@@ -1,0 +1,2 @@
+# TV1 core uses only the Python standard library.
+# Python >= 3.10 is required.
