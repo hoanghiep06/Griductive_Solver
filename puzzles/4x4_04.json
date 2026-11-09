@@ -6,14 +6,14 @@
     {
       "id": "A1",
       "name": "Abel",
-      "profession": "Doctor",
+      "profession": "Analyst",
       "row": 0,
       "col": 0
     },
     {
       "id": "B1",
       "name": "Bea",
-      "profession": "Engineer",
+      "profession": "Analyst",
       "row": 0,
       "col": 1
     },
@@ -27,125 +27,126 @@
     {
       "id": "D1",
       "name": "Derek",
-      "profession": "Guard",
+      "profession": "Journalist",
       "row": 0,
       "col": 3
     },
     {
       "id": "A2",
       "name": "Eliza",
-      "profession": "Engineer",
+      "profession": "Baker",
       "row": 1,
       "col": 0
     },
     {
       "id": "B2",
       "name": "Franz",
-      "profession": "Historian",
+      "profession": "Florist",
       "row": 1,
       "col": 1
     },
     {
       "id": "C2",
       "name": "Grant",
-      "profession": "Analyst",
+      "profession": "Guard",
       "row": 1,
       "col": 2
     },
     {
       "id": "D2",
       "name": "Hannah",
-      "profession": "Analyst",
+      "profession": "Baker",
       "row": 1,
       "col": 3
     },
     {
       "id": "A3",
       "name": "Ivy",
-      "profession": "Musician",
+      "profession": "Carpenter",
       "row": 2,
       "col": 0
     },
     {
       "id": "B3",
       "name": "Jonah",
-      "profession": "Guard",
+      "profession": "Carpenter",
       "row": 2,
       "col": 1
     },
     {
       "id": "C3",
       "name": "Kira",
-      "profession": "Baker",
+      "profession": "Musician",
       "row": 2,
       "col": 2
     },
     {
       "id": "D3",
       "name": "Leo",
-      "profession": "Carpenter",
+      "profession": "Guard",
       "row": 2,
       "col": 3
     },
     {
       "id": "A4",
       "name": "Maya",
-      "profession": "Doctor",
+      "profession": "Historian",
       "row": 3,
       "col": 0
     },
     {
       "id": "B4",
       "name": "Nora",
-      "profession": "Historian",
+      "profession": "Musician",
       "row": 3,
       "col": 1
     },
     {
       "id": "C4",
       "name": "Owen",
-      "profession": "Historian",
+      "profession": "Doctor",
       "row": 3,
       "col": 2
     },
     {
       "id": "D4",
       "name": "Petra",
-      "profession": "Carpenter",
+      "profession": "Analyst",
       "row": 3,
       "col": 3
     }
   ],
   "hidden_solution": {
-    "A1": true,
+    "A1": false,
     "B1": true,
-    "C1": true,
-    "D1": true,
+    "C1": false,
+    "D1": false,
     "A2": false,
-    "B2": true,
+    "B2": false,
     "C2": true,
-    "D2": false,
-    "A3": true,
-    "B3": false,
-    "C3": true,
-    "D3": true,
+    "D2": true,
+    "A3": false,
+    "B3": true,
+    "C3": false,
+    "D3": false,
     "A4": false,
-    "B4": false,
+    "B4": true,
     "C4": true,
     "D4": false
   },
   "initial_revealed": [
-    "C3",
-    "D3"
+    "A1",
+    "B1",
+    "C1"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "FACT",
+      "type": "SAME",
       "parameters": {
-        "target": "C3",
-        "status": "CRIMINAL"
+        "target1": "D1",
+        "target2": "A2"
       }
     },
     {
@@ -153,28 +154,32 @@
       "owner_id": "B1",
       "type": "DIFFERENT",
       "parameters": {
-        "target1": "B3",
-        "target2": "A1"
+        "target1": "A2",
+        "target2": "D2"
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 4,
-        "region_type": "NEIGHBORS",
-        "center": "C1"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "C1",
+          "D1",
+          "D2",
+          "A3"
+        ]
       }
     },
     {
       "clue_id": "CLUE_D1",
       "owner_id": "D1",
-      "type": "AT_LEAST",
+      "type": "SAME",
       "parameters": {
-        "k": 4,
-        "region_type": "COLUMN",
-        "index": 2
+        "target1": "D3",
+        "target2": "A4"
       }
     },
     {
@@ -182,77 +187,79 @@
       "owner_id": "A2",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
-        "region_type": "COLUMN",
-        "index": 3
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A4",
+          "B4"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "AT_MOST",
+      "type": "FACT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "C2",
-          "B3",
-          "C3",
-          "D4"
-        ]
+        "target": "A1",
+        "status": "INNOCENT"
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "C2",
-        "target2": "B2"
+        "target": "B1",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_D2",
       "owner_id": "D2",
-      "type": "AT_MOST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 1,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
-          "A2",
-          "C2"
+          "D2",
+          "D3",
+          "B4",
+          "C4"
         ]
       }
     },
     {
       "clue_id": "CLUE_A3",
       "owner_id": "A3",
-      "type": "DIFFERENT",
+      "type": "AT_MOST",
       "parameters": {
-        "target1": "A3",
-        "target2": "D2"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "D1",
+          "A2",
+          "D2"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B3",
       "owner_id": "B3",
-      "type": "DIFFERENT",
+      "type": "AT_MOST",
       "parameters": {
-        "target1": "B3",
-        "target2": "C2"
+        "k": 5,
+        "region_type": "NEIGHBORS",
+        "center": "C3"
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "EXACTLY",
+      "type": "FACT",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B3",
-          "C3"
-        ]
+        "target": "C1",
+        "status": "INNOCENT"
       }
     },
     {
@@ -260,50 +267,57 @@
       "owner_id": "D3",
       "type": "SAME",
       "parameters": {
-        "target1": "B2",
-        "target2": "A3"
+        "target1": "D4",
+        "target2": "B2"
       }
     },
     {
       "clue_id": "CLUE_A4",
       "owner_id": "A4",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 3,
-        "region_type": "NEIGHBORS",
-        "center": "D4"
+        "target1": "B2",
+        "target2": "C2"
       }
     },
     {
       "clue_id": "CLUE_B4",
       "owner_id": "B4",
-      "type": "AT_MOST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 1,
-        "region_type": "ROW",
-        "index": 3
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "C2",
+          "B3",
+          "B4",
+          "D4"
+        ]
       }
     },
     {
       "clue_id": "CLUE_C4",
       "owner_id": "C4",
-      "type": "SAME",
+      "type": "AT_MOST",
       "parameters": {
-        "target1": "B3",
-        "target2": "B4"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "C1",
+          "D3",
+          "A4",
+          "B4"
+        ]
       }
     },
     {
       "clue_id": "CLUE_D4",
       "owner_id": "D4",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
         "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "C4",
-          "D4"
-        ]
+        "region_type": "ROW",
+        "index": 2
       }
     }
   ]

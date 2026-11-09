@@ -1,5 +1,10 @@
 # Giai đoạn 1 — Nguyễn Hoài Phước
 
+> Tài liệu lịch sử của dataset V1 tại commit `b940b8c`. Dataset hiện tại đã nâng
+> cấp V2, dùng SAT tham chiếu và exact minimum support. Xem
+> [báo cáo V2](phuoc_dataset_v2_report.md); bảng map và phương pháp dataset bên
+> dưới mô tả bản V1 được bảo toàn trong `puzzles_baseline/`.
+
 ## A. Phạm vi và trạng thái
 
 Triển khai EntailmentChecker, dataset **15 puzzle** và công cụ kiểm định độc lập.

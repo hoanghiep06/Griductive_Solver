@@ -6,175 +6,175 @@
     {
       "id": "A1",
       "name": "Abel",
-      "profession": "Analyst",
+      "profession": "Engineer",
       "row": 0,
       "col": 0
     },
     {
       "id": "B1",
       "name": "Bea",
-      "profession": "Journalist",
+      "profession": "Illustrator",
       "row": 0,
       "col": 1
     },
     {
       "id": "C1",
       "name": "Clara",
-      "profession": "Florist",
+      "profession": "Librarian",
       "row": 0,
       "col": 2
     },
     {
       "id": "D1",
       "name": "Derek",
-      "profession": "Historian",
+      "profession": "Doctor",
       "row": 0,
       "col": 3
     },
     {
       "id": "E1",
       "name": "Eliza",
-      "profession": "Doctor",
+      "profession": "Historian",
       "row": 0,
       "col": 4
     },
     {
       "id": "A2",
       "name": "Franz",
-      "profession": "Guard",
+      "profession": "Musician",
       "row": 1,
       "col": 0
     },
     {
       "id": "B2",
       "name": "Grant",
-      "profession": "Guard",
+      "profession": "Journalist",
       "row": 1,
       "col": 1
     },
     {
       "id": "C2",
       "name": "Hannah",
-      "profession": "Engineer",
+      "profession": "Baker",
       "row": 1,
       "col": 2
     },
     {
       "id": "D2",
       "name": "Ivy",
-      "profession": "Doctor",
+      "profession": "Librarian",
       "row": 1,
       "col": 3
     },
     {
       "id": "E2",
       "name": "Jonah",
-      "profession": "Doctor",
+      "profession": "Guard",
       "row": 1,
       "col": 4
     },
     {
       "id": "A3",
       "name": "Kira",
-      "profession": "Journalist",
+      "profession": "Engineer",
       "row": 2,
       "col": 0
     },
     {
       "id": "B3",
       "name": "Leo",
-      "profession": "Doctor",
+      "profession": "Guard",
       "row": 2,
       "col": 1
     },
     {
       "id": "C3",
       "name": "Maya",
-      "profession": "Illustrator",
+      "profession": "Florist",
       "row": 2,
       "col": 2
     },
     {
       "id": "D3",
       "name": "Nora",
-      "profession": "Engineer",
+      "profession": "Baker",
       "row": 2,
       "col": 3
     },
     {
       "id": "E3",
       "name": "Owen",
-      "profession": "Doctor",
+      "profession": "Librarian",
       "row": 2,
       "col": 4
     },
     {
       "id": "A4",
       "name": "Petra",
-      "profession": "Analyst",
+      "profession": "Baker",
       "row": 3,
       "col": 0
     },
     {
       "id": "B4",
       "name": "Quinn",
-      "profession": "Engineer",
+      "profession": "Journalist",
       "row": 3,
       "col": 1
     },
     {
       "id": "C4",
       "name": "Rosa",
-      "profession": "Doctor",
+      "profession": "Librarian",
       "row": 3,
       "col": 2
     },
     {
       "id": "D4",
       "name": "Seth",
-      "profession": "Analyst",
+      "profession": "Baker",
       "row": 3,
       "col": 3
     },
     {
       "id": "E4",
       "name": "Tara",
-      "profession": "Engineer",
+      "profession": "Guard",
       "row": 3,
       "col": 4
     },
     {
       "id": "A5",
       "name": "Uma",
-      "profession": "Librarian",
+      "profession": "Baker",
       "row": 4,
       "col": 0
     },
     {
       "id": "B5",
       "name": "Vera",
-      "profession": "Doctor",
+      "profession": "Florist",
       "row": 4,
       "col": 1
     },
     {
       "id": "C5",
       "name": "Will",
-      "profession": "Analyst",
+      "profession": "Carpenter",
       "row": 4,
       "col": 2
     },
     {
       "id": "D5",
       "name": "Xena",
-      "profession": "Journalist",
+      "profession": "Musician",
       "row": 4,
       "col": 3
     },
     {
       "id": "E5",
       "name": "Yuri",
-      "profession": "Florist",
+      "profession": "Engineer",
       "row": 4,
       "col": 4
     }
@@ -182,86 +182,90 @@
   "hidden_solution": {
     "A1": false,
     "B1": true,
-    "C1": true,
-    "D1": true,
-    "E1": false,
-    "A2": true,
+    "C1": false,
+    "D1": false,
+    "E1": true,
+    "A2": false,
     "B2": true,
-    "C2": true,
-    "D2": false,
+    "C2": false,
+    "D2": true,
     "E2": true,
     "A3": true,
-    "B3": true,
-    "C3": false,
-    "D3": true,
+    "B3": false,
+    "C3": true,
+    "D3": false,
     "E3": true,
-    "A4": true,
+    "A4": false,
     "B4": true,
     "C4": false,
-    "D4": true,
+    "D4": false,
     "E4": false,
     "A5": true,
-    "B5": false,
-    "C5": true,
+    "B5": true,
+    "C5": false,
     "D5": true,
     "E5": true
   },
   "initial_revealed": [
-    "D5"
+    "E2",
+    "C1",
+    "E3"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "AT_MOST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 3,
-        "region_type": "COLUMN",
-        "index": 2
+        "k": 4,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "B2",
+          "C2",
+          "A5",
+          "E5"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A4",
-          "D5"
-        ]
+        "target1": "D4",
+        "target2": "B5"
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "SAME",
+      "type": "DIFFERENT",
       "parameters": {
-        "target1": "C1",
+        "target1": "E1",
         "target2": "B3"
       }
     },
     {
       "clue_id": "CLUE_D1",
       "owner_id": "D1",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 5,
-        "region_type": "NEIGHBORS",
-        "center": "A3"
+        "target1": "B1",
+        "target2": "D2"
       }
     },
     {
       "clue_id": "CLUE_E1",
       "owner_id": "E1",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
         "k": 2,
         "region_type": "EXPLICIT",
         "cells": [
-          "B4",
-          "D4"
+          "E2",
+          "E4",
+          "D5"
         ]
       }
     },
@@ -270,27 +274,38 @@
       "owner_id": "A2",
       "type": "EXACTLY",
       "parameters": {
-        "k": 4,
-        "region_type": "COLUMN",
-        "index": 1
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "A2",
+          "E2",
+          "A3",
+          "B3"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "DIFFERENT",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "A4",
-        "target2": "D2"
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "D2",
+          "C5"
+        ]
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "DIFFERENT",
+      "type": "SAME",
       "parameters": {
-        "target1": "E1",
-        "target2": "E2"
+        "target1": "A4",
+        "target2": "D4"
       }
     },
     {
@@ -298,31 +313,38 @@
       "owner_id": "D2",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
-          "B2",
-          "A5"
+          "B1",
+          "E2",
+          "A4",
+          "C4",
+          "B5"
         ]
       }
     },
     {
       "clue_id": "CLUE_E2",
       "owner_id": "E2",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 6,
-        "region_type": "NEIGHBORS",
-        "center": "C4"
+        "target1": "A3",
+        "target2": "E1"
       }
     },
     {
       "clue_id": "CLUE_A3",
       "owner_id": "A3",
-      "type": "FACT",
+      "type": "EXACTLY",
       "parameters": {
-        "target": "D5",
-        "status": "CRIMINAL"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B3",
+          "E4",
+          "A5"
+        ]
       }
     },
     {
@@ -330,146 +352,164 @@
       "owner_id": "B3",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
-          "B2",
-          "C5"
+          "D1",
+          "A3",
+          "B3",
+          "A5",
+          "D5"
         ]
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "DIFFERENT",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "C3",
-        "target2": "C5"
+        "region_type": "NEIGHBORS",
+        "center": "C3",
+        "k": 3
       }
     },
     {
       "clue_id": "CLUE_D3",
       "owner_id": "D3",
-      "type": "AT_MOST",
+      "type": "FACT",
       "parameters": {
-        "k": 3,
-        "region_type": "ROW",
-        "index": 0
+        "target": "E3",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_E3",
       "owner_id": "E3",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 1,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
-          "D1",
-          "D2"
+          "A2",
+          "E2",
+          "A3",
+          "B3",
+          "E3"
         ]
       }
     },
     {
       "clue_id": "CLUE_A4",
       "owner_id": "A4",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "A4",
-        "target2": "C1"
+        "k": 3,
+        "region_type": "ROW",
+        "index": 2
       }
     },
     {
       "clue_id": "CLUE_B4",
       "owner_id": "B4",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 3,
+        "k": 4,
         "region_type": "EXPLICIT",
         "cells": [
           "B1",
-          "C3",
-          "C5",
-          "D5"
+          "B2",
+          "D2",
+          "E2",
+          "C5"
         ]
       }
     },
     {
       "clue_id": "CLUE_C4",
       "owner_id": "C4",
-      "type": "DIFFERENT",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "C4",
-        "target2": "A3"
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "B2",
+          "A4",
+          "D4",
+          "B5"
+        ]
       }
     },
     {
       "clue_id": "CLUE_D4",
       "owner_id": "D4",
-      "type": "AT_MOST",
+      "type": "FACT",
       "parameters": {
-        "k": 2,
-        "region_type": "NEIGHBORS",
-        "center": "E5"
+        "target": "E2",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_E4",
       "owner_id": "E4",
-      "type": "SAME",
+      "type": "DIFFERENT",
       "parameters": {
-        "target1": "D4",
-        "target2": "E3"
+        "target1": "E5",
+        "target2": "C2"
       }
     },
     {
       "clue_id": "CLUE_A5",
       "owner_id": "A5",
-      "type": "DIFFERENT",
+      "type": "SAME",
       "parameters": {
-        "target1": "C1",
-        "target2": "E1"
+        "target1": "B2",
+        "target2": "E5"
       }
     },
     {
       "clue_id": "CLUE_B5",
       "owner_id": "B5",
-      "type": "AT_LEAST",
+      "type": "FACT",
       "parameters": {
-        "k": 4,
-        "region_type": "ROW",
-        "index": 4
+        "target": "C1",
+        "status": "INNOCENT"
       }
     },
     {
       "clue_id": "CLUE_C5",
       "owner_id": "C5",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "D5",
-        "target2": "B4"
+        "k": 2,
+        "region_type": "COLUMN",
+        "index": 3
       }
     },
     {
       "clue_id": "CLUE_D5",
       "owner_id": "D5",
-      "type": "AT_MOST",
+      "type": "EXACTLY",
       "parameters": {
         "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "C3",
-          "D5"
-        ]
+        "region_type": "NEIGHBORS",
+        "center": "B1"
       }
     },
     {
       "clue_id": "CLUE_E5",
       "owner_id": "E5",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "D1",
-        "target2": "C2"
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B1",
+          "D1",
+          "B4",
+          "E4",
+          "C5"
+        ]
       }
     }
   ]

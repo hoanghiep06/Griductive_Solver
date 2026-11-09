@@ -1,5 +1,7 @@
 # Kết quả pytest thực chạy — 09/11/2026
 
+> Snapshot lịch sử V1. Kết quả hiện tại xem [test V2](phuoc_dataset_v2_tests.md).
+
 Môi trường: Python 3.14.4, pytest 9.2.0, Ubuntu. Chạy từ root repository:
 
 ```bash

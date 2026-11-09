@@ -39,10 +39,12 @@ def test_schema_semantics_unique_solution_and_progressive_proof(pid):
     report = validate_puzzle(load_raw(pid))
     assert report["validation_status"] == "PASSED"
     assert report["checks"] == {
-        "schema": "PASSED", "semantic_truth": "PASSED", "constructive_uniqueness": "PASSED",
+        "schema": "PASSED", "semantic_truth": "PASSED", "reference_sat_uniqueness": "PASSED",
+        "exact_minimum_support": "PASSED",
         "public_no_guess": "PASSED", "dpll_cnf_integration": "SKIPPED",
     }
-    assert len(report["uniqueness_proof"]) == report["size"] ** 2
+    assert len(report["uniqueness_proof"]["primary_model"]) == report["size"] ** 2
+    assert report["uniqueness_proof"]["second_sat"] is False
     assert len(report["reveal_proof"]) == report["size"] ** 2 - report["initial_revealed_count"]
 
 
@@ -54,8 +56,9 @@ def test_all_six_templates_four_regions_and_varied_boards(reports):
         assert len({json.dumps(r["clues"], sort_keys=True) for r in raws}) == 5
         assert len({tuple(r["hidden_solution"].values()) for r in raws}) == 5
         assert len({tuple(r["initial_revealed"]) for r in raws}) >= 4
-        assert len({sum(r["hidden_solution"].values()) for r in raws}) >= 4
-        assert all(sum(c["type"] == "FACT" for c in r["clues"]) == 1 for r in raws)
+        # V2 no longer imposes the old monotone criminal-ratio template.
+        assert len({sum(r["hidden_solution"].values()) for r in raws}) >= 3
+        assert all(sum(c["type"] == "FACT" for c in r["clues"]) <= 3 for r in raws)
 
 
 def test_generator_is_byte_for_byte_reproducible(tmp_path):
@@ -131,20 +134,21 @@ def test_progressive_reasoner_receives_only_revealed_clues(monkeypatch):
     import tools.validate_puzzles as validation
     puzzle = PuzzleLoader().load(ROOT / "puzzles/5x5_03.json")
     seen = []
-    original = validation.forced_from_public
-    def spy(known, clues, characters, size):
-        assert all(c.owner_id in known for c in clues)
-        assert set(c.owner_id for c in clues) == set(known)
-        seen.append((dict(known), tuple(c.clue_id for c in clues)))
-        return original(known, clues, characters, size)
-    monkeypatch.setattr(validation, "forced_from_public", spy)
+    from tools.reference_sat import PublicSAT
+    original = PublicSAT.classify
+    def spy(self, known, unresolved):
+        assert all(c.owner_id in known for c in self.clues)
+        assert set(c.owner_id for c in self.clues) == set(known)
+        seen.append((dict(known), tuple(c.clue_id for c in self.clues)))
+        return original(self, known, unresolved)
+    monkeypatch.setattr(PublicSAT, "classify", spy)
     steps = validation.prove_progressive(puzzle)
-    assert len(seen) == len(steps) + 1
+    assert len(seen) == len(steps)
     assert len(seen[0][0]) == len(puzzle.initial_revealed)
     for index, step in enumerate(steps):
         assert step["character_id"] not in seen[index][0]
         assert step["newly_revealed_clue_id"] not in seen[index][1]
-        assert step["source_clue_id"] in seen[index][1]
+        assert set(step["minimal_supporting_clue_ids"]) <= set(seen[index][1])
 
 
 def test_unique_does_not_imply_no_guess():
@@ -165,7 +169,7 @@ def test_ambiguous_full_clues_are_not_marked_unique():
     for clue in raw["clues"]:
         clue["type"] = "SAME"
         clue["parameters"] = {"target1": "A1", "target2": "A1"}
-    with pytest.raises(PuzzleProofError, match="uniqueness could not be certified"):
+    with pytest.raises(PuzzleProofError, match="AMBIGUOUS"):
         validate_puzzle(raw)
 
 
@@ -196,7 +200,8 @@ def test_manifest_matches_recomputed_reports(reports):
         for field in ("puzzle_id", "size", "criminal_count", "innocent_count", "clue_count",
                       "initial_revealed_count", "checks", "clue_types", "region_types"):
             assert entry[field] == report[field]
-        assert entry["difficulty_measured"] is False
+        assert entry["difficulty_measured"] is True
+        assert entry["difficulty_is_subjective_heuristic"] is True
 
 
 def test_validator_cli_reports_failed_schema_without_traceback(tmp_path, capsys, monkeypatch):

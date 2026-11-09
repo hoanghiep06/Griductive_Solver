@@ -1,0 +1,6112 @@
+[
+  {
+    "puzzle_id": "3x3_01",
+    "size": 3,
+    "criminal_count": 3,
+    "innocent_count": 6,
+    "clue_count": 9,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 2,
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 3,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 4,
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 5,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 6,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 7,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 8,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "3x3_02",
+    "size": 3,
+    "criminal_count": 4,
+    "innocent_count": 5,
+    "clue_count": 9,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 2,
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 3,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 4,
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 5,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 6,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B1",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 7,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_C1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "3x3_03",
+    "size": 3,
+    "criminal_count": 5,
+    "innocent_count": 4,
+    "clue_count": 9,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_A3"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 2,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 3,
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 4,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 5,
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 6,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_C1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 7,
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 8,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_A3",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A2",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "3x3_04",
+    "size": 3,
+    "criminal_count": 6,
+    "innocent_count": 3,
+    "clue_count": 9,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 2,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 3,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 4,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 5,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 6,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_C1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 7,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "3x3_05",
+    "size": 3,
+    "criminal_count": 7,
+    "innocent_count": 2,
+    "clue_count": 9,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 2,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 3,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 4,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 5,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_A1",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 6,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_A1",
+          "CLUE_B2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 7,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_A1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 8,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_B1",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_A1",
+          "CLUE_B2",
+          "CLUE_C2",
+          "CLUE_C1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "4x4_01",
+    "size": 4,
+    "criminal_count": 5,
+    "innocent_count": 11,
+    "clue_count": 16,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D4"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_C4"
+      },
+      {
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 2,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 3,
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 4,
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 5,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 6,
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 7,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 8,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 9,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 10,
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 11,
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 12,
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 13,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 14,
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 15,
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "4x4_02",
+    "size": 4,
+    "criminal_count": 7,
+    "innocent_count": 9,
+    "clue_count": 16,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_A3"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 2,
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 3,
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 4,
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 5,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 6,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 7,
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 8,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 9,
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 10,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 11,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 12,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 13,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 14,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_D4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "4x4_03",
+    "size": 4,
+    "criminal_count": 9,
+    "innocent_count": 7,
+    "clue_count": 16,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C4"
+      },
+      {
+        "character_id": "C4",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_D4"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 2,
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 3,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 4,
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 5,
+        "character_id": "C4",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 6,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 7,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 8,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 9,
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 10,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 11,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 12,
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1",
+          "CLUE_B3",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 13,
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 14,
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_B4",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 15,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_D1",
+          "CLUE_D3",
+          "CLUE_D4",
+          "CLUE_B1",
+          "CLUE_B2",
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_A1",
+          "CLUE_B3",
+          "CLUE_A2",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "4x4_04",
+    "size": 4,
+    "criminal_count": 10,
+    "innocent_count": 6,
+    "clue_count": 16,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_C4"
+      },
+      {
+        "character_id": "C4",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 2,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 3,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 4,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 5,
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 6,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 7,
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 8,
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 9,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 10,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 11,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 12,
+        "character_id": "C4",
+        "status": true,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 13,
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 14,
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A3",
+          "CLUE_D2",
+          "CLUE_A2",
+          "CLUE_D4",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_C4",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "4x4_05",
+    "size": 4,
+    "criminal_count": 12,
+    "innocent_count": 4,
+    "clue_count": 16,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "C4",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_A4"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 2,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 3,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 4,
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 5,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 6,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 7,
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 8,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 9,
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 10,
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 11,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 12,
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 13,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 14,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_D4",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 15,
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_C4",
+          "CLUE_C2",
+          "CLUE_C3",
+          "CLUE_A3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B3",
+          "CLUE_D3",
+          "CLUE_B1",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_D4",
+          "CLUE_B2",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "5x5_01",
+    "size": 5,
+    "criminal_count": 8,
+    "innocent_count": 17,
+    "clue_count": 25,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_D4"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D4"
+      },
+      {
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_E4"
+      },
+      {
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_C4"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "E4",
+        "status": true,
+        "source_clue_id": "CLUE_E3"
+      },
+      {
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_A5"
+      },
+      {
+        "character_id": "C5",
+        "status": false,
+        "source_clue_id": "CLUE_B5"
+      },
+      {
+        "character_id": "D5",
+        "status": false,
+        "source_clue_id": "CLUE_C5"
+      },
+      {
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_D5"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 2,
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 3,
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 4,
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_E1"
+      },
+      {
+        "step": 5,
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_E1",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1"
+        ],
+        "newly_revealed_clue_id": "CLUE_E2"
+      },
+      {
+        "step": 6,
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_E2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 7,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 8,
+        "character_id": "B2",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 9,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 10,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 11,
+        "character_id": "B3",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 12,
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 13,
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 14,
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E3"
+      },
+      {
+        "step": 15,
+        "character_id": "E4",
+        "status": true,
+        "source_clue_id": "CLUE_E3",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E4"
+      },
+      {
+        "step": 16,
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_E4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 17,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 18,
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 19,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 20,
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A5"
+      },
+      {
+        "step": 21,
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_A5",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_A5"
+        ],
+        "newly_revealed_clue_id": "CLUE_B5"
+      },
+      {
+        "step": 22,
+        "character_id": "C5",
+        "status": false,
+        "source_clue_id": "CLUE_B5",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_A5",
+          "CLUE_B5"
+        ],
+        "newly_revealed_clue_id": "CLUE_C5"
+      },
+      {
+        "step": 23,
+        "character_id": "D5",
+        "status": false,
+        "source_clue_id": "CLUE_C5",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_A5",
+          "CLUE_B5",
+          "CLUE_C5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D5"
+      },
+      {
+        "step": 24,
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_D5",
+        "active_clue_ids": [
+          "CLUE_A1",
+          "CLUE_B1",
+          "CLUE_C1",
+          "CLUE_D1",
+          "CLUE_E1",
+          "CLUE_E2",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_B3",
+          "CLUE_C3",
+          "CLUE_D3",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_A4",
+          "CLUE_A5",
+          "CLUE_B5",
+          "CLUE_C5",
+          "CLUE_D5"
+        ],
+        "newly_revealed_clue_id": "CLUE_E5"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "5x5_02",
+    "size": 5,
+    "criminal_count": 11,
+    "innocent_count": 14,
+    "clue_count": 25,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "E1",
+        "status": true,
+        "source_clue_id": "CLUE_A5"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "E3",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_B5"
+      },
+      {
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "B5",
+        "status": true,
+        "source_clue_id": "CLUE_C5"
+      },
+      {
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "D5",
+        "status": false,
+        "source_clue_id": "CLUE_E5"
+      },
+      {
+        "character_id": "E5",
+        "status": false,
+        "source_clue_id": "CLUE_E4"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_E1",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E2"
+      },
+      {
+        "step": 2,
+        "character_id": "E3",
+        "status": true,
+        "source_clue_id": "CLUE_E2",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2"
+        ],
+        "newly_revealed_clue_id": "CLUE_E3"
+      },
+      {
+        "step": 3,
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_E3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E4"
+      },
+      {
+        "step": 4,
+        "character_id": "E5",
+        "status": false,
+        "source_clue_id": "CLUE_E4",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4"
+        ],
+        "newly_revealed_clue_id": "CLUE_E5"
+      },
+      {
+        "step": 5,
+        "character_id": "D5",
+        "status": false,
+        "source_clue_id": "CLUE_E5",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D5"
+      },
+      {
+        "step": 6,
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_D5",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 7,
+        "character_id": "D3",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 8,
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 9,
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 10,
+        "character_id": "C1",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 11,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 12,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 13,
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C5"
+      },
+      {
+        "step": 14,
+        "character_id": "B5",
+        "status": true,
+        "source_clue_id": "CLUE_C5",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5"
+        ],
+        "newly_revealed_clue_id": "CLUE_B5"
+      },
+      {
+        "step": 15,
+        "character_id": "B4",
+        "status": false,
+        "source_clue_id": "CLUE_B5",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 16,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 17,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 18,
+        "character_id": "B1",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 19,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 20,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 21,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 22,
+        "character_id": "A4",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 23,
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_E1",
+          "CLUE_C3",
+          "CLUE_E2",
+          "CLUE_E3",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_D4",
+          "CLUE_D3",
+          "CLUE_D2",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_C2",
+          "CLUE_C4",
+          "CLUE_C5",
+          "CLUE_B5",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_B1",
+          "CLUE_A1",
+          "CLUE_A2",
+          "CLUE_A3",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A5"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "5x5_03",
+    "size": 5,
+    "criminal_count": 14,
+    "innocent_count": 11,
+    "clue_count": 25,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_E5"
+      },
+      {
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_D5"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "E1",
+        "status": true,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_A5"
+      },
+      {
+        "character_id": "A5",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_E3"
+      },
+      {
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "D5",
+        "status": true,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "E5",
+        "status": false,
+        "source_clue_id": "CLUE_B4"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C5"
+      },
+      {
+        "step": 2,
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_C5",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5"
+        ],
+        "newly_revealed_clue_id": "CLUE_E4"
+      },
+      {
+        "step": 3,
+        "character_id": "E5",
+        "status": false,
+        "source_clue_id": "CLUE_E4",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4"
+        ],
+        "newly_revealed_clue_id": "CLUE_E5"
+      },
+      {
+        "step": 4,
+        "character_id": "C3",
+        "status": true,
+        "source_clue_id": "CLUE_E5",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 5,
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E3"
+      },
+      {
+        "step": 6,
+        "character_id": "A1",
+        "status": true,
+        "source_clue_id": "CLUE_E3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 7,
+        "character_id": "E1",
+        "status": true,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_E1"
+      },
+      {
+        "step": 8,
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_E1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 9,
+        "character_id": "D5",
+        "status": true,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D5"
+      },
+      {
+        "step": 10,
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_D5",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 11,
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 12,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 13,
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 14,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 15,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 16,
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 17,
+        "character_id": "C2",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 18,
+        "character_id": "A2",
+        "status": false,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 19,
+        "character_id": "A5",
+        "status": true,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A5"
+      },
+      {
+        "step": 20,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_A5",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2",
+          "CLUE_A5"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 21,
+        "character_id": "A3",
+        "status": false,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2",
+          "CLUE_A5",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 22,
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2",
+          "CLUE_A5",
+          "CLUE_A4",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E2"
+      },
+      {
+        "step": 23,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_E2",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2",
+          "CLUE_A5",
+          "CLUE_A4",
+          "CLUE_A3",
+          "CLUE_E2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 24,
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_B2",
+          "CLUE_C5",
+          "CLUE_E4",
+          "CLUE_E5",
+          "CLUE_C3",
+          "CLUE_E3",
+          "CLUE_A1",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_D5",
+          "CLUE_D2",
+          "CLUE_B4",
+          "CLUE_B3",
+          "CLUE_D1",
+          "CLUE_C4",
+          "CLUE_C1",
+          "CLUE_D3",
+          "CLUE_C2",
+          "CLUE_A2",
+          "CLUE_A5",
+          "CLUE_A4",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B5"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "5x5_04",
+    "size": 5,
+    "criminal_count": 16,
+    "innocent_count": 9,
+    "clue_count": 25,
+    "initial_revealed_count": 2,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_C5"
+      },
+      {
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_A3"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_A4"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_E3"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_C3"
+      },
+      {
+        "character_id": "E4",
+        "status": true,
+        "source_clue_id": "CLUE_E4"
+      },
+      {
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "B5",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_D5"
+      },
+      {
+        "character_id": "D5",
+        "status": true,
+        "source_clue_id": "CLUE_C5"
+      },
+      {
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_B2"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "D4",
+        "status": false,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 2,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 3,
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 4,
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 5,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 6,
+        "character_id": "D2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 7,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 8,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 9,
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_E5"
+      },
+      {
+        "step": 10,
+        "character_id": "D5",
+        "status": true,
+        "source_clue_id": "CLUE_E5",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5"
+        ],
+        "newly_revealed_clue_id": "CLUE_D5"
+      },
+      {
+        "step": 11,
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_D5",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5"
+        ],
+        "newly_revealed_clue_id": "CLUE_C5"
+      },
+      {
+        "step": 12,
+        "character_id": "A5",
+        "status": false,
+        "source_clue_id": "CLUE_B5",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5"
+        ],
+        "newly_revealed_clue_id": "CLUE_A5"
+      },
+      {
+        "step": 13,
+        "character_id": "E4",
+        "status": true,
+        "source_clue_id": "CLUE_A5",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5"
+        ],
+        "newly_revealed_clue_id": "CLUE_E4"
+      },
+      {
+        "step": 14,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_E4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 15,
+        "character_id": "E3",
+        "status": false,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_E3"
+      },
+      {
+        "step": 16,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_E3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      },
+      {
+        "step": 17,
+        "character_id": "E2",
+        "status": false,
+        "source_clue_id": "CLUE_A3",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3"
+        ],
+        "newly_revealed_clue_id": "CLUE_E2"
+      },
+      {
+        "step": 18,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_E2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 19,
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_E1"
+      },
+      {
+        "step": 20,
+        "character_id": "D1",
+        "status": false,
+        "source_clue_id": "CLUE_E1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_A2",
+          "CLUE_E1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 21,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_A2",
+          "CLUE_E1",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 22,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_A2",
+          "CLUE_E1",
+          "CLUE_D1",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 23,
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_C3",
+          "CLUE_B5",
+          "CLUE_D4",
+          "CLUE_C4",
+          "CLUE_B4",
+          "CLUE_D3",
+          "CLUE_B3",
+          "CLUE_D2",
+          "CLUE_C2",
+          "CLUE_B2",
+          "CLUE_E5",
+          "CLUE_D5",
+          "CLUE_C5",
+          "CLUE_A5",
+          "CLUE_E4",
+          "CLUE_A4",
+          "CLUE_E3",
+          "CLUE_A3",
+          "CLUE_E2",
+          "CLUE_A2",
+          "CLUE_E1",
+          "CLUE_D1",
+          "CLUE_C1",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      }
+    ]
+  },
+  {
+    "puzzle_id": "5x5_05",
+    "size": 5,
+    "criminal_count": 18,
+    "innocent_count": 7,
+    "clue_count": 25,
+    "initial_revealed_count": 1,
+    "clue_types": [
+      "AT_LEAST",
+      "AT_MOST",
+      "DIFFERENT",
+      "EXACTLY",
+      "FACT",
+      "SAME"
+    ],
+    "region_types": [
+      "COLUMN",
+      "EXPLICIT",
+      "NEIGHBORS",
+      "ROW"
+    ],
+    "validation_status": "PASSED",
+    "checks": {
+      "schema": "PASSED",
+      "semantic_truth": "PASSED",
+      "constructive_uniqueness": "PASSED",
+      "public_no_guess": "PASSED",
+      "dpll_cnf_integration": "SKIPPED"
+    },
+    "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+    "uniqueness_proof": [
+      {
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_C1"
+      },
+      {
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_A5"
+      },
+      {
+        "character_id": "E2",
+        "status": true,
+        "source_clue_id": "CLUE_C2"
+      },
+      {
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_B2"
+      },
+      {
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_E3"
+      },
+      {
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_E5"
+      },
+      {
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_D1"
+      },
+      {
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_E1"
+      },
+      {
+        "character_id": "E3",
+        "status": true,
+        "source_clue_id": "CLUE_E4"
+      },
+      {
+        "character_id": "A5",
+        "status": true,
+        "source_clue_id": "CLUE_D2"
+      },
+      {
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_B3"
+      },
+      {
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_B4"
+      },
+      {
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_D3"
+      },
+      {
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_A1"
+      },
+      {
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_C4"
+      },
+      {
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_A2"
+      },
+      {
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_E2"
+      },
+      {
+        "character_id": "D5",
+        "status": true,
+        "source_clue_id": "CLUE_B1"
+      },
+      {
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_D4"
+      },
+      {
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_B5"
+      }
+    ],
+    "reveal_proof": [
+      {
+        "step": 1,
+        "character_id": "C3",
+        "status": false,
+        "source_clue_id": "CLUE_D5",
+        "active_clue_ids": [
+          "CLUE_D5"
+        ],
+        "newly_revealed_clue_id": "CLUE_C3"
+      },
+      {
+        "step": 2,
+        "character_id": "C5",
+        "status": true,
+        "source_clue_id": "CLUE_C3",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3"
+        ],
+        "newly_revealed_clue_id": "CLUE_C5"
+      },
+      {
+        "step": 3,
+        "character_id": "B4",
+        "status": true,
+        "source_clue_id": "CLUE_C5",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5"
+        ],
+        "newly_revealed_clue_id": "CLUE_B4"
+      },
+      {
+        "step": 4,
+        "character_id": "B1",
+        "status": true,
+        "source_clue_id": "CLUE_B4",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4"
+        ],
+        "newly_revealed_clue_id": "CLUE_B1"
+      },
+      {
+        "step": 5,
+        "character_id": "A4",
+        "status": true,
+        "source_clue_id": "CLUE_B1",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A4"
+      },
+      {
+        "step": 6,
+        "character_id": "C1",
+        "status": true,
+        "source_clue_id": "CLUE_A4",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4"
+        ],
+        "newly_revealed_clue_id": "CLUE_C1"
+      },
+      {
+        "step": 7,
+        "character_id": "B3",
+        "status": true,
+        "source_clue_id": "CLUE_C1",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1"
+        ],
+        "newly_revealed_clue_id": "CLUE_B3"
+      },
+      {
+        "step": 8,
+        "character_id": "B2",
+        "status": true,
+        "source_clue_id": "CLUE_B3",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3"
+        ],
+        "newly_revealed_clue_id": "CLUE_B2"
+      },
+      {
+        "step": 9,
+        "character_id": "D2",
+        "status": false,
+        "source_clue_id": "CLUE_B2",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D2"
+      },
+      {
+        "step": 10,
+        "character_id": "A5",
+        "status": true,
+        "source_clue_id": "CLUE_D2",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2"
+        ],
+        "newly_revealed_clue_id": "CLUE_A5"
+      },
+      {
+        "step": 11,
+        "character_id": "E1",
+        "status": false,
+        "source_clue_id": "CLUE_A5",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5"
+        ],
+        "newly_revealed_clue_id": "CLUE_E1"
+      },
+      {
+        "step": 12,
+        "character_id": "D4",
+        "status": true,
+        "source_clue_id": "CLUE_E1",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1"
+        ],
+        "newly_revealed_clue_id": "CLUE_D4"
+      },
+      {
+        "step": 13,
+        "character_id": "E4",
+        "status": false,
+        "source_clue_id": "CLUE_D4",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4"
+        ],
+        "newly_revealed_clue_id": "CLUE_E4"
+      },
+      {
+        "step": 14,
+        "character_id": "E3",
+        "status": true,
+        "source_clue_id": "CLUE_E4",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4"
+        ],
+        "newly_revealed_clue_id": "CLUE_E3"
+      },
+      {
+        "step": 15,
+        "character_id": "D1",
+        "status": true,
+        "source_clue_id": "CLUE_E3",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3"
+        ],
+        "newly_revealed_clue_id": "CLUE_D1"
+      },
+      {
+        "step": 16,
+        "character_id": "A2",
+        "status": true,
+        "source_clue_id": "CLUE_D1",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1"
+        ],
+        "newly_revealed_clue_id": "CLUE_A2"
+      },
+      {
+        "step": 17,
+        "character_id": "B5",
+        "status": false,
+        "source_clue_id": "CLUE_A2",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2"
+        ],
+        "newly_revealed_clue_id": "CLUE_B5"
+      },
+      {
+        "step": 18,
+        "character_id": "E5",
+        "status": true,
+        "source_clue_id": "CLUE_B5",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5"
+        ],
+        "newly_revealed_clue_id": "CLUE_E5"
+      },
+      {
+        "step": 19,
+        "character_id": "C2",
+        "status": true,
+        "source_clue_id": "CLUE_E5",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5"
+        ],
+        "newly_revealed_clue_id": "CLUE_C2"
+      },
+      {
+        "step": 20,
+        "character_id": "E2",
+        "status": true,
+        "source_clue_id": "CLUE_C2",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5",
+          "CLUE_C2"
+        ],
+        "newly_revealed_clue_id": "CLUE_E2"
+      },
+      {
+        "step": 21,
+        "character_id": "D3",
+        "status": true,
+        "source_clue_id": "CLUE_E2",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5",
+          "CLUE_C2",
+          "CLUE_E2"
+        ],
+        "newly_revealed_clue_id": "CLUE_D3"
+      },
+      {
+        "step": 22,
+        "character_id": "A1",
+        "status": false,
+        "source_clue_id": "CLUE_D3",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5",
+          "CLUE_C2",
+          "CLUE_E2",
+          "CLUE_D3"
+        ],
+        "newly_revealed_clue_id": "CLUE_A1"
+      },
+      {
+        "step": 23,
+        "character_id": "C4",
+        "status": false,
+        "source_clue_id": "CLUE_A1",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5",
+          "CLUE_C2",
+          "CLUE_E2",
+          "CLUE_D3",
+          "CLUE_A1"
+        ],
+        "newly_revealed_clue_id": "CLUE_C4"
+      },
+      {
+        "step": 24,
+        "character_id": "A3",
+        "status": true,
+        "source_clue_id": "CLUE_C4",
+        "active_clue_ids": [
+          "CLUE_D5",
+          "CLUE_C3",
+          "CLUE_C5",
+          "CLUE_B4",
+          "CLUE_B1",
+          "CLUE_A4",
+          "CLUE_C1",
+          "CLUE_B3",
+          "CLUE_B2",
+          "CLUE_D2",
+          "CLUE_A5",
+          "CLUE_E1",
+          "CLUE_D4",
+          "CLUE_E4",
+          "CLUE_E3",
+          "CLUE_D1",
+          "CLUE_A2",
+          "CLUE_B5",
+          "CLUE_E5",
+          "CLUE_C2",
+          "CLUE_E2",
+          "CLUE_D3",
+          "CLUE_A1",
+          "CLUE_C4"
+        ],
+        "newly_revealed_clue_id": "CLUE_A3"
+      }
+    ]
+  }
+]

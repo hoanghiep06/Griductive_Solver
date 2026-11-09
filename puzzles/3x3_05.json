@@ -6,63 +6,63 @@
     {
       "id": "A1",
       "name": "Abel",
-      "profession": "Journalist",
+      "profession": "Engineer",
       "row": 0,
       "col": 0
     },
     {
       "id": "B1",
       "name": "Bea",
-      "profession": "Doctor",
+      "profession": "Florist",
       "row": 0,
       "col": 1
     },
     {
       "id": "C1",
       "name": "Clara",
-      "profession": "Analyst",
+      "profession": "Historian",
       "row": 0,
       "col": 2
     },
     {
       "id": "A2",
       "name": "Derek",
-      "profession": "Musician",
+      "profession": "Journalist",
       "row": 1,
       "col": 0
     },
     {
       "id": "B2",
       "name": "Eliza",
-      "profession": "Doctor",
+      "profession": "Illustrator",
       "row": 1,
       "col": 1
     },
     {
       "id": "C2",
       "name": "Franz",
-      "profession": "Engineer",
+      "profession": "Doctor",
       "row": 1,
       "col": 2
     },
     {
       "id": "A3",
       "name": "Grant",
-      "profession": "Historian",
+      "profession": "Journalist",
       "row": 2,
       "col": 0
     },
     {
       "id": "B3",
       "name": "Hannah",
-      "profession": "Journalist",
+      "profession": "Analyst",
       "row": 2,
       "col": 1
     },
     {
       "id": "C3",
       "name": "Ivy",
-      "profession": "Carpenter",
+      "profession": "Doctor",
       "row": 2,
       "col": 2
     }
@@ -73,102 +73,112 @@
     "C1": true,
     "A2": false,
     "B2": true,
-    "C2": true,
+    "C2": false,
     "A3": true,
-    "B3": false,
-    "C3": true
+    "B3": true,
+    "C3": false
   },
   "initial_revealed": [
-    "B1"
+    "B1",
+    "C2",
+    "A3"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "AT_LEAST",
+      "type": "EXACTLY",
       "parameters": {
         "k": 2,
-        "region_type": "COLUMN",
-        "index": 1
+        "region_type": "ROW",
+        "index": 2
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B1",
-          "A3"
-        ]
+        "target1": "A1",
+        "target2": "C1"
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "AT_MOST",
+      "type": "EXACTLY",
       "parameters": {
-        "k": 2,
-        "region_type": "ROW",
+        "k": 3,
+        "region_type": "COLUMN",
         "index": 1
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "B1",
-        "target2": "C3"
+        "target": "B1",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "EXACTLY",
+      "type": "FACT",
       "parameters": {
-        "k": 2,
-        "region_type": "NEIGHBORS",
-        "center": "C3"
+        "target": "A3",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 3,
-        "region_type": "ROW",
-        "index": 0
+        "target1": "C1",
+        "target2": "A2"
       }
     },
     {
       "clue_id": "CLUE_A3",
       "owner_id": "A3",
-      "type": "DIFFERENT",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "B1",
-        "target2": "B3"
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "B1",
+          "A2",
+          "C2",
+          "C3"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B3",
       "owner_id": "B3",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "B1",
-        "target2": "A1"
+        "target": "C2",
+        "status": "INNOCENT"
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "FACT",
+      "type": "EXACTLY",
       "parameters": {
-        "target": "B1",
-        "status": "CRIMINAL"
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "B1",
+          "C1",
+          "A2",
+          "C2"
+        ]
       }
     }
   ]

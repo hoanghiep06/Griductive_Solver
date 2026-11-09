@@ -1,0 +1,212 @@
+[
+  {
+    "a": "3x3_01",
+    "b": "3x3_02",
+    "similarity": 0.853175,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_01",
+    "b": "3x3_03",
+    "similarity": 0.615079,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_01",
+    "b": "3x3_04",
+    "similarity": 0.670635,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_01",
+    "b": "3x3_05",
+    "similarity": 0.555556,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_02",
+    "b": "3x3_03",
+    "similarity": 0.706349,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_02",
+    "b": "3x3_04",
+    "similarity": 0.761905,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_02",
+    "b": "3x3_05",
+    "similarity": 0.646825,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_03",
+    "b": "3x3_04",
+    "similarity": 0.888889,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_03",
+    "b": "3x3_05",
+    "similarity": 0.740079,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "3x3_04",
+    "b": "3x3_05",
+    "similarity": 0.684524,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_01",
+    "b": "4x4_02",
+    "similarity": 0.75,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_01",
+    "b": "4x4_03",
+    "similarity": 0.727163,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_01",
+    "b": "4x4_04",
+    "similarity": 0.723558,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_01",
+    "b": "4x4_05",
+    "similarity": 0.551683,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_02",
+    "b": "4x4_03",
+    "similarity": 0.789663,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_02",
+    "b": "4x4_04",
+    "similarity": 0.754808,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_02",
+    "b": "4x4_05",
+    "similarity": 0.707933,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_03",
+    "b": "4x4_04",
+    "similarity": 0.793269,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_03",
+    "b": "4x4_05",
+    "similarity": 0.824519,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "4x4_04",
+    "b": "4x4_05",
+    "similarity": 0.6875,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_01",
+    "b": "5x5_02",
+    "similarity": 0.85,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_01",
+    "b": "5x5_03",
+    "similarity": 0.634545,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_01",
+    "b": "5x5_04",
+    "similarity": 0.693182,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_01",
+    "b": "5x5_05",
+    "similarity": 0.623182,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_02",
+    "b": "5x5_03",
+    "similarity": 0.744545,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_02",
+    "b": "5x5_04",
+    "similarity": 0.773182,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_02",
+    "b": "5x5_05",
+    "similarity": 0.713182,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_03",
+    "b": "5x5_04",
+    "similarity": 0.818636,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_03",
+    "b": "5x5_05",
+    "similarity": 0.818636,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  },
+  {
+    "a": "5x5_04",
+    "b": "5x5_05",
+    "similarity": 0.748636,
+    "near_duplicate_review_flag": false,
+    "wl_equal": false
+  }
+]

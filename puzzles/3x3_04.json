@@ -6,35 +6,35 @@
     {
       "id": "A1",
       "name": "Abel",
-      "profession": "Journalist",
+      "profession": "Librarian",
       "row": 0,
       "col": 0
     },
     {
       "id": "B1",
       "name": "Bea",
-      "profession": "Doctor",
+      "profession": "Illustrator",
       "row": 0,
       "col": 1
     },
     {
       "id": "C1",
       "name": "Clara",
-      "profession": "Engineer",
+      "profession": "Historian",
       "row": 0,
       "col": 2
     },
     {
       "id": "A2",
       "name": "Derek",
-      "profession": "Historian",
+      "profession": "Baker",
       "row": 1,
       "col": 0
     },
     {
       "id": "B2",
       "name": "Eliza",
-      "profession": "Analyst",
+      "profession": "Journalist",
       "row": 1,
       "col": 1
     },
@@ -48,30 +48,30 @@
     {
       "id": "A3",
       "name": "Grant",
-      "profession": "Illustrator",
+      "profession": "Carpenter",
       "row": 2,
       "col": 0
     },
     {
       "id": "B3",
       "name": "Hannah",
-      "profession": "Historian",
+      "profession": "Florist",
       "row": 2,
       "col": 1
     },
     {
       "id": "C3",
       "name": "Ivy",
-      "profession": "Florist",
+      "profession": "Guard",
       "row": 2,
       "col": 2
     }
   ],
   "hidden_solution": {
-    "A1": true,
-    "B1": true,
-    "C1": true,
-    "A2": false,
+    "A1": false,
+    "B1": false,
+    "C1": false,
+    "A2": true,
     "B2": true,
     "C2": false,
     "A3": true,
@@ -79,84 +79,51 @@
     "C3": true
   },
   "initial_revealed": [
-    "B2",
-    "C2"
+    "A1",
+    "B1"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "FACT",
+      "type": "DIFFERENT",
       "parameters": {
-        "target": "B2",
-        "status": "CRIMINAL"
+        "target1": "C1",
+        "target2": "A2"
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "AT_LEAST",
+      "type": "AT_MOST",
       "parameters": {
-        "k": 5,
-        "region_type": "NEIGHBORS",
-        "center": "B2"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "C1",
+          "A2",
+          "C2"
+        ]
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "B2",
-        "target2": "B1"
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A3",
+          "B3"
+        ]
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "EXACTLY",
-      "parameters": {
-        "k": 2,
-        "region_type": "COLUMN",
-        "index": 2
-      }
-    },
-    {
-      "clue_id": "CLUE_B2",
-      "owner_id": "B2",
       "type": "AT_LEAST",
-      "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B2",
-          "C3"
-        ]
-      }
-    },
-    {
-      "clue_id": "CLUE_C2",
-      "owner_id": "C2",
-      "type": "SAME",
-      "parameters": {
-        "target1": "B3",
-        "target2": "A2"
-      }
-    },
-    {
-      "clue_id": "CLUE_A3",
-      "owner_id": "A3",
-      "type": "AT_MOST",
-      "parameters": {
-        "k": 1,
-        "region_type": "NEIGHBORS",
-        "center": "C3"
-      }
-    },
-    {
-      "clue_id": "CLUE_B3",
-      "owner_id": "B3",
-      "type": "EXACTLY",
       "parameters": {
         "k": 2,
         "region_type": "ROW",
@@ -164,12 +131,49 @@
       }
     },
     {
+      "clue_id": "CLUE_B2",
+      "owner_id": "B2",
+      "type": "FACT",
+      "parameters": {
+        "target": "B1",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "clue_id": "CLUE_C2",
+      "owner_id": "C2",
+      "type": "SAME",
+      "parameters": {
+        "target1": "C1",
+        "target2": "C2"
+      }
+    },
+    {
+      "clue_id": "CLUE_A3",
+      "owner_id": "A3",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 1,
+        "region_type": "COLUMN",
+        "index": 1
+      }
+    },
+    {
+      "clue_id": "CLUE_B3",
+      "owner_id": "B3",
+      "type": "FACT",
+      "parameters": {
+        "target": "A1",
+        "status": "INNOCENT"
+      }
+    },
+    {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "DIFFERENT",
+      "type": "SAME",
       "parameters": {
-        "target1": "B2",
-        "target2": "B3"
+        "target1": "A3",
+        "target2": "C3"
       }
     }
   ]
