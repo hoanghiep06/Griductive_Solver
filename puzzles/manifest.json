@@ -1,0 +1,546 @@
+{
+  "schema_version": "1.0",
+  "generator_seed": 20261109,
+  "puzzles": [
+    {
+      "puzzle_id": "3x3_01",
+      "size": 3,
+      "criminal_count": 3,
+      "innocent_count": 6,
+      "clue_count": 9,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "3x3_01.json",
+      "generation_seed": 20261410,
+      "difficulty_label": "Easy target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 8
+    },
+    {
+      "puzzle_id": "3x3_02",
+      "size": 3,
+      "criminal_count": 4,
+      "innocent_count": 5,
+      "clue_count": 9,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "3x3_02.json",
+      "generation_seed": 20261411,
+      "difficulty_label": "Easy-Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 7
+    },
+    {
+      "puzzle_id": "3x3_03",
+      "size": 3,
+      "criminal_count": 5,
+      "innocent_count": 4,
+      "clue_count": 9,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "3x3_03.json",
+      "generation_seed": 20261412,
+      "difficulty_label": "Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 8
+    },
+    {
+      "puzzle_id": "3x3_04",
+      "size": 3,
+      "criminal_count": 6,
+      "innocent_count": 3,
+      "clue_count": 9,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "3x3_04.json",
+      "generation_seed": 20261413,
+      "difficulty_label": "Medium-Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 7
+    },
+    {
+      "puzzle_id": "3x3_05",
+      "size": 3,
+      "criminal_count": 7,
+      "innocent_count": 2,
+      "clue_count": 9,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "3x3_05.json",
+      "generation_seed": 20261414,
+      "difficulty_label": "Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 8
+    },
+    {
+      "puzzle_id": "4x4_01",
+      "size": 4,
+      "criminal_count": 5,
+      "innocent_count": 11,
+      "clue_count": 16,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "4x4_01.json",
+      "generation_seed": 20261510,
+      "difficulty_label": "Easy target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 15
+    },
+    {
+      "puzzle_id": "4x4_02",
+      "size": 4,
+      "criminal_count": 7,
+      "innocent_count": 9,
+      "clue_count": 16,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "4x4_02.json",
+      "generation_seed": 20261511,
+      "difficulty_label": "Easy-Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 14
+    },
+    {
+      "puzzle_id": "4x4_03",
+      "size": 4,
+      "criminal_count": 9,
+      "innocent_count": 7,
+      "clue_count": 16,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "4x4_03.json",
+      "generation_seed": 20261512,
+      "difficulty_label": "Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 15
+    },
+    {
+      "puzzle_id": "4x4_04",
+      "size": 4,
+      "criminal_count": 10,
+      "innocent_count": 6,
+      "clue_count": 16,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "4x4_04.json",
+      "generation_seed": 20261513,
+      "difficulty_label": "Medium-Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 14
+    },
+    {
+      "puzzle_id": "4x4_05",
+      "size": 4,
+      "criminal_count": 12,
+      "innocent_count": 4,
+      "clue_count": 16,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "4x4_05.json",
+      "generation_seed": 20261514,
+      "difficulty_label": "Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 15
+    },
+    {
+      "puzzle_id": "5x5_01",
+      "size": 5,
+      "criminal_count": 8,
+      "innocent_count": 17,
+      "clue_count": 25,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "5x5_01.json",
+      "generation_seed": 20261610,
+      "difficulty_label": "Easy target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 24
+    },
+    {
+      "puzzle_id": "5x5_02",
+      "size": 5,
+      "criminal_count": 11,
+      "innocent_count": 14,
+      "clue_count": 25,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "5x5_02.json",
+      "generation_seed": 20261611,
+      "difficulty_label": "Easy-Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 23
+    },
+    {
+      "puzzle_id": "5x5_03",
+      "size": 5,
+      "criminal_count": 14,
+      "innocent_count": 11,
+      "clue_count": 25,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "5x5_03.json",
+      "generation_seed": 20261612,
+      "difficulty_label": "Medium target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 24
+    },
+    {
+      "puzzle_id": "5x5_04",
+      "size": 5,
+      "criminal_count": 16,
+      "innocent_count": 9,
+      "clue_count": 25,
+      "initial_revealed_count": 2,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "5x5_04.json",
+      "generation_seed": 20261613,
+      "difficulty_label": "Medium-Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 23
+    },
+    {
+      "puzzle_id": "5x5_05",
+      "size": 5,
+      "criminal_count": 18,
+      "innocent_count": 7,
+      "clue_count": 25,
+      "initial_revealed_count": 1,
+      "clue_types": [
+        "AT_LEAST",
+        "AT_MOST",
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "COLUMN",
+        "EXPLICIT",
+        "NEIGHBORS",
+        "ROW"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "constructive_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "dpll_cnf_integration": "SKIPPED"
+      },
+      "file": "5x5_05.json",
+      "generation_seed": 20261614,
+      "difficulty_label": "Hard target",
+      "difficulty_measured": false,
+      "proof_method": "local semantic enumeration (<=8 unknowns per clue); no CNF or SAT",
+      "deduction_steps": 24
+    }
+  ]
+}
