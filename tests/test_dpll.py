@@ -143,6 +143,18 @@ class TestDPLLSolver(unittest.TestCase):
         is_sat = self.solver.solve(clauses)
         self.assertFalse(is_sat)
 
+    def test_from_dimacs_file(self):
+        """Kiểm tra đọc và giải trực tiếp từ file .cnf thực tế trên ổ cứng."""
+        import os
+        sample_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample_test.cnf")
+        clauses = DPLLSolver.from_dimacs_file(sample_path)
+        self.assertEqual(len(clauses), 3)
+
+        is_sat, model = self.solver.solve_with_model(clauses)
+        self.assertTrue(is_sat)
+        self._verify_model(clauses, model)
+
+
 
 if __name__ == "__main__":
     unittest.main()
