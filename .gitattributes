@@ -1,0 +1,2 @@
+# Preserve exact historical baseline bytes on Windows checkouts.
+puzzles_baseline/*.json text eol=lf

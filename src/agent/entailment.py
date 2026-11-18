@@ -6,7 +6,7 @@ No SAT algorithm or fallback is implemented here.
 """
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import re
 from types import MappingProxyType
 from typing import Any, Protocol
@@ -53,12 +53,23 @@ class SATQuery:
     assumption: int | None
     satisfiable: bool
     sequence: int  # 1-based within one classify/classify_all invocation.
+    metrics: Mapping[str, float] = field(default_factory=dict)
+
+    def __post_init__(self):
+        object.__setattr__(self, "metrics", MappingProxyType(dict(self.metrics)))
 
 
 @dataclass(frozen=True, slots=True)
 class ClassificationResult:
     verdict: Verdict
     queries: tuple[SATQuery, ...]
+
+    @property
+    def metrics(self) -> Mapping[str, float]:
+        return MappingProxyType({
+            key: sum(q.metrics.get(key, 0) for q in self.queries)
+            for key in ("decisions", "propagations", "backtracks", "runtime")
+        })
 
     @property
     def sat_calls(self) -> int:
@@ -93,6 +104,13 @@ class BatchResult:
     @property
     def verdicts(self) -> Mapping[str, Verdict]:
         return MappingProxyType({cid: result.verdict for cid, result in self.results.items()})
+
+    @property
+    def metrics(self) -> Mapping[str, float]:
+        return MappingProxyType({
+            key: sum(q.metrics.get(key, 0) for q in self.queries)
+            for key in ("decisions", "propagations", "backtracks", "runtime")
+        })
 
     @property
     def sat_calls(self) -> int:
@@ -160,7 +178,9 @@ class EntailmentChecker:
         satisfiable = self._solver.solve(temporary_cnf)
         if type(satisfiable) is not bool:
             raise SolverProtocolError("solve() must return exactly bool SAT/UNSAT")
-        return SATQuery(assumption, satisfiable, sequence)
+        get_stats = getattr(self._solver, "get_stats", None)
+        metrics = dict(get_stats()) if callable(get_stats) else {}
+        return SATQuery(assumption, satisfiable, sequence, metrics)
 
     def _classify_consistent(
         self, cnf: CNFFormula, variable: int, base: SATQuery, sequence: int,

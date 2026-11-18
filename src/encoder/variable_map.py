@@ -1,9 +1,6 @@
-"""Compatibility import for the shared TV1 VariableMap.
+"""Compatibility exports; core owns the shared variable namespace."""
+from src.core.variable_map import (
+    CharacterEntry, VariableMap, format_coord, normalize_coord, parse_coord,
+)
 
-Do not implement a second mapping here. The canonical class lives in
-``src.core.variable_map`` and is shared by GameEngine and CNFEncoder.
-"""
-
-from src.core.variable_map import VariableMap
-
-__all__ = ["VariableMap"]
+__all__ = ["CharacterEntry", "VariableMap", "format_coord", "normalize_coord", "parse_coord"]

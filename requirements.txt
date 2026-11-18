@@ -1,2 +1,5 @@
-# TV1 core uses only the Python standard library.
-# Python >= 3.10 is required.
+# Python >= 3.10; production core/encoder/DPLL use the standard library.
+# Dataset validation and test tools:
+pytest>=8,<10
+jsonschema>=4.18,<5
+python-sat>=1.8.dev13,<2

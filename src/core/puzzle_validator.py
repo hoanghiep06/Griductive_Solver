@@ -31,7 +31,10 @@ class PuzzleValidator:
     SUPPORTED_GRID_SIZES = {3, 4, 5}
 
     def __init__(self, extension_evaluators: Optional[Mapping[str, ExtensionEvaluator]] = None):
-        self._extension_evaluators = {}
+        self._extension_evaluators = {
+            "PARITY": self._evaluate_extended,
+            "COUNT_COMPARE": self._evaluate_extended,
+        }
         for key, evaluator in (extension_evaluators or {}).items():
             if not isinstance(key, str) or not key.strip():
                 raise ValueError("Extension clue type names must be non-empty strings")
@@ -405,3 +408,23 @@ class PuzzleValidator:
         if type(result) is not bool:
             raise TypeError(f"Extension evaluator for {clue_type} must return bool")
         return result
+
+    @staticmethod
+    def _evaluate_extended(clue, characters, grid_size, assignment):
+        from src.encoder.semantic_eval import evaluate_clue, normalize_cells
+        from src.core.clue import _thaw
+        params = _thaw(clue.parameters)
+        expected = {"cells", "parity"} if clue.clue_type == "PARITY" else {"region_a", "region_b", "op"}
+        if set(params) != expected:
+            raise ValueError(f"{clue.clue_id}: expected parameters {sorted(expected)}")
+        fields = ("cells",) if clue.clue_type == "PARITY" else ("region_a", "region_b")
+        for field in fields:
+            params[field] = [
+                (characters[cell].row, characters[cell].col) if isinstance(cell, str) and cell in characters else cell
+                for cell in params[field]
+            ]
+            for row, col in normalize_cells(params[field]):
+                if row >= grid_size or col >= grid_size:
+                    raise ValueError(f"{clue.clue_id}: cell outside grid")
+        board = {(c.row, c.col): assignment[c.id] for c in characters.values()}
+        return evaluate_clue({"type": clue.clue_type, "params": params}, board)

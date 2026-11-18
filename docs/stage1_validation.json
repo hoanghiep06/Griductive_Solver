@@ -1,0 +1,182 @@
+[
+  {
+    "puzzle_id": "3x3_01",
+    "reveals": 8,
+    "metrics": {
+      "decisions": 0,
+      "propagations": 1038,
+      "backtracks": 0,
+      "runtime": 0.025390800001332536
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "3x3_02",
+    "reveals": 7,
+    "metrics": {
+      "decisions": 18,
+      "propagations": 749,
+      "backtracks": 0,
+      "runtime": 0.016435000026831403
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "3x3_03",
+    "reveals": 7,
+    "metrics": {
+      "decisions": 20,
+      "propagations": 746,
+      "backtracks": 0,
+      "runtime": 0.016920099980779923
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "3x3_04",
+    "reveals": 7,
+    "metrics": {
+      "decisions": 20,
+      "propagations": 728,
+      "backtracks": 0,
+      "runtime": 0.0120061000197893
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "3x3_05",
+    "reveals": 6,
+    "metrics": {
+      "decisions": 11,
+      "propagations": 1069,
+      "backtracks": 0,
+      "runtime": 0.05925109998497646
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "4x4_01",
+    "reveals": 14,
+    "metrics": {
+      "decisions": 120,
+      "propagations": 4818,
+      "backtracks": 0,
+      "runtime": 0.37766870003542863
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "4x4_02",
+    "reveals": 14,
+    "metrics": {
+      "decisions": 125,
+      "propagations": 8649,
+      "backtracks": 0,
+      "runtime": 0.8395480001490796
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "4x4_03",
+    "reveals": 13,
+    "metrics": {
+      "decisions": 138,
+      "propagations": 5936,
+      "backtracks": 18,
+      "runtime": 0.43023629988601897
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "4x4_04",
+    "reveals": 13,
+    "metrics": {
+      "decisions": 115,
+      "propagations": 5059,
+      "backtracks": 33,
+      "runtime": 0.24912549994769506
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "4x4_05",
+    "reveals": 13,
+    "metrics": {
+      "decisions": 172,
+      "propagations": 8264,
+      "backtracks": 33,
+      "runtime": 0.7094698999571847
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "5x5_01",
+    "reveals": 23,
+    "metrics": {
+      "decisions": 355,
+      "propagations": 19912,
+      "backtracks": 11,
+      "runtime": 1.9179082001646748
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "5x5_02",
+    "reveals": 23,
+    "metrics": {
+      "decisions": 404,
+      "propagations": 26186,
+      "backtracks": 28,
+      "runtime": 4.811093500102288
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "5x5_03",
+    "reveals": 22,
+    "metrics": {
+      "decisions": 480,
+      "propagations": 20133,
+      "backtracks": 45,
+      "runtime": 2.062756800019997
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "5x5_04",
+    "reveals": 22,
+    "metrics": {
+      "decisions": 389,
+      "propagations": 22189,
+      "backtracks": 55,
+      "runtime": 1.5439397001318866
+    },
+    "reference_validation": true,
+    "production_unique": true
+  },
+  {
+    "puzzle_id": "5x5_05",
+    "reveals": 22,
+    "metrics": {
+      "decisions": 578,
+      "propagations": 28296,
+      "backtracks": 86,
+      "runtime": 2.4612233999650925
+    },
+    "reference_validation": true,
+    "production_unique": true
+  }
+]

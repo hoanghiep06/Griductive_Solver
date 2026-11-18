@@ -1,9 +1,4 @@
-"""Real Core smoke tests; DPLL/Encoder end-to-end tests await team bindings.
-
-The proposed future bindings below are deliberately explicit. Change ONLY the
-team_bindings/encode helpers when Huy and Phong publish their actual APIs.
-Missing dependencies are SKIPPED; runtime failures after binding are FAILED.
-"""
+"""Core smoke tests and production DPLL/encoder integration for all 15 maps."""
 
 import pytest
 
@@ -76,22 +71,11 @@ def test_real_core_rejects_unproved_and_contradicted_bridge_with_test_solver():
 def team_bindings():
     from src.solvers import dpll
     from src.encoder import cnf_encoder
-    missing = []
-    # Proposed contracts, not claims about implementations that do not exist.
-    if not callable(getattr(dpll, "DPLLSolver", None)):
-        missing.append("Huy: src/solvers/dpll.py lacks DPLLSolver().solve(CNF)->bool")
-    if not callable(getattr(cnf_encoder, "CNFEncoder", None)):
-        missing.append("Phong: src/encoder/cnf_encoder.py lacks CNFEncoder().encode(clue, variable_map)")
-    if missing:
-        pytest.skip("BLOCKED: " + "; ".join(missing))
-    return dpll.DPLLSolver(), cnf_encoder.CNFEncoder()
+    return dpll.DPLLSolver(), cnf_encoder.CNFEncoder
 
 
 def encode_clues(encoder, clues, variable_map):
-    cnf = []
-    for clue in clues:
-        cnf.extend(encoder.encode(clue, variable_map))
-    return cnf
+    return encoder(variable_map).encode_kb(list(clues), reset_aux=True).clauses
 
 
 @pytest.mark.parametrize("pid", PUZZLE_IDS)

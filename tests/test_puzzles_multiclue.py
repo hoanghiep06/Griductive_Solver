@@ -231,7 +231,7 @@ def test_preview_embeds_actual_fifteen_maps_and_both_versions(tmp_path):
     import re
     from tools.build_preview import build_preview
     output=build_preview(tmp_path/'preview.html')
-    html=output.read_text()
+    html=output.read_text(encoding="utf-8")
     assert '__PUZZLE_DATA__' not in html
     payload=re.search(r'<script id="data" type="application/json">(.*?)</script>',html,re.S).group(1)
     data=json.loads(payload)
