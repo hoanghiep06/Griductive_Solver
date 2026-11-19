@@ -13,6 +13,8 @@ from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtWidgets import (
     QFrame,
+    QCheckBox,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QScrollArea,
@@ -24,7 +26,7 @@ from PySide6.QtWidgets import (
 from src.gui.asset_registry import CLUE_ICON_BY_TYPE
 from src.gui.components.styled_panel import StyledPanel
 from src.gui.resources.pixmap_loader import PixmapLoader, default_pixmap_loader
-from src.gui.styles.tokens import SPACING
+from src.gui.styles.tokens import COLORS, SPACING
 from src.gui.view_models import PublicClueView, normalize_clue_view
 
 _CLUE_TYPE_LABELS_VI: dict[str, str] = {
@@ -41,6 +43,7 @@ class _ClueCardItem(QFrame):
     """Single clickable evidence card rendered inside ``CluePanel``."""
 
     clicked = Signal(str)
+    used_toggled = Signal(str, bool)
 
     ICON_SIZE = QSize(48, 46)
 
@@ -74,6 +77,7 @@ class _ClueCardItem(QFrame):
             f"Chủ manh mối: {clue.owner_id}\n"
             f"{clue.text}"
         )
+        self.setAccessibleName(f"Manh mối {clue.clue_id}. Nhấn Enter để tập trung, nhấp đúp để đánh dấu đã dùng.")
 
         root = QHBoxLayout(self)
         root.setContentsMargins(SPACING.space_2, SPACING.space_2, SPACING.space_2, SPACING.space_2)
@@ -130,7 +134,48 @@ class _ClueCardItem(QFrame):
         self._text_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         col.addWidget(self._text_label)
 
+        # Coordinate chips are plain public metadata, independent of SAT state.
+        self._chips = QWidget(self)
+        chips_layout = QGridLayout(self._chips)
+        chips_layout.setContentsMargins(0, 4, 0, 0)
+        chips_layout.setSpacing(4)
+        badges = list(clue.reference_labels)
+        for index, cid in enumerate(clue.referenced_cells):
+            comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"}
+            secondary = cid in clue.secondary_cells or (not clue.primary_cells and index > 0)
+            role = ("Đối chiếu" if secondary else "Chính") if comparative else "Ô"
+            badges.append(f"{role} {cid}")
+        for index, badge in enumerate(badges):
+            chip = QLabel(badge, self._chips)
+            chip.setTextFormat(Qt.TextFormat.PlainText)
+            chip.setStyleSheet(f"color: {COLORS.paper_clue}; background: {COLORS.paper_beige}; border: 1px solid {COLORS.paper_border}; border-radius: 6px; padding: 3px 6px; font-size: 11px;")
+            chips_layout.addWidget(chip, index // 3, index % 3)
+        self._chips.setVisible(False)
+        col.addWidget(self._chips)
+
         root.addLayout(col, 1)
+        self.used_button = QCheckBox(self)
+        self.used_button.setToolTip("Đánh dấu đã dùng xong (hoặc nhấp đúp manh mối)")
+        self.used_button.setAccessibleName(f"Đã dùng xong {clue.clue_id}")
+        self.used_button.toggled.connect(self._set_used)
+        root.addWidget(self.used_button, 0, Qt.AlignmentFlag.AlignTop)
+
+    def _set_used(self, used: bool) -> None:
+        font = self._text_label.font()
+        font.setStrikeOut(used)
+        self._text_label.setFont(font)
+        self._text_label.setStyleSheet(f"color: {COLORS.ink_disabled};" if used else "")
+        self.used_toggled.emit(self._clue.clue_id, used)
+
+    def set_used(self, used: bool) -> None:
+        self.used_button.setChecked(used)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:  # noqa: N802
+        if self._interactive and event.button() == Qt.MouseButton.LeftButton:
+            self.used_button.toggle()
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
 
     @property
     def clue(self) -> PublicClueView:
@@ -157,6 +202,7 @@ class _ClueCardItem(QFrame):
         if self._selected == flag:
             return
         self._selected = flag
+        self._chips.setVisible(flag)
         self.setProperty("selected", "true" if flag else "false")
         self.style().unpolish(self)
         self.style().polish(self)
@@ -165,6 +211,7 @@ class _ClueCardItem(QFrame):
     def set_interactive(self, enabled: bool) -> None:
         flag = bool(enabled)
         self._interactive = flag
+        self.used_button.setEnabled(flag)
         self.setProperty("interactive", "true" if flag else "false")
         self.setCursor(
             Qt.CursorShape.PointingHandCursor if flag else Qt.CursorShape.ArrowCursor
@@ -195,6 +242,8 @@ class CluePanel(StyledPanel):
     """Scrollable evidence panel displaying ONLY public clues supplied by Controller."""
 
     clue_selected = Signal(str)
+    clue_usage_changed = Signal(str, bool)
+    focus_cleared = Signal()
 
     def __init__(
         self,
@@ -219,6 +268,7 @@ class CluePanel(StyledPanel):
         self._cards_by_id: dict[str, _ClueCardItem] = {}
         self._selected_clue_id: Optional[str] = None
         self._interactive: bool = True
+        self._used_clues: set[str] = set()
 
         self._scroll_area = QScrollArea(self)
         self._scroll_area.setProperty("widgetKind", "cleanScroll")
@@ -292,13 +342,25 @@ class CluePanel(StyledPanel):
         self._clear_cards_only()
         self._clues = []
         self._selected_clue_id = None
+        self._used_clues.clear()
         self._sync_empty_and_subtitle()
+
+    @property
+    def solved_clues(self) -> frozenset[str]:
+        return frozenset(self._used_clues)
+
+    def _on_usage_changed(self, clue_id: str, used: bool) -> None:
+        if used:
+            self._used_clues.add(clue_id)
+        else:
+            self._used_clues.discard(clue_id)
+        self.clue_usage_changed.emit(clue_id, used)
 
     def set_selected_clue(self, clue_id: Optional[str]) -> bool:
         """Programmatically select a clue without emitting ``clue_selected``."""
         if clue_id is None:
-            if self._selected_clue_id is not None and self._selected_clue_id in self._cards_by_id:
-                self._cards_by_id[self._selected_clue_id].set_selected(False)
+            for card in self._cards_by_id.values():
+                card.set_selected(False)
             self._selected_clue_id = None
             return True
 
@@ -306,12 +368,18 @@ class CluePanel(StyledPanel):
         if target is None:
             return False
 
-        if self._selected_clue_id is not None and self._selected_clue_id in self._cards_by_id:
-            self._cards_by_id[self._selected_clue_id].set_selected(False)
+        for card in self._cards_by_id.values():
+            card.set_selected(False)
         self._selected_clue_id = clue_id
         target.set_selected(True)
         self._scroll_area.ensureWidgetVisible(target)
         return True
+
+    def set_evidence_clues(self, clue_ids: Iterable[str]) -> None:
+        ids = tuple(cid for cid in clue_ids if cid in self._cards_by_id)
+        self.set_selected_clue(ids[0] if ids else None)
+        for cid in ids:
+            self._cards_by_id[cid].set_selected(True)
 
     def set_interactive(self, enabled: bool) -> None:
         """Enable or lock user clue selection (e.g. during PROCESSING/ANIMATING)."""
@@ -359,6 +427,8 @@ class CluePanel(StyledPanel):
             parent=self._list_host,
         )
         card.clicked.connect(self._on_card_clicked)
+        card.set_used(clue.clue_id in self._used_clues)
+        card.used_toggled.connect(self._on_usage_changed)
         # Insert right before trailing stretch item
         insert_idx = max(0, self._list_layout.count() - 1)
         self._list_layout.insertWidget(insert_idx, card)
@@ -382,6 +452,10 @@ class CluePanel(StyledPanel):
 
     def _on_card_clicked(self, clue_id: str) -> None:
         if not self._interactive or clue_id not in self._cards_by_id:
+            return
+        if self._selected_clue_id == clue_id:
+            self.set_selected_clue(None)
+            self.focus_cleared.emit()
             return
         self.set_selected_clue(clue_id)
         self.clue_selected.emit(clue_id)

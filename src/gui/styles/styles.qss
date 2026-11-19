@@ -770,10 +770,12 @@ QFrame[widgetKind="notificationBanner"][severity="success"] {
 }
 
 QFrame[widgetKind="notificationBanner"][severity="warning"] {
+    background-color: {{FEEDBACK_AMBER_SURFACE}};
     border-color: {{WARNING_AMBER_CREAM}};
 }
 
 QFrame[widgetKind="notificationBanner"][severity="error"] {
+    background-color: {{FEEDBACK_ROSE_SURFACE}};
     border-color: {{CRIMINAL_SEMANTIC}};
 }
 

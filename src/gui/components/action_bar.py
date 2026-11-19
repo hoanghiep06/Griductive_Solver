@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Optional
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from src.gui.components.styled_button import StyledButton
 from src.gui.components.styled_panel import StyledPanel
@@ -49,6 +49,8 @@ class ActionBar(QWidget):
         self._demo_mode = bool(demo_mode)
         self._game_state: GameState = GameState.NO_PUZZLE
         self._selected_character: Optional[PublicCharacterView] = None
+        self._auto_solving = False
+        self._accepted_steps = 0
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -84,7 +86,7 @@ class ActionBar(QWidget):
             parent=self._verdict_panel,
         )
         self._criminal_btn.setToolTip(
-            "Gửi yêu cầu phán quyết CRIMINAL lên Controller (không tự lật thẻ)"
+            "Chứng minh nhân vật này là tội phạm từ các manh mối đang mở"
         )
         self._criminal_btn.clicked.connect(lambda: self._emit_verdict("CRIMINAL"))
         verdict_row.addWidget(self._criminal_btn)
@@ -96,7 +98,7 @@ class ActionBar(QWidget):
             parent=self._verdict_panel,
         )
         self._innocent_btn.setToolTip(
-            "Gửi yêu cầu phán quyết INNOCENT lên Controller (không tự lật thẻ)"
+            "Chứng minh nhân vật này vô tội từ các manh mối đang mở"
         )
         self._innocent_btn.clicked.connect(lambda: self._emit_verdict("INNOCENT"))
         verdict_row.addWidget(self._innocent_btn)
@@ -111,9 +113,12 @@ class ActionBar(QWidget):
         controls_row = QHBoxLayout()
         controls_row.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
         controls_row.setSpacing(SPACING.space_2)
+        management_label = QLabel("MÀN CHƠI", self)
+        management_label.setProperty("role", "paperCaption")
+        controls_row.addWidget(management_label)
 
         self._load_btn = StyledButton(
-            "Đổi hồ sơ",
+            "▣ Đổi hồ sơ",
             variant="ghost",
             min_height=44,
             parent=self._controls_panel,
@@ -123,27 +128,34 @@ class ActionBar(QWidget):
         controls_row.addWidget(self._load_btn)
 
         self._restart_btn = StyledButton(
-            "Chơi lại",
+            "↻ Chơi lại",
             variant="ghost",
             min_height=44,
             parent=self._controls_panel,
         )
         self._restart_btn.setToolTip("Khởi động lại vụ án hiện tại")
-        self._restart_btn.clicked.connect(self.restart_requested.emit)
+        self._restart_btn.clicked.connect(self._request_restart)
         controls_row.addWidget(self._restart_btn)
 
+        divider = QFrame(self)
+        divider.setFrameShape(QFrame.Shape.VLine)
+        controls_row.addWidget(divider)
+        assist_label = QLabel("TRỢ GIÚP", self)
+        assist_label.setProperty("role", "paperCaption")
+        controls_row.addWidget(assist_label)
+
         self._hint_btn = StyledButton(
-            "Gợi ý",
+            "? Gợi ý",
             variant="secondary",
             min_height=44,
             parent=self._controls_panel,
         )
-        self._hint_btn.setToolTip("Gợi ý một bước suy luận hợp lệ (không tự lật thẻ)")
+        self._hint_btn.setToolTip("Chứng minh và mở một ô, kèm manh mối và lời giải thích")
         self._hint_btn.clicked.connect(self.hint_requested.emit)
         controls_row.addWidget(self._hint_btn)
 
         self._auto_solve_btn = StyledButton(
-            "Tự giải",
+            "▶ Tự giải",
             variant="primary",
             min_height=44,
             parent=self._controls_panel,
@@ -182,6 +194,26 @@ class ActionBar(QWidget):
         self._controls_panel.content_layout.addLayout(controls_row)
         root.addWidget(self._controls_panel)
 
+        self._restart_confirm = QWidget(self)
+        confirm_row = QHBoxLayout(self._restart_confirm)
+        confirm_row.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
+        confirm_label = QLabel("Chơi lại sẽ xóa tiến độ của ván này.", self)
+        confirm_label.setProperty("role", "paperSubheading")
+        confirm_row.addWidget(confirm_label, 1)
+        self.confirm_restart_button = StyledButton("Chơi lại từ đầu", variant="danger", min_height=32, parent=self)
+        self.cancel_restart_button = StyledButton("Tiếp tục chơi", variant="ghost", min_height=32, parent=self)
+        self.confirm_restart_button.clicked.connect(self._confirm_restart)
+        self.cancel_restart_button.clicked.connect(self.dismiss_restart_confirmation)
+        confirm_row.addWidget(self.confirm_restart_button)
+        confirm_row.addWidget(self.cancel_restart_button)
+        self._restart_confirm.hide()
+        root.addWidget(self._restart_confirm)
+
+        self.status_label = QLabel("Đã giải 0 / 0  ·  Gợi ý 0  ·  Đoán lỗi 0", self)
+        self.status_label.setProperty("role", "paperCaption")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        root.addWidget(self.status_label)
+
         self._apply_enablement()
 
     # ------------------------------------------------------------------
@@ -192,6 +224,29 @@ class ActionBar(QWidget):
         """Update button enablement according to ``STAGE2_UI_DESIGN.md`` §8."""
         self._game_state = coerce_game_state(state)
         self._apply_enablement()
+
+    def set_session_stats(self, revealed: int, total: int, hints: int, mistakes: int, accepted_steps: int = 0) -> None:
+        self._accepted_steps = accepted_steps
+        self.status_label.setText(f"Đã giải {revealed} / {total}  ·  Gợi ý {hints}  ·  Đoán lỗi {mistakes}")
+
+    def set_auto_solving(self, running: bool) -> None:
+        self._auto_solving = running
+        self._auto_solve_btn.setText("Ⅱ Tạm dừng" if running else "▶ Tự giải")
+        self._auto_solve_btn.set_variant("secondary" if running else "primary")
+        self._apply_enablement()
+
+    def _request_restart(self) -> None:
+        if self._accepted_steps >= 2:
+            self._restart_confirm.show()
+        else:
+            self.restart_requested.emit()
+
+    def _confirm_restart(self) -> None:
+        self.dismiss_restart_confirmation()
+        self.restart_requested.emit()
+
+    def dismiss_restart_confirmation(self) -> None:
+        self._restart_confirm.hide()
 
     def set_actions_enabled(self, state: GameState | str) -> None:
         """Alias of ``set_game_state`` matching Phase 4 §15 conceptual contract."""
@@ -280,6 +335,8 @@ class ActionBar(QWidget):
         self.verdict_requested.emit(self._selected_character.cell_id, verdict)
 
     def _can_submit_verdict(self) -> bool:
+        if self._auto_solving:
+            return False
         if self._game_state not in (GameState.READY, GameState.STUCK):
             return False
         if self._selected_character is None:
@@ -293,8 +350,8 @@ class ActionBar(QWidget):
         self._innocent_btn.setEnabled(can_verdict)
 
         can_agent_assist = state in (GameState.READY, GameState.STUCK)
-        self._hint_btn.setEnabled(can_agent_assist)
-        self._auto_solve_btn.setEnabled(can_agent_assist)
+        self._hint_btn.setEnabled(can_agent_assist and not self._auto_solving)
+        self._auto_solve_btn.setEnabled(can_agent_assist or self._auto_solving)
 
         # Restart enabled whenever a puzzle is loaded (even during PROCESSING/ANIMATING per cancellation policy)
         self._restart_btn.setEnabled(state is not GameState.NO_PUZZLE)

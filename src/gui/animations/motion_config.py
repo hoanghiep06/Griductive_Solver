@@ -52,6 +52,13 @@ class MotionConfig:
     notification_exit_duration: int = 170
     notification_auto_dismiss_ms: int = 4500
 
+    # Guided-play interaction rhythm
+    focus_dim_duration: int = 180
+    focus_dim_opacity: float = 0.42
+    contradiction_shake_duration: int = 280
+    assisted_flip_duration: int = 380
+    auto_step_interval: int = 450
+
     # Accessibility
     reduced_motion: bool = False
 

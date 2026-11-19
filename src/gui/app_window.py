@@ -204,7 +204,6 @@ class MainWindow(QMainWindow):
             self._gameplay_screen.demo_notification_requested.connect(self._demo_show_notification)
             self._gameplay_screen.demo_flip_requested.connect(self._demo_trigger_mock_flip)
             self._gameplay_screen.demo_reduced_motion_toggled.connect(self.set_reduced_motion)
-            self._gameplay_screen.clue_selected.connect(self._demo_on_clue_selected)
             self._gameplay_screen.verdict_requested.connect(self._demo_on_verdict_requested)
             self._gameplay_screen.hint_requested.connect(self._demo_on_hint_requested)
             self._gameplay_screen.auto_solve_requested.connect(self._demo_on_auto_solve_requested)

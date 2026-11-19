@@ -99,6 +99,8 @@ def build_qss_variables(
         "INFO_CLUE_SEMANTIC": c.info_clue_semantic,
         "PAPER_INNOCENT": c.paper_innocent,
         "PAPER_CLUE": c.paper_clue,
+        "FEEDBACK_AMBER_SURFACE": c.feedback_amber_surface,
+        "FEEDBACK_ROSE_SURFACE": c.feedback_rose_surface,
         # Semantic verdicts & alerts
         "CRIMINAL_VERDICT": c.criminal_verdict,
         "CRIMINAL_VERDICT_HOVER": c.criminal_verdict_hover,

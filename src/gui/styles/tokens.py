@@ -138,6 +138,8 @@ class ColorTokens:
     info_clue_semantic: str = PRIMITIVE_COLORS["INFO_CLUE_SEMANTIC"]
     paper_innocent: str = PRIMITIVE_COLORS["INNOCENT_PAPER_TEAL"]
     paper_clue: str = PRIMITIVE_COLORS["CLUE_PAPER_BLUE"]
+    feedback_amber_surface: str = "#FFF5DF"
+    feedback_rose_surface: str = "#FBECEF"
 
     # Borders & Overlays (Nocturne board / cards)
     border_subtle: str = PRIMITIVE_COLORS["BORDER_SUBTLE"]

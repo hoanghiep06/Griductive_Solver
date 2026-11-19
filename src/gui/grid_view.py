@@ -72,6 +72,7 @@ class GameBoard(QGraphicsView):
     """Interactive PySide6 board hosting dynamic N×N ``CharacterCard`` items."""
 
     card_selected = Signal(str)               # Emits cell_id on user click or keyboard selection
+    background_clicked = Signal()
     animation_finished = Signal(str, object)  # (cell_id, token) — ONLY on successful flip finish
     animation_cancelled = Signal(str, object) # (cell_id, token) — ONLY on explicit cancel
 
@@ -309,7 +310,20 @@ class GameBoard(QGraphicsView):
 
     def highlight_cells(self, cell_ids: Iterable[str]) -> tuple[str, ...]:
         """Apply luminous cyan highlight overlay to the specified cell IDs."""
-        return self._highlighter.apply_highlight(self._cards_by_id, cell_ids)
+        valid = self._highlighter.apply_highlight(self._cards_by_id, cell_ids)
+        active = set(valid)
+        for cid, card in self._cards_by_id.items():
+            card.set_focus_context(bool(active) and cid not in active, "primary")
+        return valid
+
+    def focus_evidence(self, primary: Iterable[str], references: Iterable[str] = ()) -> tuple[str, ...]:
+        main = set(primary)
+        targets = tuple(dict.fromkeys((*main, *references)))
+        valid = self.highlight_cells(targets)
+        for cid, card in self._cards_by_id.items():
+            card.set_focus_context(bool(valid) and cid not in valid,
+                                   "primary" if cid in main else "reference")
+        return valid
 
     def set_highlighted_cells(self, cell_ids: Iterable[str]) -> tuple[str, ...]:
         """Alias of ``highlight_cells`` matching Phase 5 §6.3."""
@@ -318,6 +332,14 @@ class GameBoard(QGraphicsView):
     def clear_highlights(self) -> None:
         """Fade out / clear all visual highlight overlays."""
         self._highlighter.clear_highlight(self._cards_by_id)
+        for card in self._cards_by_id.values():
+            card.set_focus_context(False)
+
+    def mousePressEvent(self, event) -> None:  # noqa: N802
+        item = self.itemAt(event.position().toPoint())
+        if event.button() == Qt.MouseButton.LeftButton and not isinstance(item, CharacterCard):
+            self.background_clicked.emit()
+        super().mousePressEvent(event)
 
     def clear_highlight(self) -> None:
         """Alias of ``clear_highlights`` matching Phase 5 §6.3."""

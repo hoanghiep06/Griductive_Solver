@@ -1,15 +1,7 @@
-"""Standalone PySide6 GUI Foundation bootstrap & launcher (Phase 2).
+"""PySide6 launcher: real gameplay by default, isolated preview with --demo.
 
-Run from any working directory with the project virtual environment:
-
-    .venv/bin/python -m src.gui.app
-
-Note:
-    ``main.py`` at the repository root is reserved for Hiệp's Stage 2
-    Composition Root (wiring GameEngine, LogicAgent, GameController and
-    MainWindow together). This module provides a clean standalone presentation
-    launcher for Phase 2 UI Foundation demo & testing without requiring
-    DPLL, Encoder, LogicAgent or GameController.
+Widget construction stays domain-free. Only main() imports the application
+controller, keeping standalone UI previews and widget tests independent.
 """
 
 from __future__ import annotations
@@ -70,14 +62,19 @@ def build_main_window(
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    """Launch the Phase 2 UI Foundation standalone demo."""
+    """Launch real gameplay, or the isolated presentation preview with --demo."""
     try:
         app, theme_manager = create_application(argv)
     except RuntimeError as exc:
         print(f"[GRIDUCTIVE GUI] {exc}", file=sys.stderr)
         return 1
 
-    window = build_main_window(theme_manager=theme_manager, demo_navigation=True)
+    args = list(argv) if argv is not None else sys.argv[1:]
+    demo = "--demo" in args
+    window = build_main_window(theme_manager=theme_manager, demo_navigation=demo)
+    if not demo:
+        from src.controller.play_controller import PlayController
+        window.play_controller = PlayController(window)
     window.show()
     return int(app.exec())
 

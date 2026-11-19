@@ -1,12 +1,11 @@
-"""Phase 5 Cinematic Motion & Animation system for GRIDUCTIVE."""
+"""Phase 5 motion API with lazy imports for components using motion tokens.
 
-from src.gui.animations.card_flip import (
-    CardFlipAnimation,
-    FlipFrameState,
-    build_perspective_y_transform,
-    compute_flip_frame,
-)
-from src.gui.animations.evidence_glow import EvidenceGlowController
+``CharacterCard`` reads timing values from ``motion_config``. Importing the
+package must therefore not eagerly import ``card_flip``, which itself depends
+on ``CharacterCard``. The heavier animation classes remain available through
+the same public names and are resolved only when requested.
+"""
+
 from src.gui.animations.motion_config import (
     CARD_FLIP_DURATION,
     CARD_LIFT_DISTANCE,
@@ -21,10 +20,27 @@ from src.gui.animations.motion_config import (
     SELECTION_DURATION,
     MotionConfig,
 )
-from src.gui.animations.motion_coordinator import (
-    AnimationLifecycleState,
-    MotionCoordinator,
-)
+
+
+def __getattr__(name: str):
+    if name in {
+        "CardFlipAnimation",
+        "FlipFrameState",
+        "build_perspective_y_transform",
+        "compute_flip_frame",
+    }:
+        from src.gui.animations import card_flip
+
+        return getattr(card_flip, name)
+    if name == "EvidenceGlowController":
+        from src.gui.animations.evidence_glow import EvidenceGlowController
+
+        return EvidenceGlowController
+    if name in {"AnimationLifecycleState", "MotionCoordinator"}:
+        from src.gui.animations import motion_coordinator
+
+        return getattr(motion_coordinator, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     "AnimationLifecycleState",

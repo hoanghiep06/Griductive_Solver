@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -139,7 +139,7 @@ class _HintBox(QFrame):
         header.setContentsMargins(0, 0, 0, 0)
         header.setSpacing(SPACING.space_2)
 
-        self._title_label = QLabel("Gợi ý · Hint (chưa lật thẻ)", self)
+        self._title_label = QLabel("Gợi ý suy luận", self)
         self._title_label.setTextFormat(Qt.TextFormat.PlainText)
         self._title_label.setProperty("role", "paperSubheading")
         header.addWidget(self._title_label, 1)
@@ -167,7 +167,7 @@ class _HintBox(QFrame):
 
     def display_hint(self, hint: HintView) -> None:
         if hint.outcome == "FORCED" and hint.cell_id and hint.verdict:
-            self._title_label.setText(f"GỢI Ý · Ô {hint.cell_id} (CHƯA LẬT)")
+            self._title_label.setText(f"SUY LUẬN · Ô {hint.cell_id}")
             tone = "danger" if hint.verdict == "CRIMINAL" else "success"
             self._verdict_pill.set_status(hint.verdict, tone=tone)
         else:
@@ -191,6 +191,8 @@ class _HintBox(QFrame):
 
 class DeductionPanel(StyledPanel):
     """Scrollable accepted deduction trace panel with smart auto-scroll & Hint box."""
+
+    hint_changed = Signal(object)
 
     def __init__(self, *, parent: Optional[QWidget] = None) -> None:
         super().__init__(
@@ -300,11 +302,13 @@ class DeductionPanel(StyledPanel):
         hint = normalize_hint_view(raw_hint)
         self._current_hint = hint
         self._hint_box.display_hint(hint)
+        self.hint_changed.emit(hint)
 
     def clear_hint(self) -> None:
         """Hide and clear the temporary Hint box."""
         self._current_hint = None
         self._hint_box.clear_hint()
+        self.hint_changed.emit(None)
 
     # ------------------------------------------------------------------
     # Properties

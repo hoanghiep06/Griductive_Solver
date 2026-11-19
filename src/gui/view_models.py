@@ -285,6 +285,9 @@ class PublicClueView:
     clue_type: str
     text: str
     referenced_cells: tuple[str, ...] = ()
+    primary_cells: tuple[str, ...] = ()
+    secondary_cells: tuple[str, ...] = ()
+    reference_labels: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         cid = _coerce_non_empty_str(self.clue_id, "clue_id")
@@ -297,6 +300,8 @@ class PublicClueView:
         object.__setattr__(self, "clue_type", ctype)
         object.__setattr__(self, "text", txt)
         object.__setattr__(self, "referenced_cells", refs)
+        for key in ("primary_cells", "secondary_cells", "reference_labels"):
+            object.__setattr__(self, key, _coerce_str_tuple(getattr(self, key), key))
 
     @property
     def display_text(self) -> str:
@@ -648,6 +653,9 @@ def normalize_clue_view(obj: Any) -> PublicClueView:
         clue_type=clue_type,
         text=text,
         referenced_cells=tuple(referenced),
+        primary_cells=tuple(getattr(obj, "primary_cells", ()) or ()),
+        secondary_cells=tuple(getattr(obj, "secondary_cells", ()) or ()),
+        reference_labels=tuple(getattr(obj, "reference_labels", ()) or ()),
     )
 
 

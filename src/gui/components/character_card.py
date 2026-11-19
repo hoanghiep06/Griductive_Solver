@@ -51,6 +51,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsObject, QStyleOptionGraphicsItem, QWidget
 
 from src.gui.styles.tokens import COLORS, GEOMETRY, TYPOGRAPHY
+from src.gui.animations.motion_config import DEFAULT_MOTION
 from src.gui.view_models import CardVisibility, PublicCharacterView
 
 if TYPE_CHECKING:
@@ -103,6 +104,12 @@ class CharacterCard(QGraphicsObject):
         # Independent visual presentation flags
         self._selected: bool = False
         self._highlighted: bool = False
+        self._evidence_role: str = "primary"
+        self._focus_dimmed = False
+        self._focus_anim = QPropertyAnimation(self, b"opacity", self)
+        self._focus_anim.setDuration(DEFAULT_MOTION.focus_dim_duration)
+        self._shake_offset = 0.0
+        self._shake_anim = QPropertyAnimation(self, b"shake_offset", self)
         self._hovered: bool = False
         self._interactive: bool = True
         self._reduced_motion: bool = bool(reduced_motion)
@@ -250,6 +257,10 @@ class CharacterCard(QGraphicsObject):
         self._reduced_motion = bool(enabled)
         if self._reduced_motion:
             self._stop_transition_anims()
+            self._focus_anim.stop()
+            self._shake_anim.stop()
+            self._shake_offset = 0.0
+            self.setOpacity(DEFAULT_MOTION.focus_dim_opacity if self._focus_dimmed else 1.0)
             self._hover_level = 1.0 if self._hovered else 0.0
             self._selection_level = 1.0 if self._selected else 0.0
             self.update()
@@ -292,6 +303,42 @@ class CharacterCard(QGraphicsObject):
                 self._glow_intensity = 0.0
                 self._glow_pulse = 0.0
             self.update()
+
+    def set_focus_context(self, dimmed: bool, role: str = "reference") -> None:
+        self._focus_dimmed = dimmed
+        self._evidence_role = role
+        self._focus_anim.stop()
+        target = DEFAULT_MOTION.focus_dim_opacity if dimmed else 1.0
+        if self._reduced_motion:
+            self.setOpacity(target)
+        else:
+            self._focus_anim.setStartValue(self.opacity())
+            self._focus_anim.setEndValue(target)
+            self._focus_anim.start()
+        self.update()
+
+    def _set_shake_offset(self, value: float) -> None:
+        self._shake_offset = value
+        self.update()
+
+    shake_offset = Property(float, lambda self: self._shake_offset, _set_shake_offset)
+
+    def shake(self) -> None:
+        if self._reduced_motion:
+            return
+        self._shake_anim.stop()
+        self._shake_anim.setDuration(DEFAULT_MOTION.contradiction_shake_duration)
+        for t, value in ((0, 0), (.18, -3), (.36, 3), (.54, -2), (.72, 2), (1, 0)):
+            self._shake_anim.setKeyValueAt(t, value)
+        self._shake_anim.start()
+
+    def reset_interaction_visuals(self) -> None:
+        self._focus_anim.stop()
+        self._shake_anim.stop()
+        self._shake_offset = 0.0
+        self._focus_dimmed = False
+        self.setOpacity(1.0)
+        self.update()
 
     def set_glow_state(self, intensity: float, pulse: float = 0.0) -> None:
         """Update localized luminous cyan glow intensity & pulse amplitude."""
@@ -496,6 +543,7 @@ class CharacterCard(QGraphicsObject):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+        painter.translate(self._shake_offset, 0)
 
         rect = self.card_rect()
         radius = 8.0 if self._mode is CardDisplayMode.COMPACT else 10.0
@@ -672,7 +720,13 @@ class CharacterCard(QGraphicsObject):
         """Render independent SELECTED (Gold), HIGHLIGHTED (Luminous Cyan), and FOCUS layers."""
         # Overlay 1 (Outer Halo): LUMINOUS CLUE HIGHLIGHT (Clue Cyan — localized 3-layer glow)
         effective_glow = self._glow_intensity if self._glow_intensity > 0.01 else (0.86 if self._highlighted else 0.0)
+        accent = QColor(COLORS.clue_highlight if self._evidence_role == "primary" else COLORS.info_clue_semantic)
         if effective_glow > 0.01:
+            tint = QColor(accent)
+            tint.setAlpha(int(20 * effective_glow))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(tint)
+            painter.drawRoundedRect(rect, radius, radius)
             pulse_boost = 0.72 + 0.28 * self._glow_pulse
             lum = effective_glow * pulse_boost
             # Outer offset keeps Cyan glow strictly outside Gold selected border
@@ -685,13 +739,16 @@ class CharacterCard(QGraphicsObject):
                 (1.8, 72, 3.2),
             ):
                 g_rect = hl_rect.adjusted(-expand, -expand, expand, expand)
-                g_pen = QPen(QColor(101, 185, 233, int(alpha_mul * lum)), pen_w)
+                glow_color = QColor(accent)
+                glow_color.setAlpha(int(alpha_mul * lum))
+                g_pen = QPen(glow_color, pen_w)
                 painter.setPen(g_pen)
                 painter.setBrush(Qt.BrushStyle.NoBrush)
                 painter.drawRoundedRect(g_rect, radius + outer_pad + expand * 0.5, radius + outer_pad + expand * 0.5)
 
             # Layer 1: Crisp Cyan accent border
-            hl_pen = QPen(QColor(101, 185, 233, int(235 * effective_glow)), 2.2)
+            accent.setAlpha(int(235 * effective_glow))
+            hl_pen = QPen(accent, 2.2)
             painter.setPen(hl_pen)
             painter.drawRoundedRect(hl_rect, radius + outer_pad * 0.65, radius + outer_pad * 0.65)
 

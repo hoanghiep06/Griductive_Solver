@@ -88,6 +88,7 @@ class NotificationBanner(QFrame):
     """Non-blocking dismissible notification bar with smooth Enter/Exit motion."""
 
     dismissed = Signal()
+    inspect_requested = Signal()
 
     def __init__(
         self,
@@ -148,6 +149,11 @@ class NotificationBanner(QFrame):
 
         row.addLayout(text_col, 1)
 
+        self.inspect_button = StyledButton("◎ Soi điểm mâu thuẫn", variant="secondary", min_height=34, parent=self)
+        self.inspect_button.clicked.connect(self.inspect_requested.emit)
+        self.inspect_button.hide()
+        row.addWidget(self.inspect_button)
+
         self._close_btn = StyledButton("Đóng", variant="ghost", min_height=34, parent=self)
         self._close_btn.setProperty("widgetKind", "compactButton")
         self._close_btn.setToolTip("Ẩn thông báo này")
@@ -173,6 +179,7 @@ class NotificationBanner(QFrame):
     ) -> ActionResult:
         """Display a normalized ``ActionResult`` cleanly with deduplication & enter motion."""
         result = normalize_action_result(raw_result)
+        self.inspect_button.hide()
         dedup_key = (result.code, result.cell_id, result.message)
 
         # Deduplicate repeated identical active notifications cleanly
@@ -196,6 +203,8 @@ class NotificationBanner(QFrame):
             short_label = "INCONSISTENT"
         elif result.code in (ActionCode.LOAD_FAILED, ActionCode.SOLVER_FAILED, ActionCode.INTERNAL_ERROR):
             short_label = "ERROR"
+        elif result.code is ActionCode.NOT_PROVABLE:
+            symbol, short_label = "?", "CHƯA ĐỦ DỮ KIỆN"
 
         self.setProperty("severity", severity.value.lower())
         self._badge.set_status(f"{symbol} {short_label}", tone=pill_tone)

@@ -16,9 +16,10 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
+    QApplication,
     QHBoxLayout,
     QLabel,
     QSizePolicy,
@@ -28,6 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.asset_registry import AssetId
+from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
 from src.gui.components.action_bar import ActionBar
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
 from src.gui.components.clue_panel import CluePanel
@@ -38,6 +40,7 @@ from src.gui.components.status_label import StatusLabel
 from src.gui.components.styled_button import StyledButton
 from src.gui.components.styled_panel import StyledPanel
 from src.gui.grid_view import GameBoard
+from src.gui.interaction_state import InteractionState
 from src.gui.resources.pixmap_loader import PixmapLoader
 from src.gui.screens.backdrop_screen import BackdropScreen
 from src.gui.styles.tokens import COLORS, GEOMETRY, SPACING
@@ -102,6 +105,7 @@ class GameplayScreen(BackdropScreen):
         self._demo_mode = bool(demo_mode)
         self._game_state: GameState = GameState.NO_PUZZLE
         self._current_kb_version: Optional[int] = None
+        self.ui_state = InteractionState()
 
         # ------------------------------------------------------------------
         # 1. TOP BAR: GRIDUCTIVE | CASE ID | DEV DEMO SWITCHER | STATUS
@@ -238,8 +242,13 @@ class GameplayScreen(BackdropScreen):
         self._board_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._board_panel.setMinimumWidth(520)
 
-        self._game_board = GameBoard(pixmap_loader=pixmap_loader, parent=self._board_panel)
+        self._game_board = GameBoard(
+            pixmap_loader=pixmap_loader,
+            motion_config=MotionConfig(card_flip_duration=DEFAULT_MOTION.assisted_flip_duration),
+            parent=self._board_panel,
+        )
         self._game_board.card_selected.connect(self._on_board_card_selected)
+        self._game_board.background_clicked.connect(self.clear_highlights)
         self._game_board.animation_finished.connect(self._on_board_animation_finished)
         self._game_board.animation_cancelled.connect(self.animation_cancelled.emit)
         self._board_panel.content_layout.addWidget(self._game_board, 1)
@@ -255,10 +264,13 @@ class GameplayScreen(BackdropScreen):
         sidebar_layout.setSpacing(SPACING.space_2)
 
         self._clue_panel = CluePanel(pixmap_loader=pixmap_loader, parent=self._sidebar_widget)
-        self._clue_panel.clue_selected.connect(self.clue_selected.emit)
+        self._clue_panel.clue_selected.connect(self._on_clue_selected)
+        self._clue_panel.focus_cleared.connect(self.clear_highlights)
+        self._clue_panel.clue_usage_changed.connect(self._on_clue_usage_changed)
         sidebar_layout.addWidget(self._clue_panel, 5)
 
         self._deduction_panel = DeductionPanel(parent=self._sidebar_widget)
+        self._deduction_panel.hint_changed.connect(self._on_hint_changed)
         sidebar_layout.addWidget(self._deduction_panel, 3)
 
         self._progress_panel = ProgressPanel(parent=self._sidebar_widget)
@@ -291,6 +303,8 @@ class GameplayScreen(BackdropScreen):
         self.body_layout.addLayout(action_wrap)
 
         self.set_game_status(GameState.NO_PUZZLE)
+        QApplication.instance().installEventFilter(self)
+        self._notification_banner.dismissed.connect(self._on_feedback_dismissed)
 
     # ------------------------------------------------------------------
     # Public Controller -> GUI Presentation API (ViewPort-aligned)
@@ -313,10 +327,12 @@ class GameplayScreen(BackdropScreen):
         self._clue_panel.set_clues(norm.clues)
         self._progress_panel.set_case_info(pid, n)
         self._progress_panel.set_progress(revealed_count, len(norm.characters))
+        self._action_bar.set_session_stats(revealed_count, len(norm.characters),
+                                           self.ui_state.hint_count, self.ui_state.mistake_count)
 
         # Per STAGE2_API_CONTRACT §D: when KB version advances, clear stale Hint
         if prev_kb is not None and norm.kb_version != prev_kb:
-            self._deduction_panel.clear_hint()
+            self.clear_hint()
 
         self._sync_selected_character()
         for sz, btn in self._demo_size_buttons.items():
@@ -330,6 +346,12 @@ class GameplayScreen(BackdropScreen):
         self._deduction_panel.clear_hint()
         self._game_board.clear_highlights()
         self._game_board.clear_selection()
+        for card in self._game_board.cards_by_id.values():
+            card.reset_interaction_visuals()
+        self.ui_state = InteractionState()
+        self._clue_panel.clear()
+        self._action_bar.set_auto_solving(False)
+        self._action_bar.dismiss_restart_confirmation()
         self._current_kb_version = None
         self.set_board(snapshot)
 
@@ -399,10 +421,12 @@ class GameplayScreen(BackdropScreen):
     def show_hint(self, hint: Any) -> None:
         """Render a temporary non-mutating HintView in DeductionPanel."""
         self._deduction_panel.show_hint(hint)
+        self.ui_state.active_hint = hint
 
     def clear_hint(self) -> None:
         """Hide and clear the temporary Hint box."""
         self._deduction_panel.clear_hint()
+        self.ui_state.active_hint = None
 
     def set_progress(self, revealed: int, total: int) -> None:
         """Update ProgressPanel counts and bar from public Controller counts."""
@@ -434,6 +458,8 @@ class GameplayScreen(BackdropScreen):
     def show_notification(self, result: Any) -> None:
         """Display a non-blocking Controller notification banner."""
         self._notification_banner.show_result(result)
+        current = self._notification_banner.current_result
+        self.ui_state.error_feedback = current if current.code in (ActionCode.NOT_PROVABLE, ActionCode.CONTRADICTED) else None
 
     def dismiss_notification(self) -> None:
         self._notification_banner.dismiss()
@@ -450,10 +476,60 @@ class GameplayScreen(BackdropScreen):
         self._sync_selected_character()
 
     def highlight_cells(self, cell_ids: Iterable[str]) -> tuple[str, ...]:
-        return self._game_board.highlight_cells(cell_ids)
+        self.ui_state.highlighted_targets = self._game_board.highlight_cells(cell_ids)
+        return self.ui_state.highlighted_targets
 
     def clear_highlights(self) -> None:
         self._game_board.clear_highlights()
+        self._clue_panel.set_selected_clue(None)
+        self.ui_state.selected_clue_id = None
+        self.ui_state.highlighted_targets = ()
+
+    def focus_evidence(self, clue_ids: Iterable[str], cells: Iterable[str] = ()) -> None:
+        ids = tuple(clue_ids)
+        clues = [c for c in self._clue_panel.clues if c.clue_id in ids]
+        primary = list(cells)
+        references = []
+        for clue in clues:
+            primary.append(clue.owner_id)
+            references.extend(clue.referenced_cells)
+        self._clue_panel.set_evidence_clues(c.clue_id for c in clues)
+        self.ui_state.selected_clue_id = clues[0].clue_id if clues else None
+        self.ui_state.highlighted_targets = self._game_board.focus_evidence(primary, references)
+
+    def _on_clue_selected(self, clue_id: str) -> None:
+        clue = next(c for c in self._clue_panel.clues if c.clue_id == clue_id)
+        primary = clue.primary_cells or (clue.referenced_cells[:1] if clue.clue_type in {"SAME", "DIFFERENT"} else clue.referenced_cells)
+        references = (*clue.referenced_cells, clue.owner_id)
+        self.ui_state.selected_clue_id = clue_id
+        self.ui_state.highlighted_targets = self._game_board.focus_evidence(primary, references)
+        self.clue_selected.emit(clue_id)
+
+    def _on_clue_usage_changed(self, clue_id: str, used: bool) -> None:
+        if used:
+            self.ui_state.solved_clues.add(clue_id)
+        else:
+            self.ui_state.solved_clues.discard(clue_id)
+
+    def _on_feedback_dismissed(self) -> None:
+        self.ui_state.error_feedback = None
+
+    def _on_hint_changed(self, hint) -> None:
+        self.ui_state.active_hint = hint
+
+    def eventFilter(self, watched, event) -> bool:  # noqa: N802
+        if self.isVisible():
+            if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
+                self.clear_highlights()
+                self._notification_banner.dismiss(animated=True)
+                self._action_bar.dismiss_restart_confirmation()
+                return True
+            if event.type() == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
+                blank = (self, self._board_panel, self._sidebar_widget,
+                         self._clue_panel.scroll_area.viewport(), self._clue_panel.scroll_area.widget())
+                if watched in blank:
+                    self.clear_highlights()
+        return False
 
     def set_board_interactive(self, enabled: bool) -> None:
         self._game_board.set_interactive(enabled)
@@ -466,6 +542,7 @@ class GameplayScreen(BackdropScreen):
     # ------------------------------------------------------------------
 
     def _on_board_card_selected(self, cell_id: str) -> None:
+        self._notification_banner.dismiss(animated=False)
         self._sync_selected_character()
         self.card_selected.emit(cell_id)
 
