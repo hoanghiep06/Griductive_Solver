@@ -14,7 +14,15 @@ from __future__ import annotations
 from typing import Optional
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QSizePolicy,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
+)
 
 from src.gui.components.styled_button import StyledButton
 from src.gui.components.styled_panel import StyledPanel
@@ -33,8 +41,10 @@ class ActionBar(QWidget):
     verdict_requested = Signal(str, object)  # (cell_id, "CRIMINAL" | "INNOCENT")
     level_selection_requested = Signal()
     restart_requested = Signal()
+    restart_confirmation_requested = Signal()
     hint_requested = Signal()
     auto_solve_requested = Signal()
+    auto_solve_speed_changed = Signal(int)
     back_requested = Signal()
     demo_results_requested = Signal()
 
@@ -194,25 +204,39 @@ class ActionBar(QWidget):
         self._controls_panel.content_layout.addLayout(controls_row)
         root.addWidget(self._controls_panel)
 
-        self._restart_confirm = QWidget(self)
-        confirm_row = QHBoxLayout(self._restart_confirm)
-        confirm_row.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
-        confirm_label = QLabel("Chơi lại sẽ xóa tiến độ của ván này.", self)
-        confirm_label.setProperty("role", "paperSubheading")
-        confirm_row.addWidget(confirm_label, 1)
-        self.confirm_restart_button = StyledButton("Chơi lại từ đầu", variant="danger", min_height=32, parent=self)
-        self.cancel_restart_button = StyledButton("Tiếp tục chơi", variant="ghost", min_height=32, parent=self)
-        self.confirm_restart_button.clicked.connect(self._confirm_restart)
-        self.cancel_restart_button.clicked.connect(self.dismiss_restart_confirmation)
-        confirm_row.addWidget(self.confirm_restart_button)
-        confirm_row.addWidget(self.cancel_restart_button)
-        self._restart_confirm.hide()
-        root.addWidget(self._restart_confirm)
-
         self.status_label = QLabel("Đã giải 0 / 0  ·  Gợi ý 0  ·  Đoán lỗi 0", self)
         self.status_label.setProperty("role", "paperCaption")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        root.addWidget(self.status_label)
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        footer = QHBoxLayout()
+        footer.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
+        footer.setSpacing(SPACING.space_2)
+        footer.addWidget(self.status_label, 1)
+        speed_title = QLabel("NHỊP TỰ GIẢI", self)
+        speed_title.setProperty("role", "paperCaption")
+        footer.addWidget(speed_title)
+        fast_label = QLabel("Nhanh", self)
+        fast_label.setProperty("role", "paperCaption")
+        footer.addWidget(fast_label)
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.speed_slider.setProperty("widgetKind", "autoSpeedSlider")
+        self.speed_slider.setRange(250, 1200)
+        self.speed_slider.setSingleStep(50)
+        self.speed_slider.setPageStep(100)
+        self.speed_slider.setValue(450)
+        self.speed_slider.setFixedWidth(150)
+        self.speed_slider.setToolTip("Điều chỉnh khoảng nghỉ giữa các bước tự giải")
+        self.speed_slider.setAccessibleName("Tốc độ tự giải")
+        self.speed_slider.valueChanged.connect(self._on_speed_changed)
+        footer.addWidget(self.speed_slider)
+        slow_label = QLabel("Chậm", self)
+        slow_label.setProperty("role", "paperCaption")
+        footer.addWidget(slow_label)
+        self.speed_value_label = QLabel("0.45 giây / bước", self)
+        self.speed_value_label.setProperty("role", "paperMono")
+        self.speed_value_label.setMinimumWidth(105)
+        footer.addWidget(self.speed_value_label)
+        root.addLayout(footer)
 
         self._apply_enablement()
 
@@ -237,16 +261,13 @@ class ActionBar(QWidget):
 
     def _request_restart(self) -> None:
         if self._accepted_steps >= 2:
-            self._restart_confirm.show()
+            self.restart_confirmation_requested.emit()
         else:
             self.restart_requested.emit()
 
-    def _confirm_restart(self) -> None:
-        self.dismiss_restart_confirmation()
-        self.restart_requested.emit()
-
-    def dismiss_restart_confirmation(self) -> None:
-        self._restart_confirm.hide()
+    def _on_speed_changed(self, value: int) -> None:
+        self.speed_value_label.setText(f"{value / 1000:.2f} giây / bước")
+        self.auto_solve_speed_changed.emit(value)
 
     def set_actions_enabled(self, state: GameState | str) -> None:
         """Alias of ``set_game_state`` matching Phase 4 §15 conceptual contract."""

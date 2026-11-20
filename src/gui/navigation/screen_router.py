@@ -14,8 +14,8 @@ from enum import Enum
 import logging
 from typing import Optional
 
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QStackedWidget, QWidget
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Signal
+from PySide6.QtWidgets import QGraphicsOpacityEffect, QStackedWidget, QWidget
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,8 @@ class ScreenRouter(QStackedWidget):
         self.setObjectName("GriductiveScreenRouter")
         self._screens: dict[ScreenId, QWidget] = {}
         self._current_screen: Optional[ScreenId] = None
+        self._transition: Optional[QPropertyAnimation] = None
+        self._transition_widget: Optional[QWidget] = None
 
     @property
     def current_screen(self) -> Optional[ScreenId]:
@@ -82,8 +84,35 @@ class ScreenRouter(QStackedWidget):
         self.setCurrentWidget(target)
         self._current_screen = resolved
         if changed:
+            self._fade_in(target)
             self.screen_changed.emit(resolved)
         return True
+
+    def _fade_in(self, target: QWidget) -> None:
+        """Give Load/Menu navigation a restrained cinematic cross-page entrance."""
+        if self._transition is not None:
+            self._transition.stop()
+        if self._transition_widget is not None:
+            self._transition_widget.setGraphicsEffect(None)
+        effect = QGraphicsOpacityEffect(target)
+        effect.setOpacity(0.0)
+        target.setGraphicsEffect(effect)
+        animation = QPropertyAnimation(effect, b"opacity", self)
+        animation.setDuration(260)
+        animation.setStartValue(0.0)
+        animation.setEndValue(1.0)
+        animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._transition = animation
+        self._transition_widget = target
+
+        def finish() -> None:
+            if self._transition_widget is target:
+                target.setGraphicsEffect(None)
+                self._transition_widget = None
+                self._transition = None
+
+        animation.finished.connect(finish)
+        animation.start()
 
     @staticmethod
     def _coerce_screen_id(value: ScreenId | str) -> Optional[ScreenId]:

@@ -34,6 +34,7 @@ from src.gui.components.action_bar import ActionBar
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
 from src.gui.components.clue_panel import CluePanel
 from src.gui.components.deduction_panel import DeductionPanel
+from src.gui.components.interaction_dialog import InteractionDialog
 from src.gui.components.notification_dialog import NotificationBanner
 from src.gui.components.progress_panel import ProgressPanel
 from src.gui.components.status_label import StatusLabel
@@ -76,6 +77,7 @@ class GameplayScreen(BackdropScreen):
     restart_requested = Signal()
     hint_requested = Signal()
     auto_solve_requested = Signal()
+    auto_solve_speed_changed = Signal(int)
     back_requested = Signal()
     animation_finished = Signal(str, object)   # (cell_id, token) — ONLY on completion
     animation_cancelled = Signal(str, object)  # (cell_id, token) — ONLY on cancel
@@ -294,13 +296,22 @@ class GameplayScreen(BackdropScreen):
         self._action_bar.verdict_requested.connect(self.verdict_requested.emit)
         self._action_bar.level_selection_requested.connect(self.level_selection_requested.emit)
         self._action_bar.restart_requested.connect(self.restart_requested.emit)
+        self._action_bar.restart_confirmation_requested.connect(self._show_restart_dialog)
         self._action_bar.hint_requested.connect(self.hint_requested.emit)
         self._action_bar.auto_solve_requested.connect(self.auto_solve_requested.emit)
+        self._action_bar.auto_solve_speed_changed.connect(self.auto_solve_speed_changed.emit)
         self._action_bar.back_requested.connect(self.back_requested.emit)
         self._action_bar.demo_results_requested.connect(self.demo_results_requested.emit)
 
         action_wrap.addWidget(self._action_bar)
         self.body_layout.addLayout(action_wrap)
+
+        self._restart_dialog = InteractionDialog(self)
+        self._restart_dialog.confirmed.connect(self.restart_requested.emit)
+        self._feedback_dialog = InteractionDialog(self)
+        self._feedback_dialog.inspect_requested.connect(
+            self._notification_banner.inspect_requested.emit
+        )
 
         self.set_game_status(GameState.NO_PUZZLE)
         QApplication.instance().installEventFilter(self)
@@ -342,6 +353,8 @@ class GameplayScreen(BackdropScreen):
         """Prepare screen for a fresh Load/Restart (cancel flips, clear trace/hint/banner/highlights)."""
         self._game_board.cancel_animations(revert_to_original=False)
         self._notification_banner.dismiss(animated=False)
+        self._restart_dialog.force_close()
+        self._feedback_dialog.force_close()
         self._deduction_panel.clear()
         self._deduction_panel.clear_hint()
         self._game_board.clear_highlights()
@@ -351,7 +364,6 @@ class GameplayScreen(BackdropScreen):
         self.ui_state = InteractionState()
         self._clue_panel.clear()
         self._action_bar.set_auto_solving(False)
-        self._action_bar.dismiss_restart_confirmation()
         self._current_kb_version = None
         self.set_board(snapshot)
 
@@ -423,6 +435,20 @@ class GameplayScreen(BackdropScreen):
         self._deduction_panel.show_hint(hint)
         self.ui_state.active_hint = hint
 
+    def animate_hint_flow(
+        self,
+        clue_ids: Iterable[str],
+        supporting_cells: Iterable[str],
+        target_cell_id: str,
+    ) -> bool:
+        clue_set = set(clue_ids)
+        source_cells = list(supporting_cells)
+        for clue in self._clue_panel.clues:
+            if clue.clue_id in clue_set:
+                source_cells.append(clue.owner_id)
+                source_cells.extend(clue.referenced_cells)
+        return self._game_board.animate_hint_flow(source_cells, target_cell_id)
+
     def clear_hint(self) -> None:
         """Hide and clear the temporary Hint box."""
         self._deduction_panel.clear_hint()
@@ -460,9 +486,54 @@ class GameplayScreen(BackdropScreen):
         self._notification_banner.show_result(result)
         current = self._notification_banner.current_result
         self.ui_state.error_feedback = current if current.code in (ActionCode.NOT_PROVABLE, ActionCode.CONTRADICTED) else None
+        if current.code is ActionCode.NOT_PROVABLE:
+            self._feedback_dialog.force_close()
+            self._feedback_dialog.configure(
+                tone="warning",
+                icon="?",
+                kicker="CHƯA ĐỦ CHỨNG CỨ · NOT_PROVABLE",
+                title="Kết luận này vẫn còn hai khả năng hợp lệ",
+                message=current.message,
+                detail=(
+                    "SAT vẫn tìm được ít nhất một mô hình cho mỗi giả thiết. "
+                    "Hãy mở thêm chuỗi suy luận hoặc xem lại một manh mối khác trước khi kết luận."
+                ),
+                cancel_text="Quay lại điều tra",
+                modal=False,
+            )
+            self._feedback_dialog.show()
+            self._feedback_dialog.raise_()
+        elif current.code is ActionCode.CONTRADICTED:
+            self._feedback_dialog.force_close()
+            self._feedback_dialog.configure(
+                tone="danger",
+                icon="×",
+                kicker="XUNG ĐỘT LOGIC · CONTRADICTED",
+                title="Giả thiết vừa chọn phá vỡ chuỗi chứng cứ",
+                message=current.message,
+                detail=(
+                    "Giả thiết ngược lại đã được chứng minh từ KB hiện tại. "
+                    "Bạn có thể soi tập chứng cứ tối tiểu đang gây ra mâu thuẫn."
+                ),
+                cancel_text="Đóng",
+                allow_inspect=self._notification_banner.inspect_button.isVisible(),
+                modal=False,
+            )
+            self._feedback_dialog.show()
+            self._feedback_dialog.raise_()
 
     def dismiss_notification(self) -> None:
         self._notification_banner.dismiss()
+        self._feedback_dialog.close_animated()
+
+    def dismiss_interaction_dialogs(self) -> None:
+        self._restart_dialog.force_close()
+        self._feedback_dialog.force_close()
+
+    def set_contradiction_inspect_available(self, enabled: bool) -> None:
+        flag = bool(enabled)
+        self._notification_banner.inspect_button.setVisible(flag)
+        self._feedback_dialog.inspect_button.setVisible(flag)
 
     def set_selection(self, cell_id: Optional[str]) -> bool:
         """Programmatically update selected cell (emits no signal)."""
@@ -522,7 +593,8 @@ class GameplayScreen(BackdropScreen):
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
                 self.clear_highlights()
                 self._notification_banner.dismiss(animated=True)
-                self._action_bar.dismiss_restart_confirmation()
+                self._restart_dialog.close_animated()
+                self._feedback_dialog.close_animated()
                 return True
             if event.type() == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
                 blank = (self, self._board_panel, self._sidebar_widget,
@@ -531,8 +603,57 @@ class GameplayScreen(BackdropScreen):
                     self.clear_highlights()
         return False
 
+    def closeEvent(self, event) -> None:  # noqa: N802
+        app = QApplication.instance()
+        if app is not None:
+            app.removeEventFilter(self)
+        self._restart_dialog.force_close()
+        self._feedback_dialog.force_close()
+        super().closeEvent(event)
+
     def set_board_interactive(self, enabled: bool) -> None:
         self._game_board.set_interactive(enabled)
+
+    def restart_with_transition(self, snapshot: Any, completed=None) -> None:
+        """Clear transient UI while the old board collapses and the new one is dealt."""
+        self._restart_dialog.force_close()
+        self._feedback_dialog.force_close()
+        self._notification_banner.dismiss(animated=False)
+        self._deduction_panel.clear()
+        self._deduction_panel.clear_hint()
+        self._clue_panel.clear()
+        self._game_board.clear_selection()
+        self.ui_state = InteractionState()
+        self._action_bar.set_auto_solving(False)
+        self._current_kb_version = None
+
+        def finish() -> None:
+            self.set_board(snapshot)
+            if callable(completed):
+                completed()
+
+        self._game_board.animate_board_rebuild(snapshot, finish)
+
+    def _show_restart_dialog(self) -> None:
+        revealed = self._progress_panel.revealed_count
+        total = self._progress_panel.total_count
+        self._restart_dialog.configure(
+            tone="restart",
+            icon="↻",
+            kicker="TÁI DỰNG HỒ SƠ",
+            title="Xóa tiến độ và dựng lại bàn điều tra?",
+            message=(
+                "Các thẻ đã mở, nhật ký suy luận, highlight và ghi chú manh mối "
+                "của lượt chơi hiện tại sẽ được làm mới."
+            ),
+            detail=f"Tiến độ hiện tại: {revealed}/{total} thẻ đã mở. Dữ liệu puzzle gốc và solver không bị thay đổi.",
+            confirm_text="↻ Tái dựng từ đầu",
+            cancel_text="Giữ nguyên hồ sơ",
+            modal=True,
+        )
+        self._restart_dialog.show()
+        self._restart_dialog.raise_()
+        self._restart_dialog.activateWindow()
 
     def set_demo_case_preview(self, grid_label: str) -> None:
         self._case_label.setText(f"VỤ ÁN: [XEM TRƯỚC {grid_label.upper()}]")
@@ -543,6 +664,7 @@ class GameplayScreen(BackdropScreen):
 
     def _on_board_card_selected(self, cell_id: str) -> None:
         self._notification_banner.dismiss(animated=False)
+        self._feedback_dialog.close_animated()
         self._sync_selected_character()
         self.card_selected.emit(cell_id)
 

@@ -657,6 +657,78 @@ QDialog#GriductiveNotificationDialog {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Cinematic interaction dialogs                                               */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="interactionDialog"] {
+    background-color: {{PAPER_SHEET}};
+    border: 2px solid {{INFO_CLUE_SEMANTIC}};
+    border-radius: {{RADIUS_LG}}px;
+}
+
+QFrame[widgetKind="interactionDialog"][tone="restart"] {
+    background-color: {{PAPER_SELECTED}};
+    border-color: {{BRASS_ACCENT}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="warning"] {
+    background-color: {{FEEDBACK_AMBER_SURFACE}};
+    border-color: {{WARNING_AMBER_CREAM}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="danger"] {
+    background-color: {{FEEDBACK_ROSE_SURFACE}};
+    border-color: {{CRIMINAL_SEMANTIC}};
+}
+
+QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: {{PAPER_LINEN}};
+    border: 2px solid {{BRASS_ACCENT}};
+    border-radius: 32px;
+    color: {{INK_PRIMARY}};
+    font-family: "{{FONT_DISPLAY}}";
+    font-size: 27px;
+    font-weight: 800;
+}
+
+QFrame[widgetKind="interactionDialog"][tone="warning"] QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: rgba(242, 184, 75, 55);
+    border-color: {{WARNING_AMBER_CREAM}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="danger"] QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: rgba(181, 82, 82, 38);
+    border-color: {{CRIMINAL_SEMANTIC}};
+    color: {{BRICK_ACCENT_DARK}};
+}
+
+QFrame[widgetKind="interactionDialogDetail"] {
+    background-color: rgba(255, 255, 255, 105);
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::groove:horizontal {
+    height: 5px;
+    background: {{PAPER_BORDER}};
+    border-radius: 2px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::sub-page:horizontal {
+    background: {{BRASS_ACCENT}};
+    border-radius: 2px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    background: {{INK_PRIMARY}};
+    border: 2px solid {{PAPER_SHEET}};
+    border-radius: 8px;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Editorial Evidence Slips, Deduction Trace & HintBox (Warm Paper Material)  */
 /* -------------------------------------------------------------------------- */
 
@@ -730,6 +802,17 @@ QFrame[widgetKind="hintBox"] {
     border: 1px dashed {{BRASS_ACCENT}};
     border-left: 4px solid {{BRASS_ACCENT}};
     border-radius: {{RADIUS_SM}}px;
+}
+
+QLabel[widgetKind="logicChain"] {
+    background-color: rgba(228, 185, 109, 38);
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+    color: {{BRASS_INK}};
+    font-family: "{{FONT_MONO}}";
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 8px;
 }
 
 /* -------------------------------------------------------------------------- */

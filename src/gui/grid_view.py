@@ -17,10 +17,23 @@ import logging
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping, Optional
 
-from PySide6.QtCore import QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPainter, QPixmap, QTransform
+from PySide6.QtCore import (
+    QEasingCurve,
+    QParallelAnimationGroup,
+    QPauseAnimation,
+    QPointF,
+    QPropertyAnimation,
+    QRectF,
+    QSequentialAnimationGroup,
+    QSize,
+    Qt,
+    QVariantAnimation,
+    Signal,
+)
+from PySide6.QtGui import QBrush, QColor, QFont, QPainter, QPen, QPixmap, QTransform
 from PySide6.QtWidgets import (
     QFrame,
+    QGraphicsEllipseItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
     QGraphicsView,
@@ -111,6 +124,9 @@ class GameBoard(QGraphicsView):
         self._interactive: bool = True
         self._display_mode: CardDisplayMode = CardDisplayMode.STANDARD
         self._current_scale: float = 1.0
+        self._board_transition = None
+        self._hint_flow = None
+        self._hint_particles: list[QGraphicsEllipseItem] = []
 
         # View configuration: transparent over Gameplay A05 backdrop, smooth rendering
         self.setFrameShape(QFrame.Shape.NoFrame)
@@ -345,6 +361,160 @@ class GameBoard(QGraphicsView):
         """Alias of ``clear_highlights`` matching Phase 5 §6.3."""
         self.clear_highlights()
 
+    def animate_hint_flow(
+        self,
+        source_cell_ids: Iterable[str],
+        target_cell_id: str,
+    ) -> bool:
+        """Send luminous evidence particles from public source cards to a target."""
+        target = self._cards_by_id.get(target_cell_id)
+        sources = [
+            self._cards_by_id[cid]
+            for cid in dict.fromkeys(source_cell_ids)
+            if cid in self._cards_by_id and cid != target_cell_id
+        ]
+        if target is None:
+            return False
+        if not sources:
+            sources = [target]
+        self._clear_hint_particles()
+        if self.reduced_motion:
+            target.set_glow_state(1.0, 1.0)
+            return True
+
+        target_center = target.pos() + target.card_rect().center()
+        group = QParallelAnimationGroup(self)
+        colors = (QColor(101, 185, 233), QColor(228, 185, 109), QColor(255, 247, 216))
+        for source_index, source in enumerate(sources[:5]):
+            start = source.pos() + source.card_rect().center()
+            for particle_index in range(3):
+                size = 5.0 + particle_index * 1.7
+                particle = QGraphicsEllipseItem(-size / 2, -size / 2, size, size)
+                color = QColor(colors[(source_index + particle_index) % len(colors)])
+                color.setAlpha(230)
+                particle.setBrush(QBrush(color))
+                particle.setPen(QPen(Qt.PenStyle.NoPen))
+                particle.setZValue(50)
+                particle.setPos(start)
+                self._scene.addItem(particle)
+                self._hint_particles.append(particle)
+
+                sequence = QSequentialAnimationGroup(group)
+                sequence.addAnimation(QPauseAnimation((source_index * 70) + (particle_index * 55)))
+                anim = QVariantAnimation(sequence)
+                anim.setDuration(DEFAULT_MOTION.hint_particle_duration)
+                anim.setStartValue(0.0)
+                anim.setEndValue(1.0)
+                anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+                arc = -42.0 - (particle_index * 14.0) + (source_index * 8.0)
+
+                def move(value, item=particle, p0=start, p2=target_center, bend=arc):
+                    t = float(value)
+                    mid = QPointF((p0.x() + p2.x()) / 2.0, (p0.y() + p2.y()) / 2.0 + bend)
+                    inv = 1.0 - t
+                    point = QPointF(
+                        inv * inv * p0.x() + 2 * inv * t * mid.x() + t * t * p2.x(),
+                        inv * inv * p0.y() + 2 * inv * t * mid.y() + t * t * p2.y(),
+                    )
+                    item.setPos(point)
+                    item.setOpacity(min(1.0, t * 5.0) * min(1.0, (1.0 - t) * 6.0))
+                    item.setScale(0.75 + 0.8 * t)
+
+                anim.valueChanged.connect(move)
+                sequence.addAnimation(anim)
+                group.addAnimation(sequence)
+
+        group.finished.connect(self._finish_hint_flow)
+        self._hint_flow = group
+        group.start()
+        return True
+
+    def _finish_hint_flow(self) -> None:
+        self._clear_hint_particles()
+        self._hint_flow = None
+
+    def _clear_hint_particles(self) -> None:
+        if self._hint_flow is not None:
+            self._hint_flow.stop()
+        for item in self._hint_particles:
+            if item.scene() is self._scene:
+                self._scene.removeItem(item)
+        self._hint_particles.clear()
+
+    def animate_board_rebuild(self, snapshot: Any, finished=None) -> None:
+        """Collapse the old dossier grid, rebuild it, then deal cards back in."""
+        normalized = normalize_board_snapshot(snapshot)
+        self._motion_coordinator.cancel_active_animation(revert_to_original=False)
+        self._clear_hint_particles()
+        if self._board_transition is not None:
+            self._board_transition.stop()
+        if self.reduced_motion or not self._cards_by_id:
+            self.set_board(normalized)
+            if callable(finished):
+                finished()
+            return
+
+        self.set_interactive(False)
+        out_group = QParallelAnimationGroup(self)
+        ordered = sorted(self._cards_by_id.values(), key=lambda c: (c.public_data.row, c.public_data.col))
+        for index, card in enumerate(ordered):
+            sequence = QSequentialAnimationGroup(out_group)
+            sequence.addAnimation(QPauseAnimation(index * 24))
+            pair = QParallelAnimationGroup(sequence)
+            fade = QPropertyAnimation(card, b"opacity", pair)
+            fade.setDuration(210)
+            fade.setStartValue(card.opacity())
+            fade.setEndValue(0.0)
+            fade.setEasingCurve(QEasingCurve.Type.InCubic)
+            shrink = QPropertyAnimation(card, b"scale", pair)
+            shrink.setDuration(DEFAULT_MOTION.board_collapse_duration)
+            shrink.setStartValue(card.scale())
+            shrink.setEndValue(0.58)
+            shrink.setEasingCurve(QEasingCurve.Type.InBack)
+            pair.addAnimation(fade)
+            pair.addAnimation(shrink)
+            sequence.addAnimation(pair)
+            out_group.addAnimation(sequence)
+
+        self._board_transition = out_group
+
+        def rebuild() -> None:
+            self.set_board(normalized)
+            in_group = QParallelAnimationGroup(self)
+            new_cards = sorted(self._cards_by_id.values(), key=lambda c: (c.public_data.row, c.public_data.col))
+            for index, card in enumerate(new_cards):
+                card.setOpacity(0.0)
+                card.setScale(1.28)
+                sequence = QSequentialAnimationGroup(in_group)
+                sequence.addAnimation(QPauseAnimation(index * 32))
+                pair = QParallelAnimationGroup(sequence)
+                fade = QPropertyAnimation(card, b"opacity", pair)
+                fade.setDuration(260)
+                fade.setStartValue(0.0)
+                fade.setEndValue(1.0)
+                fade.setEasingCurve(QEasingCurve.Type.OutCubic)
+                settle = QPropertyAnimation(card, b"scale", pair)
+                settle.setDuration(DEFAULT_MOTION.board_rebuild_duration)
+                settle.setStartValue(1.28)
+                settle.setEndValue(1.0)
+                settle.setEasingCurve(QEasingCurve.Type.OutBack)
+                pair.addAnimation(fade)
+                pair.addAnimation(settle)
+                sequence.addAnimation(pair)
+                in_group.addAnimation(sequence)
+
+            def complete() -> None:
+                self._board_transition = None
+                if callable(finished):
+                    finished()
+
+            in_group.finished.connect(complete)
+            self._board_transition = in_group
+            in_group.start()
+
+        out_group.finished.connect(rebuild)
+        out_group.start()
+
     def set_interactive(self, enabled: bool) -> None:
         """Enable or disable mouse/keyboard card interaction."""
         self._interactive = bool(enabled)
@@ -408,6 +578,7 @@ class GameBoard(QGraphicsView):
 
     def _rebuild_scene(self, snapshot: PublicBoardSnapshot, mode: CardDisplayMode) -> None:
         # Stop all active flips & glows before clearing QGraphicsScene items
+        self._clear_hint_particles()
         self._motion_coordinator.reset_visuals(self._cards_by_id)
         self._scene.clear()
         self._cards_by_id.clear()
@@ -506,6 +677,9 @@ class GameBoard(QGraphicsView):
         self.fit_board_to_viewport()
 
     def closeEvent(self, event) -> None:  # noqa: N802
+        self._clear_hint_particles()
+        if self._board_transition is not None:
+            self._board_transition.stop()
         self._motion_coordinator.reset_visuals(self._cards_by_id)
         super().closeEvent(event)
 

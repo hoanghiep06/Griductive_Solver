@@ -58,6 +58,11 @@ class MotionConfig:
     contradiction_shake_duration: int = 280
     assisted_flip_duration: int = 380
     auto_step_interval: int = 450
+    dialog_enter_duration: int = 260
+    dialog_exit_duration: int = 150
+    hint_particle_duration: int = 620
+    board_collapse_duration: int = 230
+    board_rebuild_duration: int = 340
 
     # Accessibility
     reduced_motion: bool = False

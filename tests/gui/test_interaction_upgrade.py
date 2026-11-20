@@ -56,6 +56,7 @@ def test_used_notes_survive_reveal_and_reset_on_restart(qtbot, game):
     qtbot.waitUntil(lambda: controller._pending is None and not controller._busy, timeout=5000)
     assert screen.clue_panel.clue_cards["CLUE_A1"].text_label.font().strikeOut()
     controller.restart()
+    qtbot.waitUntil(lambda: "CLUE_A1" in screen.clue_panel.clue_cards, timeout=5000)
     assert not screen.ui_state.solved_clues
     assert not screen.clue_panel.clue_cards["CLUE_A1"].used_button.isChecked()
 
@@ -80,11 +81,15 @@ def test_unknown_and_contradicted_never_reveal_and_inspect_real_evidence(qtbot, 
     controller.guess("C3", "CRIMINAL")
     qtbot.waitUntil(lambda: not controller._busy, timeout=5000)
     assert screen.notification_banner.current_result.code is ActionCode.NOT_PROVABLE
+    assert screen._feedback_dialog.isVisible()
+    assert screen._feedback_dialog.panel.property("tone") == "warning"
     assert not screen.notification_banner.inspect_button.isVisible()
     assert "Cả hai khả năng" in screen.notification_banner.current_result.message
     controller.guess("B1", "INNOCENT")
     qtbot.waitUntil(lambda: not controller._busy, timeout=5000)
     assert screen.notification_banner.current_result.code is ActionCode.CONTRADICTED
+    qtbot.waitUntil(screen._feedback_dialog.isVisible, timeout=1000)
+    assert screen._feedback_dialog.panel.property("tone") == "danger"
     assert screen.notification_banner.inspect_button.isVisible()
     screen.notification_banner.inspect_button.click()
     assert screen.ui_state.selected_clue_id == "CLUE_A1"
@@ -103,12 +108,14 @@ def test_restart_inline_confirmation_and_counters(qtbot, game):
         qtbot.waitUntil(lambda: not controller._busy and controller._pending is None, timeout=5000)
     before = controller.session.engine.public_kb_version
     screen.action_bar.restart_button.click()
-    assert screen.action_bar._restart_confirm.isVisible()
+    assert screen._restart_dialog.isVisible()
     assert controller.session.engine.public_kb_version == before
-    screen.action_bar.cancel_restart_button.click()
-    assert not screen.action_bar._restart_confirm.isVisible()
+    screen._restart_dialog.cancel_button.click()
+    qtbot.waitUntil(lambda: not screen._restart_dialog.isVisible(), timeout=1000)
     screen.action_bar.restart_button.click()
-    screen.action_bar.confirm_restart_button.click()
+    screen._restart_dialog.confirm_button.click()
+    qtbot.waitUntil(lambda: controller.session.engine.public_kb_version > before, timeout=1000)
+    qtbot.waitUntil(lambda: "CLUE_A1" in screen.clue_panel.clue_cards, timeout=5000)
     assert controller.session.engine.public_kb_version > before
     assert len(controller.session.engine.get_proved_verdicts()) == 1
     assert screen.ui_state.hint_count == screen.ui_state.mistake_count == 0
@@ -153,6 +160,17 @@ def test_auto_completes_and_pause_during_flip_keeps_accepted_progress(qtbot, gam
     assert screen.game_state is GameState.SOLVED
     assert not screen.ui_state.is_auto_solving
     assert screen.ui_state.hint_count == 0
+
+
+def test_auto_speed_control_updates_running_timer(qtbot, game):
+    screen, controller = game
+    screen.action_bar.speed_slider.setValue(900)
+    assert controller._auto_interval_ms == 900
+    assert "0.90" in screen.action_bar.speed_value_label.text()
+    controller.toggle_auto()
+    qtbot.waitUntil(lambda: controller._pending is not None, timeout=5000)
+    assert screen.game_board._hint_flow is not None
+    controller.toggle_auto()
 
 
 def test_load_cancels_inflight_hint_and_cleans_all_ui_state(qtbot, game, monkeypatch):

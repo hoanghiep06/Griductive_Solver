@@ -10,6 +10,7 @@ from src.gui.components.character_card import (
 )
 from src.gui.components.clue_panel import CluePanel
 from src.gui.components.deduction_panel import DeductionPanel
+from src.gui.components.interaction_dialog import InteractionDialog
 from src.gui.components.notification_dialog import (
     HowToPlayDialog,
     NotificationBanner,
@@ -33,6 +34,7 @@ __all__ = [
     "DeductionPanel",
     "HowToPlayDialog",
     "ImageScaleMode",
+    "InteractionDialog",
     "NotificationBanner",
     "NotificationDialog",
     "PageHeader",

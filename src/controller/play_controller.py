@@ -61,7 +61,8 @@ class PlayController(QObject):
         self._steps = 0
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
-        self._timer.setInterval(DEFAULT_MOTION.auto_step_interval)
+        self._auto_interval_ms = DEFAULT_MOTION.auto_step_interval
+        self._timer.setInterval(self._auto_interval_ms)
         self._timer.timeout.connect(self._auto_step)
         window.play_requested.connect(self.open_levels)
         window.level_selection_requested.connect(self.open_levels)
@@ -74,6 +75,7 @@ class PlayController(QObject):
         window.exit_requested.connect(window.close)
         window.how_to_play_requested.connect(window.show_how_to_play)
         window.animation_finished.connect(self._finish_reveal)
+        self.screen.auto_solve_speed_changed.connect(self.set_auto_speed)
         self.screen.notification_banner.inspect_requested.connect(self.inspect_contradiction)
         from PySide6.QtWidgets import QApplication
         QApplication.instance().aboutToQuit.connect(self.stop)
@@ -99,6 +101,7 @@ class PlayController(QObject):
 
     def open_levels(self):
         self.stop()
+        self.screen.dismiss_interaction_dialogs()
         try:
             self.window.level_selection_screen.set_levels(self._catalog())
             self.window.show_level_selection()
@@ -107,6 +110,7 @@ class PlayController(QObject):
 
     def back(self):
         self.stop()
+        self.screen.dismiss_interaction_dialogs()
         self.window.show_main_menu()
 
     def _cancel_request(self):
@@ -146,7 +150,14 @@ class PlayController(QObject):
         if self.session is None:
             return
         self.session.restart()
-        self._reset_screen()
+        self.screen.set_game_status(GameState.PROCESSING)
+        self.screen.restart_with_transition(self.session.board(), self._finish_restart)
+
+    def _finish_restart(self):
+        self._steps = 0
+        self._evidence = Evidence()
+        self._ready()
+        self.window.show_gameplay()
 
     def _reset_screen(self):
         self._steps = 0
@@ -186,6 +197,12 @@ class PlayController(QObject):
         self.state.is_auto_solving = True
         self.screen.action_bar.set_auto_solving(True)
         self._auto_step()
+
+    def set_auto_speed(self, interval_ms: int):
+        self._auto_interval_ms = max(250, min(1200, int(interval_ms)))
+        self._timer.setInterval(self._auto_interval_ms)
+        if self.state.is_auto_solving and self._timer.isActive():
+            self._timer.start(self._auto_interval_ms)
 
     def _auto_step(self):
         if not self.state.is_auto_solving or self._busy or self._pending:
@@ -257,8 +274,10 @@ class PlayController(QObject):
                 if card:
                     card.shake()
             self._notice(ActionCode(response.value), message, result.cell_id)
-            self.screen.notification_banner.inspect_button.setVisible(
-                response is VerdictResponse.CONTRADICTED and bool(result.evidence.clue_ids or result.evidence.cell_ids))
+            self.screen.set_contradiction_inspect_available(
+                response is VerdictResponse.CONTRADICTED
+                and bool(result.evidence.clue_ids or result.evidence.cell_ids)
+            )
             self._stats()
         else:
             self._notice(ActionCode(response.value), "Dữ kiện đã thay đổi. Hãy thử lại trên bàn cờ hiện tại.")
@@ -269,6 +288,12 @@ class PlayController(QObject):
         verdict = analysis.classification.verdict.value
         text = self._explanation(analysis)
         self.screen.focus_evidence(analysis.evidence.clue_ids, (*analysis.evidence.cell_ids, analysis.cell_id))
+        if operation in {"hint", "auto"}:
+            self.screen.animate_hint_flow(
+                analysis.evidence.clue_ids,
+                analysis.evidence.cell_ids,
+                analysis.cell_id,
+            )
         self.screen.append_deduction_step(DeductionStepView(
             self.session.session_id, self._steps, board.kb_version, analysis.cell_id, verdict, text,
             source_clue_ids=analysis.evidence.clue_ids, step=self._steps,
@@ -323,7 +348,7 @@ class PlayController(QObject):
             # The reveal lasts 380 ms; a short reading beat yields ~450 ms/step
             # plus actual solver time, without blocking the Qt event loop.
             elapsed = int((perf_counter() - self._reveal_started) * 1000)
-            self._timer.start(max(1, DEFAULT_MOTION.auto_step_interval - elapsed))
+            self._timer.start(max(1, self._auto_interval_ms - elapsed))
 
     def inspect_contradiction(self):
         self.screen.focus_evidence(self._evidence.clue_ids, self._evidence.cell_ids)

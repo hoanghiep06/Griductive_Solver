@@ -10,9 +10,10 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QFrame,
+    QGraphicsOpacityEffect,
     QHBoxLayout,
     QLabel,
     QLayout,
@@ -163,6 +164,22 @@ class _HintBox(QFrame):
         self._body_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         layout.addWidget(self._body_label)
 
+        self._logic_chain = QLabel(
+            "CHỨNG CỨ  →  THỬ GIẢ THIẾT NGƯỢC  →  MÂU THUẪN  →  KẾT LUẬN",
+            self,
+        )
+        self._logic_chain.setProperty("widgetKind", "logicChain")
+        self._logic_chain.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._logic_chain.setWordWrap(True)
+        layout.addWidget(self._logic_chain)
+
+        self._opacity = QGraphicsOpacityEffect(self)
+        self._opacity.setOpacity(1.0)
+        self.setGraphicsEffect(self._opacity)
+        self._enter = QPropertyAnimation(self._opacity, b"opacity", self)
+        self._enter.setDuration(260)
+        self._enter.setEasingCurve(QEasingCurve.Type.OutCubic)
+
         self.setVisible(False)
 
     def display_hint(self, hint: HintView) -> None:
@@ -176,14 +193,22 @@ class _HintBox(QFrame):
 
         body = hint.text
         if hint.source_clue_ids:
-            body = f"{body} (Chứng cứ: {', '.join(hint.source_clue_ids)})"
+            body = f"{body}\n\nCăn cứ công khai: {', '.join(hint.source_clue_ids)}"
         self._body_label.setText(body)
+        self._logic_chain.setVisible(hint.outcome == "FORCED")
         self.setMinimumHeight(92)
         self.setVisible(True)
+        self._enter.stop()
+        self._opacity.setOpacity(0.0)
+        self._enter.setStartValue(0.0)
+        self._enter.setEndValue(1.0)
+        self._enter.start()
         self.updateGeometry()
 
     def clear_hint(self) -> None:
         self._body_label.clear()
+        self._enter.stop()
+        self._opacity.setOpacity(1.0)
         self.setMinimumHeight(0)
         self.setVisible(False)
         self.updateGeometry()
