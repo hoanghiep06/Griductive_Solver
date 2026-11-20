@@ -9,8 +9,9 @@ Thuật toán No-Guess Deduction Loop:
     4. Nếu tìm thấy:
        a. Chuyển ClassificationResult → EntailmentResult.
        b. Gọi GameEngine.submit_verdict() để xác nhận và nhận Clue mới.
-       c. Ghi vết vào DeductionTrace.
-       d. Tiếp tục vòng lặp (KB đã được cập nhật tự động qua GameEngine).
+       c. Tính tập chứng cứ TỐI TIỂU (manh mối + ô đã chứng minh thực sự cần).
+       d. Ghi vết vào DeductionTrace.
+       e. Tiếp tục vòng lặp (KB đã được cập nhật tự động qua GameEngine).
     5. Nếu không tìm thấy → kết thúc vòng lặp (puzzle hết khả năng suy luận
        thuần túy, hoặc đã giải hoàn toàn).
 
@@ -22,10 +23,14 @@ Thiết kế:
   - iter_steps() là generator: mỗi lần next() chạy đúng MỘT bước, caller
     (QTimer / CLI) tự quyết định nghỉ bao lâu giữa hai bước.
   - auto_solve() chạy liên tục (dành cho CLI / benchmark).
+  - Chứng cứ tối tiểu cần một solver có solve(cnf) -> bool. Nếu không lấy được
+    solver (hoặc việc mã hóa lại lỗi) thì bước vẫn được ghi, với
+    minimal_evidence=False và clue_ids là toàn bộ manh mối đang mở.
 """
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any, Callable, Iterator
 
@@ -41,9 +46,12 @@ from src.agent.entailment import (
     Verdict,
     row_major_key,
 )
+from src.agent.evidence import EvidenceGroup, minimize_support
 from src.core.entailment_result import EntailmentResult, EntailmentStatus
 from src.core.game_engine import GameEngine, VerdictResponse
 from src.encoder.cnf_encoder import CNFEncoder
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +80,9 @@ class LogicAgent:
         trace:      DeductionTrace để ghi vết (nếu None sẽ tự tạo mới).
         on_step:    Callback tuỳ chọn được gọi sau mỗi bước thành công.
                     Nhận (DeductionStep, PublicKBSnapshot) làm đối số.
+        solver:     Solver có solve(cnf) -> bool dùng để tính chứng cứ tối tiểu.
+                    Nếu None, thử lấy từ checker; nếu vẫn không có thì bỏ qua
+                    việc tối thiểu hoá chứng cứ.
     """
 
     def __init__(
@@ -81,6 +92,7 @@ class LogicAgent:
         checker: EntailmentChecker,
         trace: DeductionTrace | None = None,
         on_step: Callable[[DeductionStep, Any], None] | None = None,
+        solver: Any = None,
     ) -> None:
         if not isinstance(engine, GameEngine):
             raise TypeError("engine phải là GameEngine")
@@ -97,6 +109,9 @@ class LogicAgent:
             grid_size=engine.grid_size,
         )
         self._on_step = on_step
+        if solver is None:
+            solver = getattr(checker, "_solver", None) or getattr(checker, "solver", None)
+        self._solver = solver if hasattr(solver, "solve") else None
 
     # ------------------------------------------------------------------
     # API công khai
@@ -241,18 +256,33 @@ class LogicAgent:
                 f"GameEngine từ chối verdict cho {char_id!r}: {response.value}"
             )
 
-        # Tổng hợp metrics từ SAT queries
+        # Metrics từ các truy vấn SAT của bước phân loại
         sat_metrics_list = [dict(q.metrics) for q in classification.queries]
 
-        # Ghi vết suy luận
-        step = build_step(
-            step_index=self._trace.step_count + 1,
-            character_id=char_id,
-            verdict=verdict_str,
-            kb_version=snapshot.version,
-            revealed_clues=list(snapshot.revealed_clues),
-            sat_metrics_list=sat_metrics_list,
-        )
+        # Tính tập chứng cứ tối tiểu trên KB *trước* khi lật (snapshot cũ)
+        evidence = self._compute_evidence(snapshot, char_id, is_criminal)
+        if evidence is not None:
+            clue_ids, support_cells, extra_metrics = evidence
+            sat_metrics_list.extend(extra_metrics)
+            step = build_step(
+                step_index=self._trace.step_count + 1,
+                character_id=char_id,
+                verdict=verdict_str,
+                kb_version=snapshot.version,
+                revealed_clues=list(snapshot.revealed_clues),
+                sat_metrics_list=sat_metrics_list,
+                evidence_clue_ids=clue_ids,
+                support_cell_ids=support_cells,
+            )
+        else:
+            step = build_step(
+                step_index=self._trace.step_count + 1,
+                character_id=char_id,
+                verdict=verdict_str,
+                kb_version=snapshot.version,
+                revealed_clues=list(snapshot.revealed_clues),
+                sat_metrics_list=sat_metrics_list,
+            )
         self._trace.record(step)
 
         # Gọi callback nếu có (ví dụ GUI cập nhật hiển thị)
@@ -261,6 +291,65 @@ class LogicAgent:
             self._on_step(step, updated_snapshot)
 
         return step
+
+    # ------------------------------------------------------------------
+    # Chứng cứ tối tiểu
+    # ------------------------------------------------------------------
+
+    def _compute_evidence(
+        self,
+        snapshot: Any,
+        char_id: str,
+        is_criminal: bool,
+    ) -> tuple[tuple[str, ...], tuple[str, ...], list[dict[str, float]]] | None:
+        """Tính tập manh mối + ô đã chứng minh tối tiểu dẫn tới kết luận.
+
+        Returns:
+            (clue_ids, support_cell_ids, extra_metrics) hoặc None nếu không tính
+            được (không có solver, mã hóa lỗi, hoặc KB ∧ ¬C không UNSAT như kỳ vọng).
+        """
+        solver = self._solver
+        if solver is None:
+            return None
+        try:
+            encoder = self._encoder
+            groups: list[EvidenceGroup] = [
+                ("clue", clue.clue_id, [list(cl) for cl in encoder.encode_clue(clue)])
+                for clue in snapshot.revealed_clues
+            ]
+            groups += [
+                ("cell", cid, [list(encoder.encode_verdict(cid, value))])
+                for cid, value in snapshot.proved_verdicts.items()
+            ]
+
+            var = self._engine.var_map.get_var(char_id)
+            opposite = -var if is_criminal else var
+
+            extra: list[dict[str, float]] = []
+
+            def record() -> None:
+                stats = solver.get_stats() if hasattr(solver, "get_stats") else {}
+                extra.append(dict(stats))
+
+            # Kiểm tra an toàn: toàn bộ KB ∧ ¬C phải UNSAT thì mới tối thiểu hoá được.
+            base = [list(c) for _, _, cs in groups for c in cs] + [[opposite]]
+            satisfiable = solver.solve(base)
+            record()
+            if satisfiable:
+                logger.warning(
+                    "Không xác nhận được ¬C mâu thuẫn khi tính chứng cứ cho %r; "
+                    "dùng toàn bộ KB.",
+                    char_id,
+                )
+                return None
+
+            support = minimize_support(groups, opposite, solver, on_solve=record)
+            clue_ids = tuple(key for kind, key, _ in support if kind == "clue")
+            cell_ids = tuple(key for kind, key, _ in support if kind == "cell")
+            return clue_ids, cell_ids, extra
+        except Exception:  # noqa: BLE001 — chứng cứ chỉ là phần trình bày, không được làm hỏng suy luận
+            logger.exception("Không tính được chứng cứ tối tiểu cho %r", char_id)
+            return None
 
     # ------------------------------------------------------------------
     # Tiện ích chuyển đổi định danh
@@ -331,4 +420,5 @@ def create_logic_agent(
         checker=checker,
         trace=trace,
         on_step=on_step,
+        solver=dpll_solver,
     )

@@ -8,8 +8,11 @@ Thiết kế:
   - Hoàn toàn tách biệt khỏi PublicKB, GameEngine và Encoder — trace chỉ
     nhận dữ liệu đã được chuẩn bị sẵn từ LogicAgent.
   - Mỗi ``DeductionStep`` ghi lại: nhân vật được lật, kết luận, phiên bản KB
-    tại thời điểm suy luận, chỉ số SAT tích lũy, danh sách manh mối tham chiếu
-    và chuỗi giải thích ngắn gọn bằng ngôn ngữ tự nhiên.
+    tại thời điểm suy luận, chỉ số SAT tích lũy, tập chứng cứ (manh mối và các
+    ô đã chứng minh) và chuỗi giải thích ngắn gọn bằng ngôn ngữ tự nhiên.
+  - Nếu LogicAgent tính được tập chứng cứ *tối tiểu* thì ``clue_ids`` và
+    ``support_cell_ids`` chỉ chứa chứng cứ thật sự cần (``minimal_evidence=True``).
+    Nếu không, ``clue_ids`` là toàn bộ manh mối đang mở (``minimal_evidence=False``).
   - ``DeductionTrace`` không lưu trạng thái ẩn của puzzle (không có
     hidden_solution, chỉ có public information).
 """
@@ -72,14 +75,16 @@ class DeductionStep:
     """Một bước suy luận đã được chứng minh bởi SAT.
 
     Attributes:
-        step_index:     Thứ tự bước (bắt đầu từ 1) trong toàn ván.
-        character_id:   ID nhân vật được lật/kết luận trong bước này.
-        verdict:        'CRIMINAL' hoặc 'INNOCENT'.
-        kb_version:     Phiên bản KB *tại thời điểm suy luận* (trước khi cập nhật).
-        clue_ids:       Danh sách ID manh mối đã được dùng làm bằng chứng.
-        explanation:    Chuỗi mô tả ngắn gọn tại sao kết luận này được rút ra.
-        metrics:        Chỉ số SAT tích lũy cho bước này.
-        timestamp:      Thời điểm ghi nhận bước (ISO 8601).
+        step_index:       Thứ tự bước (bắt đầu từ 1) trong toàn ván.
+        character_id:     ID nhân vật được lật/kết luận trong bước này.
+        verdict:          'CRIMINAL' hoặc 'INNOCENT'.
+        kb_version:       Phiên bản KB *tại thời điểm suy luận* (trước khi cập nhật).
+        clue_ids:         ID manh mối làm chứng cứ (tối tiểu nếu minimal_evidence=True).
+        explanation:      Chuỗi mô tả ngắn gọn tại sao kết luận này được rút ra.
+        metrics:          Chỉ số SAT tích lũy cho bước này.
+        timestamp:        Thời điểm ghi nhận bước (ISO 8601).
+        support_cell_ids: Các ô đã chứng minh trước đó mà chứng cứ cần dùng.
+        minimal_evidence: True nếu clue_ids / support_cell_ids là tập tối tiểu.
     """
     step_index: int
     character_id: str
@@ -89,6 +94,8 @@ class DeductionStep:
     explanation: str
     metrics: SATMetrics
     timestamp: str = field(default_factory=lambda: datetime.datetime.now().isoformat())
+    support_cell_ids: tuple[str, ...] = ()
+    minimal_evidence: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.step_index, int) or self.step_index < 1:
@@ -101,8 +108,10 @@ class DeductionStep:
             raise ValueError("kb_version phải là số nguyên không âm")
         if not isinstance(self.metrics, SATMetrics):
             raise TypeError("metrics phải là SATMetrics")
-        # Đảm bảo clue_ids là tuple
+        # Đảm bảo là tuple
         object.__setattr__(self, "clue_ids", tuple(self.clue_ids))
+        object.__setattr__(self, "support_cell_ids", tuple(self.support_cell_ids))
+        object.__setattr__(self, "minimal_evidence", bool(self.minimal_evidence))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -111,6 +120,8 @@ class DeductionStep:
             "verdict": self.verdict,
             "kb_version": self.kb_version,
             "clue_ids": list(self.clue_ids),
+            "support_cell_ids": list(self.support_cell_ids),
+            "minimal_evidence": self.minimal_evidence,
             "explanation": self.explanation,
             "metrics": self.metrics.to_dict(),
             "timestamp": self.timestamp,
@@ -119,9 +130,11 @@ class DeductionStep:
     def format_summary(self) -> str:
         """Trả về dòng tóm tắt ngắn cho stdout / UI log."""
         clues_str = ", ".join(self.clue_ids) if self.clue_ids else "(không có manh mối mới)"
+        cells_str = f" + ô {', '.join(self.support_cell_ids)}" if self.support_cell_ids else ""
+        tag = "tối tiểu" if self.minimal_evidence else "toàn KB"
         return (
             f"[Bước {self.step_index:>3}] {self.character_id:<20} → {self.verdict:<9} "
-            f"| KB v{self.kb_version} | Manh mối: {clues_str} | "
+            f"| KB v{self.kb_version} | Chứng cứ ({tag}): {clues_str}{cells_str} | "
             f"SAT calls={self.metrics.sat_calls}, bt={self.metrics.backtracks}, "
             f"rt={self.metrics.runtime_ms:.2f}ms"
         )
@@ -285,6 +298,8 @@ def build_step(
     revealed_clues: Sequence[Any],
     sat_metrics_list: Sequence[Mapping[str, float]],
     extra_note: str = "",
+    evidence_clue_ids: Sequence[str] | None = None,
+    support_cell_ids: Sequence[str] = (),
 ) -> DeductionStep:
     """Tạo ``DeductionStep`` từ kết quả trả về của EntailmentChecker.
 
@@ -294,19 +309,27 @@ def build_step(
         verdict:            'CRIMINAL' hoặc 'INNOCENT'.
         kb_version:         Phiên bản KB *trước* khi cập nhật.
         revealed_clues:     Các manh mối công khai đang có trong KB (Clue hoặc dict).
+                            Chỉ dùng khi ``evidence_clue_ids`` là None.
         sat_metrics_list:   Danh sách dict get_stats() từ DPLL, một dict mỗi lần gọi SAT.
         extra_note:         Ghi chú thêm vào explanation.
+        evidence_clue_ids:  Tập manh mối tối tiểu do LogicAgent tính được. Nếu None,
+                            dùng toàn bộ ``revealed_clues`` (minimal_evidence=False).
+        support_cell_ids:   Các ô đã chứng minh nằm trong tập chứng cứ tối tiểu.
 
     Returns:
         DeductionStep bất biến sẵn sàng để trace.record().
     """
-    # Thu thập clue_ids từ danh sách manh mối
+    minimal = evidence_clue_ids is not None
     clue_ids: list[str] = []
-    for clue in revealed_clues:
-        if hasattr(clue, "clue_id"):
-            clue_ids.append(clue.clue_id)
-        elif isinstance(clue, dict) and "clue_id" in clue:
-            clue_ids.append(clue["clue_id"])
+    if minimal:
+        clue_ids = [str(cid) for cid in evidence_clue_ids]  # type: ignore[union-attr]
+    else:
+        for clue in revealed_clues:
+            if hasattr(clue, "clue_id"):
+                clue_ids.append(clue.clue_id)
+            elif isinstance(clue, dict) and "clue_id" in clue:
+                clue_ids.append(clue["clue_id"])
+    cell_ids = [str(c) for c in support_cell_ids] if minimal else []
 
     # Tổng hợp metrics từ nhiều lần gọi SAT
     agg = SATMetrics()
@@ -315,12 +338,23 @@ def build_step(
 
     # Tạo explanation
     verdict_label = "phạm nhân (CRIMINAL)" if verdict == "CRIMINAL" else "vô tội (INNOCENT)"
-    clues_label = ", ".join(clue_ids) if clue_ids else "các manh mối đã mở"
-    explanation = (
-        f"KB (v{kb_version}) với {len(clue_ids)} manh mối bắt buộc "
-        f"{character_id} là {verdict_label}. "
-        f"Dựa trên: {clues_label}."
-    )
+    clues_label = ", ".join(clue_ids) if clue_ids else "không cần manh mối nào"
+    if minimal:
+        explanation = (
+            f"Từ {len(clue_ids)} manh mối cần thiết ({clues_label})"
+        )
+        if cell_ids:
+            explanation += f" cùng các ô đã chứng minh ({', '.join(cell_ids)})"
+        explanation += (
+            f", giả thiết ngược lại dẫn tới mâu thuẫn nên {character_id} "
+            f"bắt buộc là {verdict_label}. [KB v{kb_version}]"
+        )
+    else:
+        explanation = (
+            f"KB (v{kb_version}) với {len(clue_ids)} manh mối bắt buộc "
+            f"{character_id} là {verdict_label}. "
+            f"Dựa trên: {clues_label}."
+        )
     if extra_note:
         explanation += f" {extra_note}"
 
@@ -332,4 +366,6 @@ def build_step(
         clue_ids=tuple(clue_ids),
         explanation=explanation,
         metrics=agg,
+        support_cell_ids=tuple(cell_ids),
+        minimal_evidence=minimal,
     )

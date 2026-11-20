@@ -11,6 +11,15 @@ Nguyên lý (Blocking clause):
        - SAT    →  tồn tại ít nhất nghiệm thứ hai (NON_UNIQUE), trả về cả M₂.
   4. Trả về ``UniquenessResult`` bất biến với chi tiết đầy đủ.
 
+Model một phần (partial model):
+  DPLL có thể kết thúc khi mọi mệnh đề đã thỏa mãn mà vẫn còn biến primary chưa
+  được gán (biến tự do). Nếu chỉ lặp trên ``model.items()``, blocking clause sẽ
+  thiếu các biến đó, ngắn hơn M₁ đầy đủ và chặn luôn cả những nghiệm khác
+  (khác M₁ ở biến tự do) → có thể báo UNIQUE sai. Vì vậy mọi biến primary thiếu
+  trong model được *hoàn thiện* với giá trị False (một phép gán hợp lệ vì biến
+  tự do nhận giá trị nào cũng thỏa CNF), và blocking clause luôn lặp trên toàn bộ
+  ``primary_var_ids``.
+
 Giới hạn rõ ràng:
   - Chỉ hoạt động trên *biến primary* (Character verdicts). Biến auxiliary
     (Tseitin) bị loại khỏi blocking clause vì chúng không thuộc về nghiệm
@@ -156,7 +165,8 @@ def check_uniqueness(
 
     # Chuẩn hoá CNF sang list[list[int]] để tránh side-effect
     cnf_copy: list[list[int]] = [list(clause) for clause in cnf]
-    primary_set = frozenset(primary_var_ids)
+    # Thứ tự cố định, loại trùng lặp: blocking clause luôn phủ toàn bộ biến primary
+    primary_order: list[int] = list(dict.fromkeys(primary_var_ids))
 
     # ------------------------------------------------------------------
     # Lần 1: Tìm nghiệm M₁
@@ -175,13 +185,13 @@ def check_uniqueness(
             metrics_m2=None,
         )
 
-    # Decode model sang {char_id: verdict}
-    decoded_m1 = _decode_model(model1, primary_set, var_id_to_char_id)
+    # Decode model sang {char_id: verdict} (biến thiếu được hoàn thiện = False)
+    decoded_m1 = _decode_model(model1, primary_order, var_id_to_char_id)
 
     # ------------------------------------------------------------------
     # Lần 2: Thêm blocking clause ¬M₁ và giải lại
     # ------------------------------------------------------------------
-    blocking_clause = _build_blocking_clause(model1, primary_set)
+    blocking_clause = _build_blocking_clause(model1, primary_order)
     cnf_blocked: list[list[int]] = cnf_copy + [blocking_clause]
 
     sat2, model2 = solver.solve_with_model(cnf_blocked)
@@ -199,7 +209,7 @@ def check_uniqueness(
         )
     else:
         # Tồn tại nghiệm thứ hai
-        decoded_m2 = _decode_model(model2, primary_set, var_id_to_char_id)
+        decoded_m2 = _decode_model(model2, primary_order, var_id_to_char_id)
         return UniquenessResult(
             status=UniquenessStatus.NON_UNIQUE,
             first_model=decoded_m1,
@@ -242,36 +252,37 @@ def check_uniqueness_from_var_map(
 # ---------------------------------------------------------------------------
 
 def _build_blocking_clause(
-    model: dict[int, bool], primary_set: frozenset[int]
+    model: Mapping[int, bool], primary_var_ids: Sequence[int]
 ) -> list[int]:
-    """Xây dựng blocking clause ¬M (chỉ dùng biến primary).
+    """Xây dựng blocking clause ¬M (chỉ dùng biến primary, luôn đủ mọi biến).
 
     Nếu M[var]=True  → literal phủ định = -var (để clause = False khi var=True).
     Nếu M[var]=False → literal dương    = +var (để clause = False khi var=False).
+    Biến primary không có trong model (biến tự do) được coi là False.
     Kết quả: (lit₁ ∨ lit₂ ∨ … ∨ litₙ) sẽ là False khi và chỉ khi mô hình
-    gán giống hệt M₁ trên các biến primary.
+    gán giống hệt M₁ (đã hoàn thiện) trên *toàn bộ* biến primary.
     """
     clause: list[int] = []
-    for var, value in model.items():
-        if var not in primary_set:
-            continue
-        # Phủ định: nếu M[var]=True → đưa -var vào clause
+    for var in primary_var_ids:
+        value = model.get(var, False)
         clause.append(-var if value else var)
     return clause
 
 
 def _decode_model(
-    model: dict[int, bool],
-    primary_set: frozenset[int],
+    model: Mapping[int, bool],
+    primary_var_ids: Sequence[int],
     var_id_to_char_id: Mapping[int, str],
 ) -> dict[str, str]:
-    """Chuyển model DPLL sang {char_id: 'CRIMINAL'/'INNOCENT'}."""
+    """Chuyển model DPLL sang {char_id: 'CRIMINAL'/'INNOCENT'}.
+
+    Biến primary thiếu trong model được hoàn thiện = False (INNOCENT), khớp với
+    cách ``_build_blocking_clause`` hoàn thiện model.
+    """
     result: dict[str, str] = {}
-    for var, value in model.items():
-        if var not in primary_set:
-            continue
+    for var in primary_var_ids:
         char_id = var_id_to_char_id.get(var)
         if char_id is None:
             continue
-        result[char_id] = "CRIMINAL" if value else "INNOCENT"
+        result[char_id] = "CRIMINAL" if model.get(var, False) else "INNOCENT"
     return result
