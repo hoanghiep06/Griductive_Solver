@@ -199,7 +199,10 @@ class PlayController(QObject):
         self._auto_step()
 
     def set_auto_speed(self, interval_ms: int):
-        self._auto_interval_ms = max(250, min(1200, int(interval_ms)))
+        self._auto_interval_ms = max(
+            DEFAULT_MOTION.auto_step_min,
+            min(DEFAULT_MOTION.auto_step_max, int(interval_ms)),
+        )
         self._timer.setInterval(self._auto_interval_ms)
         if self.state.is_auto_solving and self._timer.isActive():
             self._timer.start(self._auto_interval_ms)
@@ -245,6 +248,10 @@ class PlayController(QObject):
             self.screen.show_hint(HintView(self.session.session_id, result.version, "NO_FORCED", None, None,
                                           "Chưa tìm thấy bước chắc chắn từ dữ kiện hiện có. Hãy xem lại các manh mối đang mở."))
             return
+        if operation == "hint":
+            # Gợi ý chỉ làm rõ lập luận: không submit_verdict, không lật thẻ.
+            self._show_hint(result)
+            return
         claimed = self._claimed if operation == "guess" else result.classification.verdict is Verdict.CRIMINAL
         proof = result.classification.to_engine_result(result.cell_id, result.version)
         try:
@@ -255,8 +262,6 @@ class PlayController(QObject):
             self._notice(ActionCode.INTERNAL_ERROR, "Không thể xác nhận bước suy luận này. Hãy chọn lại hồ sơ.")
             return
         if response is VerdictResponse.ACCEPTED:
-            if operation == "hint":
-                self.state.hint_count += 1
             self._accept(result, operation)
             return
         self._ready()
@@ -282,13 +287,34 @@ class PlayController(QObject):
         else:
             self._notice(ActionCode(response.value), "Dữ kiện đã thay đổi. Hãy thử lại trên bàn cờ hiện tại.")
 
+    def _show_hint(self, analysis: Analysis):
+        """Gợi ý lập luận: KHÔNG nêu kết luận, KHÔNG lật thẻ, KHÔNG submit_verdict."""
+        self.state.hint_count += 1
+        clues = {c.clue_id: c for c in self.screen.clue_panel.clues}
+        statements = [clues[cid].text for cid in analysis.evidence.clue_ids if cid in clues]
+        parts = [f"Hãy tập trung vào ô {analysis.cell_id}."]
+        if statements:
+            parts.append("Đọc kỹ các manh mối đang được tô sáng: " + " ".join(statements))
+        if analysis.evidence.cell_ids:
+            parts.append(f"Kết hợp với các ô đã mở: {', '.join(analysis.evidence.cell_ids)}.")
+        parts.append(
+            "Với những dữ kiện này, chỉ một trong hai khả năng là không dẫn đến mâu thuẫn. "
+            "Hãy thử giả sử lần lượt tội phạm / vô tội và xem giả thiết nào làm vỡ một manh mối."
+        )
+        hint = HintView(self.session.session_id, analysis.version, "FORCED",
+                        analysis.cell_id, None, " ".join(parts), analysis.evidence.clue_ids)
+        self.screen.focus_evidence(analysis.evidence.clue_ids,
+                                   (*analysis.evidence.cell_ids, analysis.cell_id))
+        self.screen.show_hint(hint)
+        self._ready()
+
     def _accept(self, analysis: Analysis, operation: str):
         self._steps += 1
         board = self.session.board()
         verdict = analysis.classification.verdict.value
         text = self._explanation(analysis)
         self.screen.focus_evidence(analysis.evidence.clue_ids, (*analysis.evidence.cell_ids, analysis.cell_id))
-        if operation in {"hint", "auto"}:
+        if operation == "auto":
             self.screen.animate_hint_flow(
                 analysis.evidence.clue_ids,
                 analysis.evidence.cell_ids,
@@ -305,7 +331,7 @@ class PlayController(QObject):
             "Giả thiết ngược lại mâu thuẫn với tập chứng cứ này. Xem chi tiết trong nhật ký bên dưới."
         )
         hint = HintView(self.session.session_id, board.kb_version, "FORCED", analysis.cell_id, verdict,
-                        short_text, analysis.evidence.clue_ids) if operation in {"hint", "auto"} else None
+                        short_text, analysis.evidence.clue_ids) if operation == "auto" else None
         if hint:
             self.screen.show_hint(hint)
         token = (self.session.session_id, self._steps)
@@ -345,10 +371,9 @@ class PlayController(QObject):
             self.screen.action_bar.set_auto_solving(False)
             self._notice(ActionCode.ACCEPTED, "Đã phá án! Mọi ô đều được chứng minh bằng suy luận.")
         elif self.state.is_auto_solving:
-            # The reveal lasts 380 ms; a short reading beat yields ~450 ms/step
-            # plus actual solver time, without blocking the Qt event loop.
-            elapsed = int((perf_counter() - self._reveal_started) * 1000)
-            self._timer.start(max(1, self._auto_interval_ms - elapsed))
+            # Nghỉ trọn khoảng interval SAU khi lật xong để người xem đọc lập luận,
+            # rồi mới chạy bước kế tiếp (từng bước một, không chạy một mạch).
+            self._timer.start(self._auto_interval_ms)
 
     def inspect_contradiction(self):
         self.screen.focus_evidence(self._evidence.clue_ids, self._evidence.cell_ids)

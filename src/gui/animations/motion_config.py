@@ -57,7 +57,9 @@ class MotionConfig:
     focus_dim_opacity: float = 0.42
     contradiction_shake_duration: int = 280
     assisted_flip_duration: int = 380
-    auto_step_interval: int = 450
+    auto_step_interval: int = 1500   # nghỉ SAU khi lật xong để kịp đọc lập luận
+    auto_step_min: int = 600
+    auto_step_max: int = 3000
     dialog_enter_duration: int = 260
     dialog_exit_duration: int = 150
     hint_particle_duration: int = 620

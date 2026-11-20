@@ -160,7 +160,7 @@ class ActionBar(QWidget):
             min_height=44,
             parent=self._controls_panel,
         )
-        self._hint_btn.setToolTip("Chứng minh và mở một ô, kèm manh mối và lời giải thích")
+        self._hint_btn.setToolTip("Chỉ ra ô nên xét và các manh mối liên quan, không tiết lộ kết luận")
         self._hint_btn.clicked.connect(self.hint_requested.emit)
         controls_row.addWidget(self._hint_btn)
 
@@ -220,10 +220,10 @@ class ActionBar(QWidget):
         footer.addWidget(fast_label)
         self.speed_slider = QSlider(Qt.Orientation.Horizontal, self)
         self.speed_slider.setProperty("widgetKind", "autoSpeedSlider")
-        self.speed_slider.setRange(250, 1200)
-        self.speed_slider.setSingleStep(50)
-        self.speed_slider.setPageStep(100)
-        self.speed_slider.setValue(450)
+        self.speed_slider.setRange(600, 3000)
+        self.speed_slider.setSingleStep(100)
+        self.speed_slider.setPageStep(300)
+        self.speed_slider.setValue(1500)
         self.speed_slider.setFixedWidth(150)
         self.speed_slider.setToolTip("Điều chỉnh khoảng nghỉ giữa các bước tự giải")
         self.speed_slider.setAccessibleName("Tốc độ tự giải")
@@ -232,7 +232,7 @@ class ActionBar(QWidget):
         slow_label = QLabel("Chậm", self)
         slow_label.setProperty("role", "paperCaption")
         footer.addWidget(slow_label)
-        self.speed_value_label = QLabel("0.45 giây / bước", self)
+        self.speed_value_label = QLabel("1.50 giây / bước", self)
         self.speed_value_label.setProperty("role", "paperMono")
         self.speed_value_label.setMinimumWidth(105)
         footer.addWidget(self.speed_value_label)

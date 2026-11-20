@@ -414,7 +414,11 @@ class DeductionStepView:
 
 @dataclass(frozen=True, slots=True)
 class HintView:
-    """PROPOSED immutable non-mutating Hint view (aligned with STAGE2_API_CONTRACT §B2)."""
+    """PROPOSED immutable non-mutating Hint view (aligned with STAGE2_API_CONTRACT §B2).
+
+    ``FORCED`` hints may omit ``verdict``: the Hint button only points at the
+    cell and the supporting clues without revealing the conclusion.
+    """
 
     session_id: str
     kb_version: int
@@ -436,9 +440,7 @@ class HintView:
 
         if outcome == "FORCED":
             cid = _coerce_non_empty_str(self.cell_id, "cell_id")
-            verdict = _coerce_verdict(self.verdict)
-            if verdict is None:
-                raise ValueError("FORCED HintView requires verdict CRIMINAL or INNOCENT")
+            verdict = _coerce_verdict(self.verdict) if self.verdict is not None else None
         else:
             cid = None
             verdict = None

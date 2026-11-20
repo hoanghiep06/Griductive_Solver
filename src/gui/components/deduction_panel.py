@@ -183,10 +183,16 @@ class _HintBox(QFrame):
         self.setVisible(False)
 
     def display_hint(self, hint: HintView) -> None:
-        if hint.outcome == "FORCED" and hint.cell_id and hint.verdict:
-            self._title_label.setText(f"SUY LUẬN · Ô {hint.cell_id}")
-            tone = "danger" if hint.verdict == "CRIMINAL" else "success"
-            self._verdict_pill.set_status(hint.verdict, tone=tone)
+        if hint.outcome == "FORCED" and hint.cell_id:
+            if hint.verdict:
+                # Auto Solve: đã có kết luận được chứng minh
+                self._title_label.setText(f"SUY LUẬN · Ô {hint.cell_id}")
+                tone = "danger" if hint.verdict == "CRIMINAL" else "success"
+                self._verdict_pill.set_status(hint.verdict, tone=tone)
+            else:
+                # Nút Gợi ý: chỉ làm rõ lập luận, không nêu kết luận
+                self._title_label.setText(f"GỢI Ý · XÉT Ô {hint.cell_id}")
+                self._verdict_pill.set_status("GỢI Ý", tone="paperAccent")
         else:
             self._title_label.setText("GỢI Ý · CHƯA CÓ NƯỚC ĐI BẮT BUỘC")
             self._verdict_pill.set_status("NO_FORCED", tone="warning")
