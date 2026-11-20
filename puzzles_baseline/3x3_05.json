@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "puzzle_id": "3x3_05",
+  "grid_size": 3,
+  "characters": [
+    {
+      "id": "A1",
+      "name": "Abel",
+      "profession": "Journalist",
+      "row": 0,
+      "col": 0
+    },
+    {
+      "id": "B1",
+      "name": "Bea",
+      "profession": "Doctor",
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "C1",
+      "name": "Clara",
+      "profession": "Analyst",
+      "row": 0,
+      "col": 2
+    },
+    {
+      "id": "A2",
+      "name": "Derek",
+      "profession": "Musician",
+      "row": 1,
+      "col": 0
+    },
+    {
+      "id": "B2",
+      "name": "Eliza",
+      "profession": "Doctor",
+      "row": 1,
+      "col": 1
+    },
+    {
+      "id": "C2",
+      "name": "Franz",
+      "profession": "Engineer",
+      "row": 1,
+      "col": 2
+    },
+    {
+      "id": "A3",
+      "name": "Grant",
+      "profession": "Historian",
+      "row": 2,
+      "col": 0
+    },
+    {
+      "id": "B3",
+      "name": "Hannah",
+      "profession": "Journalist",
+      "row": 2,
+      "col": 1
+    },
+    {
+      "id": "C3",
+      "name": "Ivy",
+      "profession": "Carpenter",
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "hidden_solution": {
+    "A1": true,
+    "B1": true,
+    "C1": true,
+    "A2": false,
+    "B2": true,
+    "C2": true,
+    "A3": true,
+    "B3": false,
+    "C3": true
+  },
+  "initial_revealed": [
+    "B1"
+  ],
+  "clues": [
+    {
+      "clue_id": "CLUE_A1",
+      "owner_id": "A1",
+      "type": "AT_LEAST",
+      "parameters": {
+        "k": 2,
+        "region_type": "COLUMN",
+        "index": 1
+      }
+    },
+    {
+      "clue_id": "CLUE_B1",
+      "owner_id": "B1",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B1",
+          "A3"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_C1",
+      "owner_id": "C1",
+      "type": "AT_MOST",
+      "parameters": {
+        "k": 2,
+        "region_type": "ROW",
+        "index": 1
+      }
+    },
+    {
+      "clue_id": "CLUE_A2",
+      "owner_id": "A2",
+      "type": "SAME",
+      "parameters": {
+        "target1": "B1",
+        "target2": "C3"
+      }
+    },
+    {
+      "clue_id": "CLUE_B2",
+      "owner_id": "B2",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "NEIGHBORS",
+        "center": "C3"
+      }
+    },
+    {
+      "clue_id": "CLUE_C2",
+      "owner_id": "C2",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "ROW",
+        "index": 0
+      }
+    },
+    {
+      "clue_id": "CLUE_A3",
+      "owner_id": "A3",
+      "type": "DIFFERENT",
+      "parameters": {
+        "target1": "B1",
+        "target2": "B3"
+      }
+    },
+    {
+      "clue_id": "CLUE_B3",
+      "owner_id": "B3",
+      "type": "SAME",
+      "parameters": {
+        "target1": "B1",
+        "target2": "A1"
+      }
+    },
+    {
+      "clue_id": "CLUE_C3",
+      "owner_id": "C3",
+      "type": "FACT",
+      "parameters": {
+        "target": "B1",
+        "status": "CRIMINAL"
+      }
+    }
+  ]
+}

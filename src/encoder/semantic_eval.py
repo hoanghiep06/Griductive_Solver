@@ -53,8 +53,15 @@ def normalize_cells(cells: Iterable[Any]) -> List[Cell]:
     out: Dict[Cell, None] = {}
     for cell in cells:
         try:
-            r, c = cell
-            out[(int(r), int(c))] = None
+            if isinstance(cell, str):
+                from src.core.variable_map import parse_coord
+                col, row = parse_coord(cell)
+                r, c = row - 1, col - 1
+            else:
+                r, c = cell
+            if type(r) is not int or type(c) is not int or r < 0 or c < 0:
+                raise ValueError("Cell coordinates must be non-negative integers")
+            out[(r, c)] = None
         except (TypeError, ValueError):
             raise ValueError(f"O khong hop le (can (row, col)): {cell!r}") from None
     if not out:
@@ -159,7 +166,7 @@ def check_count_compare(board: Board, region_a: Iterable[Cell],
 # Doc Clue + dispatch theo loai
 # --------------------------------------------------------------------------- #
 def clue_type_name(clue: Any) -> str:
-    t = clue.get("type") if isinstance(clue, Mapping) else getattr(clue, "type", None)
+    t = clue.get("type") if isinstance(clue, Mapping) else getattr(clue, "clue_type", getattr(clue, "type", None))
     if t is None:
         raise ValueError(f"Manh moi khong co truong 'type': {clue!r}")
     return str(getattr(t, "name", t)).upper()
@@ -167,8 +174,8 @@ def clue_type_name(clue: Any) -> str:
 
 def clue_params(clue: Any) -> Mapping[str, Any]:
     if isinstance(clue, Mapping):
-        return clue.get("params", {k: v for k, v in clue.items() if k != "type"})
-    params = getattr(clue, "params", None)
+        return clue.get("parameters", clue.get("params", {k: v for k, v in clue.items() if k != "type"}))
+    params = getattr(clue, "parameters", getattr(clue, "params", None))
     if params is None:
         raise ValueError(f"Manh moi khong co truong 'params': {clue!r}")
     return params
@@ -205,6 +212,16 @@ def _ev_exactly(board, p):
     return check_exactly(board, p["cells"], p["k"])
 
 
+@register_evaluator("AT_LEAST")
+def _ev_at_least(board, p):
+    return count_guilty(board, p["cells"]) >= p["k"]
+
+
+@register_evaluator("AT_MOST")
+def _ev_at_most(board, p):
+    return count_guilty(board, p["cells"]) <= p["k"]
+
+
 @register_evaluator("PARITY")
 def _ev_parity(board, p):
     return check_parity(board, p["cells"], p["parity"])
@@ -222,7 +239,36 @@ def evaluate_clue(clue: Any, board: Board) -> bool:
         fn = _EVALUATORS[name]
     except KeyError:
         raise ValueError(f"Chua co bo danh gia cho loai manh moi {name!r}") from None
-    return fn(board, clue_params(clue))
+    p = dict(clue_params(clue))
+    if name == "FACT" and "target" in p:
+        p = {"cell": normalize_cells([p["target"]])[0],
+             "value": p["status"] == "CRIMINAL"}
+    elif name in {"SAME", "DIFFERENT"} and "target1" in p:
+        p = {"cells": normalize_cells([p["target1"], p["target2"]])}
+    elif "region_type" in p:
+        b = to_board(board)
+        kind = p["region_type"]
+        if kind == "ROW":
+            cells = [cell for cell in b if cell[0] == p["index"]]
+        elif kind == "COLUMN":
+            cells = [cell for cell in b if cell[1] == p["index"]]
+        elif kind == "NEIGHBORS":
+            r, c = normalize_cells([p["center"]])[0]
+            cells = [cell for cell in b if cell != (r, c)
+                     and abs(cell[0]-r) <= 1 and abs(cell[1]-c) <= 1]
+        elif kind == "EXPLICIT":
+            cells = p["cells"]
+        else:
+            raise ValueError(f"Unknown region type: {kind}")
+        if not cells:
+            if name == "EXACTLY":
+                return p["k"] == 0
+            if name == "AT_LEAST":
+                return 0 >= p["k"]
+            if name == "AT_MOST":
+                return 0 <= p["k"]
+        p = {"cells": cells, "k": p["k"]}
+    return fn(board, p)
 
 
 def evaluate_all(clues: Iterable[Any], board: Board) -> bool:

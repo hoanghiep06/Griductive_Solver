@@ -62,6 +62,18 @@ def _emit(clauses: List[Clause], lits: Sequence[Lit]) -> None:
 
 
 def _cell_lits(vm, cells) -> List[int]:
+    cells = list(cells)
+    cells = list(cells)
+    if not cells:
+        raise ValueError("Extended clue regions must not be empty")
+    if hasattr(vm, "get_primary"):
+        literals = []
+        for cell in cells:
+            literal = (vm.get_primary(cell) if isinstance(cell, str)
+                       else vm.cell_var(*normalize_cells([cell])[0]))
+            if literal not in literals:
+                literals.append(literal)
+        return literals
     return [vm.cell_var(r, c) for r, c in normalize_cells(cells)]
 
 

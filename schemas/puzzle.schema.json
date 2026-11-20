@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/griductive/puzzle.schema.json",
+  "title": "Griductive Puzzle Schema",
+  "description": "Structural JSON schema for Griductive puzzle files. Cross-reference, grid cardinality, region-size, and semantic-truth checks are enforced by PuzzleValidator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "puzzle_id",
+    "grid_size",
+    "characters",
+    "hidden_solution",
+    "initial_revealed",
+    "clues"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "puzzle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grid_size": {
+      "type": "integer",
+      "enum": [
+        3,
+        4,
+        5
+      ]
+    },
+    "characters": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 25,
+      "items": {
+        "$ref": "#/$defs/character"
+      }
+    },
+    "hidden_solution": {
+      "type": "object",
+      "description": "Private engine data: true=CRIMINAL, false=INNOCENT.",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "initial_revealed": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "clues": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 25,
+      "items": {
+        "$ref": "#/$defs/clue"
+      }
+    }
+  },
+  "$defs": {
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "profession",
+        "row",
+        "col"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profession": {
+          "type": "string",
+          "minLength": 1
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "col": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "clue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clue_id",
+        "owner_id",
+        "type",
+        "parameters"
+      ],
+      "properties": {
+        "clue_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Core types are FACT, SAME, DIFFERENT, EXACTLY, AT_LEAST, AT_MOST. Uppercase extension types are permitted and validated by a registered extension evaluator."
+        },
+        "parameters": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "FACT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "$ref": "#/$defs/factParameters"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "SAME",
+                  "DIFFERENT"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "$ref": "#/$defs/binaryParameters"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "EXACTLY",
+                  "AT_LEAST",
+                  "AT_MOST"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/rowCountParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/columnCountParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/neighborsCountParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/explicitCountParameters"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "factParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "status"
+      ],
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "CRIMINAL",
+            "INNOCENT"
+          ]
+        }
+      }
+    },
+    "binaryParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target1",
+        "target2"
+      ],
+      "properties": {
+        "target1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target2": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "rowCountParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "k",
+        "region_type",
+        "index"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region_type": {
+          "const": "ROW"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "columnCountParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "k",
+        "region_type",
+        "index"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region_type": {
+          "const": "COLUMN"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "neighborsCountParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "k",
+        "region_type",
+        "center"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region_type": {
+          "const": "NEIGHBORS"
+        },
+        "center": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "explicitCountParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "k",
+        "region_type",
+        "cells"
+      ],
+      "properties": {
+        "k": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region_type": {
+          "const": "EXPLICIT"
+        },
+        "cells": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

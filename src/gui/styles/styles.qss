@@ -1,0 +1,907 @@
+"""Qt Stylesheet (QSS) V2 for GRIDUCTIVE — Detective Editorial (Modern Case Files).
+
+All colors, typography stacks (Display Serif / UI Sans / Technical Mono),
+spacing, and border metrics are injected at runtime from
+``src/gui/styles/tokens.py`` via ``ThemeManager`` (zero raw scattered hexes).
+"""
+
+/* -------------------------------------------------------------------------- */
+/* Application & Root Surfaces                                                */
+/* -------------------------------------------------------------------------- */
+
+QMainWindow#GriductiveMainWindow,
+QWidget#GriductiveCentralRoot {
+    background-color: {{PAPER_CANVAS}};
+    color: {{CREAM_TEXT_PRIMARY}};
+    font-family: "{{FONT_UI}}";
+}
+
+QWidget#GriductiveBackdropForeground {
+    background: transparent;
+}
+
+QWidget[surface="paperCanvas"] {
+    background-color: {{PAPER_CANVAS}};
+    color: {{CREAM_TEXT_PRIMARY}};
+}
+
+QWidget[surface="paperBeige"] {
+    background-color: {{PAPER_BEIGE}};
+    color: {{CREAM_TEXT_PRIMARY}};
+}
+
+QWidget[surface="transparent"] {
+    background: transparent;
+}
+
+QToolTip {
+    background-color: {{INK_PRIMARY}};
+    color: {{PAPER_SHEET}};
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+    padding: 6px 10px;
+    font-family: "{{FONT_UI}}";
+    font-size: {{SIZE_METADATA}}px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Editorial Hairline Separators                                              */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="paperRule"] {
+    background-color: {{PAPER_BORDER}};
+    border: none;
+    max-height: 1px;
+    min-height: 1px;
+}
+
+QFrame[widgetKind="paperVRule"] {
+    background-color: {{PAPER_BORDER}};
+    border: none;
+    max-width: 1px;
+    min-width: 1px;
+}
+
+QFrame[widgetKind="brassRule"] {
+    background-color: {{BRASS_ACCENT}};
+    border: none;
+    max-height: 2px;
+    min-height: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Typography Roles — Dark Nocturne Surfaces                                  */
+/* -------------------------------------------------------------------------- */
+
+QLabel[role="display"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{PAPER_SHEET}};
+    font-size: {{SIZE_DISPLAY}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="title"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{PAPER_SHEET}};
+    font-size: {{SIZE_TITLE}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="heading"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{ACCENT_PRIMARY}};
+    font-size: {{SIZE_HEADING}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="subheading"] {
+    font-family: "{{FONT_UI}}";
+    color: {{PRIMARY_TEXT}};
+    font-size: {{SIZE_SUBHEADING}}px;
+    font-weight: 600;
+    background: transparent;
+}
+
+QLabel[role="body"] {
+    font-family: "{{FONT_UI}}";
+    color: {{PRIMARY_TEXT}};
+    font-size: {{SIZE_BODY}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="secondary"] {
+    font-family: "{{FONT_UI}}";
+    color: {{SECONDARY_TEXT}};
+    font-size: {{SIZE_LABEL}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="caption"] {
+    font-family: "{{FONT_UI}}";
+    color: {{SECONDARY_TEXT}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="muted"] {
+    font-family: "{{FONT_UI}}";
+    color: {{DISABLED_TEXT}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="mono"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{ACCENT_PRIMARY}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Typography Roles — Warm Paper Editorial Surfaces                           */
+/* -------------------------------------------------------------------------- */
+
+QLabel[role="paperDisplay"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_DISPLAY}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="paperTitle"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_TITLE}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="paperHeading"] {
+    font-family: "{{FONT_DISPLAY}}";
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_HEADING}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="paperSubheading"] {
+    font-family: "{{FONT_UI}}";
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_SUBHEADING}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="paperItalicSub"] {
+    font-family: "{{FONT_DISPLAY}}";
+    font-style: italic;
+    color: {{BRASS_INK}};
+    font-size: {{SIZE_SUBHEADING}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="paperBody"] {
+    font-family: "{{FONT_UI}}";
+    color: {{CREAM_TEXT_PRIMARY}};
+    font-size: {{SIZE_BODY}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="paperSecondary"] {
+    font-family: "{{FONT_UI}}";
+    color: {{INK_SECONDARY}};
+    font-size: {{SIZE_LABEL}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="paperCaption"] {
+    font-family: "{{FONT_UI}}";
+    color: {{INK_SECONDARY}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 400;
+    background: transparent;
+}
+
+QLabel[role="paperMono"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="paperKicker"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{BRICK_ACCENT}};
+    font-size: 11px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[role="demoGroupLabel"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{BRASS_INK}};
+    font-size: 11px;
+    font-weight: 700;
+    background: transparent;
+    padding: 0px 4px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* StatusLabel Pills (Unified Cream Detective Editorial System)               */
+/* -------------------------------------------------------------------------- */
+
+QLabel[widgetKind="statusPill"],
+QLabel[widgetKind="statusPill"][tone="neutral"],
+QLabel[widgetKind="statusPill"][tone="paperNeutral"] {
+    font-family: "{{FONT_MONO}}";
+    border-radius: {{RADIUS_SM}}px;
+    padding: 4px 10px;
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    color: {{INK_PRIMARY}};
+}
+
+QLabel[widgetKind="statusPill"][tone="accent"],
+QLabel[widgetKind="statusPill"][tone="warning"],
+QLabel[widgetKind="statusPill"][tone="paperAccent"] {
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{BRASS_ACCENT}};
+    color: {{BRASS_INK}};
+}
+
+QLabel[widgetKind="statusPill"][tone="info"],
+QLabel[widgetKind="statusPill"][tone="paperInfo"] {
+    background-color: {{PAPER_SELECTED}};
+    border: 1px solid {{BRASS_ACCENT}};
+    color: {{INK_PRIMARY}};
+}
+
+QLabel[widgetKind="statusPill"][tone="success"],
+QLabel[widgetKind="statusPill"][tone="paperSuccess"] {
+    background-color: {{PAPER_INNOCENT}};
+    border: 1px solid {{PAPER_INNOCENT}};
+    color: {{PAPER_SHEET}};
+}
+
+QLabel[widgetKind="statusPill"][tone="danger"],
+QLabel[widgetKind="statusPill"][tone="paperDanger"] {
+    background-color: {{BRICK_ACCENT}};
+    border: 1px solid {{BRICK_ACCENT}};
+    color: {{PAPER_SHEET}};
+}
+
+/* -------------------------------------------------------------------------- */
+/* StyledPanel Surfaces (Unified Warm Cream & Soft Ivory Dossiers)            */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="styledPanel"],
+QFrame[widgetKind="styledPanel"][variant="elevated"],
+QFrame[widgetKind="styledPanel"][variant="card"],
+QFrame[widgetKind="styledPanel"][variant="paper"],
+QFrame[widgetKind="styledPanel"][variant="dossier"] {
+    background-color: {{PAPER_SHEET}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-radius: {{RADIUS_MD}}px;
+}
+
+QFrame[widgetKind="styledPanel"][variant="deep"] {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_MD}}px;
+}
+
+QFrame[widgetKind="styledPanel"][variant="accent"] {
+    background-color: {{PAPER_SHEET}};
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_MD}}px;
+}
+
+/* GameBoard Investigation Tabletop Surface (Warm Paper Beige Mat) */
+QFrame[widgetKind="styledPanel"][variant="translucent"] {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_MD}}px;
+}
+
+QFrame[widgetKind="styledPanel"][variant="paperLinen"] {
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="coverMat"] {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+/* Transparent emblem container (no dark rectangle on cream dossiers!) */
+QFrame[widgetKind="emblemBadge"] {
+    background-color: transparent;
+    border: none;
+}
+
+QFrame[widgetKind="demoToolbarGroup"] {
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="sectionPlaceholder"] {
+    background-color: {{PAPER_BEIGE}};
+    border: 2px dashed {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_MD}}px;
+}
+
+/* Option A — Unified Paper Beige Top Bar */
+QFrame[widgetKind="pageHeader"] {
+    background-color: {{PAPER_BEIGE}};
+    border-bottom: 2px solid {{BRASS_ACCENT}};
+}
+
+QFrame[widgetKind="mastheadPlate"] {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="editorialPullQuote"] {
+    background-color: {{PAPER_BEIGE}};
+    border: none;
+    border-left: 3px solid {{BRICK_ACCENT}};
+    border-radius: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* StyledButton Hierarchy (Nocturne & Paper Variants)                         */
+/* -------------------------------------------------------------------------- */
+
+QPushButton[widgetKind="styledButton"] {
+    font-family: "{{FONT_UI}}";
+    min-height: {{BUTTON_MIN_HEIGHT}}px;
+    padding: 0px {{SPACE_4}}px;
+    border-radius: {{RADIUS_SM}}px;
+    font-size: {{SIZE_BODY}}px;
+    font-weight: 700;
+    outline: none;
+}
+
+QPushButton[widgetKind="styledButton"][compact="true"] {
+    min-height: 32px;
+    padding: 0px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][compactLinks="true"] {
+    padding: 0px 12px;
+    font-size: 13px;
+}
+
+QPushButton[widgetKind="styledButton"]:focus {
+    border: {{FOCUS_RING_WIDTH}}px solid {{FOCUS_RING}};
+}
+
+/* Tier 1 — Primary Brass/Gold CTA (Unified Cream & Ink System) */
+QPushButton[widgetKind="styledButton"][variant="primary"] {
+    background-color: {{BRASS_ACCENT}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="primary"]:hover {
+    background-color: {{BTN_PRIMARY_HOVER_BG}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="primary"]:pressed {
+    background-color: {{ACCENT_PRIMARY_PRESSED}};
+}
+
+/* Tier 2 — Secondary Editorial Outline (Deep Ink on Soft Ivory) */
+QPushButton[widgetKind="styledButton"][variant="secondary"] {
+    background-color: {{PAPER_SHEET}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{INK_PRIMARY}};
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][variant="secondary"]:hover {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="secondary"]:pressed {
+    background-color: {{PAPER_LINEN}};
+}
+
+/* Tier 3 — Ghost / Quiet Utility (Cream Editorial & Header Variants) */
+QPushButton[widgetKind="styledButton"][variant="ghost"] {
+    background-color: {{PAPER_SHEET}};
+    color: {{INK_SECONDARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][variant="ghost"]:hover {
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{INK_PRIMARY}};
+    color: {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="ghost"]:pressed {
+    background-color: {{PAPER_LINEN}};
+}
+
+/* Ghost buttons inside Paper Beige Top Bar (PageHeader) */
+QFrame[widgetKind="pageHeader"] QPushButton[widgetKind="styledButton"][variant="ghost"] {
+    background-color: {{PAPER_SHEET}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+}
+
+QFrame[widgetKind="pageHeader"] QPushButton[widgetKind="styledButton"][variant="ghost"]:hover {
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+/* Tier 3 — Tertiary Minimal Exit/Link (Cream Surface) */
+QPushButton[widgetKind="styledButton"][variant="tertiary"] {
+    background-color: {{PAPER_BEIGE}};
+    color: {{INK_SECONDARY}};
+    border: 1px solid {{PAPER_BORDER}};
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][variant="tertiary"]:hover {
+    background-color: #F4E3E1;
+    border: 1px solid {{BRICK_ACCENT}};
+    color: {{BRICK_ACCENT}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="tertiary"]:pressed {
+    background-color: #EAD2CF;
+}
+
+/* Semantic Verdict Buttons (Muted Crimson & Innocent Teal) */
+QPushButton[widgetKind="styledButton"][variant="danger"] {
+    background-color: {{CRIMINAL_SEMANTIC}};
+    color: {{PAPER_SHEET}};
+    border: 1px solid {{BRICK_ACCENT_DARK}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="danger"]:hover {
+    background-color: {{BRICK_ACCENT}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="danger"]:pressed {
+    background-color: {{BRICK_ACCENT_DARK}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="success"] {
+    background-color: {{INNOCENT_SEMANTIC}};
+    color: {{PAPER_SHEET}};
+    border: 1px solid {{PAPER_INNOCENT}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="success"]:hover {
+    background-color: {{PAPER_INNOCENT}};
+    color: {{PAPER_SHEET}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="success"]:pressed {
+    background-color: {{INNOCENT_VERDICT_HOVER}};
+    color: {{PAPER_SHEET}};
+}
+
+/* Warm Paper Editorial Buttons */
+QPushButton[widgetKind="styledButton"][variant="inkPrimary"] {
+    background-color: {{BTN_INK_PRIMARY_BG}};
+    color: {{BTN_INK_PRIMARY_FG}};
+    border: 1px solid {{BRASS_ACCENT}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="inkPrimary"]:hover {
+    background-color: {{BTN_INK_PRIMARY_HOVER_BG}};
+    border: 1px solid {{ACCENT_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="inkPrimary"]:pressed {
+    background-color: {{BACKDROP_DEEP}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="paperSecondary"] {
+    background-color: {{PAPER_SHEET}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][variant="paperSecondary"]:hover {
+    background-color: {{PAPER_HOVER}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="paperSecondary"]:pressed {
+    background-color: {{PAPER_LINEN}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="paperGhost"] {
+    background-color: transparent;
+    color: {{INK_SECONDARY}};
+    border: 1px solid {{PAPER_BORDER}};
+    font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][variant="paperGhost"]:hover {
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{INK_PRIMARY}};
+}
+
+/* Disabled Button States (Unified Cream System) */
+QPushButton[widgetKind="styledButton"]:disabled {
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_DISABLED}};
+    border: 1px solid {{PAPER_BORDER}};
+}
+
+QPushButton[widgetKind="styledButton"][variant="inkPrimary"]:disabled,
+QPushButton[widgetKind="styledButton"][variant="paperSecondary"]:disabled,
+QPushButton[widgetKind="styledButton"][variant="paperGhost"]:disabled {
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_DISABLED}};
+    border: 1px solid {{PAPER_BORDER}};
+}
+
+/* -------------------------------------------------------------------------- */
+/* Compact Utility Buttons & Scroll Areas                                     */
+/* -------------------------------------------------------------------------- */
+
+QPushButton[widgetKind="compactButton"] {
+    font-family: "{{FONT_UI}}";
+    min-height: 26px;
+    max-height: 28px;
+    padding: 0px 10px;
+    border-radius: {{RADIUS_SM}}px;
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 600;
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+}
+
+QPushButton[widgetKind="compactButton"]:hover {
+    background-color: {{INK_PRIMARY}};
+    color: {{PAPER_SHEET}};
+    border: 1px solid {{BRASS_ACCENT}};
+}
+
+QPushButton[widgetKind="compactButton"]:focus {
+    border: {{FOCUS_RING_WIDTH}}px solid {{FOCUS_RING}};
+}
+
+QScrollArea[widgetKind="cleanScroll"] {
+    background: transparent;
+    border: none;
+}
+
+QScrollArea[widgetKind="cleanScroll"] > QWidget > QWidget {
+    background: transparent;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 9px;
+    margin: 2px 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: rgba(138, 125, 102, 165);
+    min-height: 28px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: {{BRASS_ACCENT}};
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 9px;
+    margin: 0px 2px;
+}
+
+QScrollBar::handle:horizontal {
+    background: rgba(138, 125, 102, 165);
+    min-width: 28px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: {{BRASS_ACCENT}};
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+QDialog#GriductiveHowToPlayDialog,
+QDialog#GriductiveNotificationDialog {
+    background-color: {{PAPER_CANVAS}};
+    color: {{INK_PRIMARY}};
+}
+
+/* -------------------------------------------------------------------------- */
+/* Cinematic interaction dialogs                                               */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="interactionDialog"] {
+    background-color: {{PAPER_SHEET}};
+    border: 2px solid {{INFO_CLUE_SEMANTIC}};
+    border-radius: {{RADIUS_LG}}px;
+}
+
+QFrame[widgetKind="interactionDialog"][tone="restart"] {
+    background-color: {{PAPER_SELECTED}};
+    border-color: {{BRASS_ACCENT}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="warning"] {
+    background-color: {{FEEDBACK_AMBER_SURFACE}};
+    border-color: {{WARNING_AMBER_CREAM}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="danger"] {
+    background-color: {{FEEDBACK_ROSE_SURFACE}};
+    border-color: {{CRIMINAL_SEMANTIC}};
+}
+
+QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: {{PAPER_LINEN}};
+    border: 2px solid {{BRASS_ACCENT}};
+    border-radius: 32px;
+    color: {{INK_PRIMARY}};
+    font-family: "{{FONT_DISPLAY}}";
+    font-size: 27px;
+    font-weight: 800;
+}
+
+QFrame[widgetKind="interactionDialog"][tone="warning"] QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: rgba(242, 184, 75, 55);
+    border-color: {{WARNING_AMBER_CREAM}};
+}
+
+QFrame[widgetKind="interactionDialog"][tone="danger"] QLabel[widgetKind="interactionDialogIcon"] {
+    background-color: rgba(181, 82, 82, 38);
+    border-color: {{CRIMINAL_SEMANTIC}};
+    color: {{BRICK_ACCENT_DARK}};
+}
+
+QFrame[widgetKind="interactionDialogDetail"] {
+    background-color: rgba(255, 255, 255, 105);
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::groove:horizontal {
+    height: 5px;
+    background: {{PAPER_BORDER}};
+    border-radius: 2px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::sub-page:horizontal {
+    background: {{BRASS_ACCENT}};
+    border-radius: 2px;
+}
+
+QSlider[widgetKind="autoSpeedSlider"]::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    background: {{INK_PRIMARY}};
+    border: 2px solid {{PAPER_SHEET}};
+    border-radius: 8px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Editorial Evidence Slips, Deduction Trace & HintBox (Warm Paper Material)  */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="clueCard"] {
+    background-color: {{PAPER_CANVAS}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-left: 3px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="clueCard"]:hover {
+    background-color: {{PAPER_HOVER}};
+    border: 1px solid {{BRASS_INK}};
+    border-left: 3px solid {{BRASS_INK}};
+}
+
+QFrame[widgetKind="clueCard"][selected="true"] {
+    background-color: {{PAPER_SELECTED}};
+    border: 2px solid {{INK_PRIMARY}};
+    border-left: 4px solid {{BRICK_ACCENT}};
+}
+
+QFrame[widgetKind="clueCard"][interactive="false"]:hover {
+    background-color: {{PAPER_CANVAS}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-left: 3px solid {{BRASS_ACCENT}};
+}
+
+QLabel[widgetKind="clueFallbackBadge"] {
+    font-family: "{{FONT_MONO}}";
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+}
+
+QLabel[widgetKind="clueTypePill"] {
+    font-family: "{{FONT_MONO}}";
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+    padding: 2px 7px;
+    color: {{BRASS_INK}};
+    font-size: 11px;
+    font-weight: 700;
+}
+
+QFrame[widgetKind="traceEntry"] {
+    background-color: {{PAPER_CANVAS}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-left: 4px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="traceEntry"][verdictTone="criminal"] {
+    border-left: 4px solid {{BRICK_ACCENT}};
+}
+
+QFrame[widgetKind="traceEntry"][verdictTone="innocent"] {
+    border-left: 4px solid {{PAPER_INNOCENT}};
+}
+
+QFrame[widgetKind="traceEntry"][verdictTone="unknown"] {
+    border-left: 4px solid {{PAPER_BORDER_STRONG}};
+}
+
+QFrame[widgetKind="hintBox"] {
+    background-color: {{PAPER_SELECTED}};
+    border: 1px dashed {{BRASS_ACCENT}};
+    border-left: 4px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QLabel[widgetKind="logicChain"] {
+    background-color: rgba(228, 185, 109, 38);
+    border: 1px solid {{BRASS_ACCENT}};
+    border-radius: {{RADIUS_SM}}px;
+    color: {{BRASS_INK}};
+    font-family: "{{FONT_MONO}}";
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 8px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Progress Bar & Non-Blocking Notification Banner (Cream Editorial)          */
+/* -------------------------------------------------------------------------- */
+
+QProgressBar[widgetKind="caseProgress"] {
+    font-family: "{{FONT_MONO}}";
+    background-color: {{PAPER_BEIGE}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+    text-align: center;
+    color: {{INK_PRIMARY}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+    min-height: 18px;
+    max-height: 20px;
+}
+
+QProgressBar[widgetKind="caseProgress"]::chunk {
+    background-color: {{BRASS_ACCENT}};
+    border-radius: 5px;
+}
+
+QFrame[widgetKind="notificationBanner"] {
+    background-color: {{PAPER_SHEET}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border-left: 4px solid {{INFO_CLUE_SEMANTIC}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="notificationBanner"][severity="info"] {
+    border-color: {{INFO_CLUE_SEMANTIC}};
+}
+
+QFrame[widgetKind="notificationBanner"][severity="success"] {
+    border-color: {{INNOCENT_SEMANTIC}};
+}
+
+QFrame[widgetKind="notificationBanner"][severity="warning"] {
+    background-color: {{FEEDBACK_AMBER_SURFACE}};
+    border-color: {{WARNING_AMBER_CREAM}};
+}
+
+QFrame[widgetKind="notificationBanner"][severity="error"] {
+    background-color: {{FEEDBACK_ROSE_SURFACE}};
+    border-color: {{CRIMINAL_SEMANTIC}};
+}
+
+/* -------------------------------------------------------------------------- */
+/* Case Archive Index Slips (Level Selection) & About Roster Rows             */
+/* -------------------------------------------------------------------------- */
+
+QFrame[widgetKind="caseTile"] {
+    background-color: {{PAPER_SHEET}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-left: 3px solid {{PAPER_BORDER_STRONG}};
+    border-radius: {{RADIUS_SM}}px;
+}
+
+QFrame[widgetKind="caseTile"]:hover {
+    background-color: {{PAPER_HOVER}};
+    border: 1px solid {{BRASS_ACCENT}};
+    border-left: 3px solid {{BRASS_ACCENT}};
+}
+
+QFrame[widgetKind="caseTile"][selected="true"] {
+    background-color: {{PAPER_SELECTED}};
+    border: 2px solid {{INK_PRIMARY}};
+    border-left: 5px solid {{BRICK_ACCENT}};
+}
+
+QFrame[widgetKind="teamMemberRow"] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid {{PAPER_BORDER}};
+}
+
+QFrame[widgetKind="teamMemberRow"][isLast="true"] {
+    border-bottom: none;
+}
+
+QSplitter#GameplaySplitter::handle {
+    background-color: rgba(179, 139, 82, 110);
+    width: 4px;
+    margin: 12px 2px;
+    border-radius: 2px;
+}
+
+QSplitter#GameplaySplitter::handle:hover {
+    background-color: {{ACCENT_PRIMARY}};
+}

@@ -1,0 +1,516 @@
+{
+  "schema_version": "1.0",
+  "puzzle_id": "5x5_05",
+  "grid_size": 5,
+  "characters": [
+    {
+      "id": "A1",
+      "name": "Abel",
+      "profession": "Engineer",
+      "row": 0,
+      "col": 0
+    },
+    {
+      "id": "B1",
+      "name": "Bea",
+      "profession": "Illustrator",
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "C1",
+      "name": "Clara",
+      "profession": "Librarian",
+      "row": 0,
+      "col": 2
+    },
+    {
+      "id": "D1",
+      "name": "Derek",
+      "profession": "Doctor",
+      "row": 0,
+      "col": 3
+    },
+    {
+      "id": "E1",
+      "name": "Eliza",
+      "profession": "Historian",
+      "row": 0,
+      "col": 4
+    },
+    {
+      "id": "A2",
+      "name": "Franz",
+      "profession": "Musician",
+      "row": 1,
+      "col": 0
+    },
+    {
+      "id": "B2",
+      "name": "Grant",
+      "profession": "Journalist",
+      "row": 1,
+      "col": 1
+    },
+    {
+      "id": "C2",
+      "name": "Hannah",
+      "profession": "Baker",
+      "row": 1,
+      "col": 2
+    },
+    {
+      "id": "D2",
+      "name": "Ivy",
+      "profession": "Librarian",
+      "row": 1,
+      "col": 3
+    },
+    {
+      "id": "E2",
+      "name": "Jonah",
+      "profession": "Guard",
+      "row": 1,
+      "col": 4
+    },
+    {
+      "id": "A3",
+      "name": "Kira",
+      "profession": "Engineer",
+      "row": 2,
+      "col": 0
+    },
+    {
+      "id": "B3",
+      "name": "Leo",
+      "profession": "Guard",
+      "row": 2,
+      "col": 1
+    },
+    {
+      "id": "C3",
+      "name": "Maya",
+      "profession": "Florist",
+      "row": 2,
+      "col": 2
+    },
+    {
+      "id": "D3",
+      "name": "Nora",
+      "profession": "Baker",
+      "row": 2,
+      "col": 3
+    },
+    {
+      "id": "E3",
+      "name": "Owen",
+      "profession": "Librarian",
+      "row": 2,
+      "col": 4
+    },
+    {
+      "id": "A4",
+      "name": "Petra",
+      "profession": "Baker",
+      "row": 3,
+      "col": 0
+    },
+    {
+      "id": "B4",
+      "name": "Quinn",
+      "profession": "Journalist",
+      "row": 3,
+      "col": 1
+    },
+    {
+      "id": "C4",
+      "name": "Rosa",
+      "profession": "Librarian",
+      "row": 3,
+      "col": 2
+    },
+    {
+      "id": "D4",
+      "name": "Seth",
+      "profession": "Baker",
+      "row": 3,
+      "col": 3
+    },
+    {
+      "id": "E4",
+      "name": "Tara",
+      "profession": "Guard",
+      "row": 3,
+      "col": 4
+    },
+    {
+      "id": "A5",
+      "name": "Uma",
+      "profession": "Baker",
+      "row": 4,
+      "col": 0
+    },
+    {
+      "id": "B5",
+      "name": "Vera",
+      "profession": "Florist",
+      "row": 4,
+      "col": 1
+    },
+    {
+      "id": "C5",
+      "name": "Will",
+      "profession": "Carpenter",
+      "row": 4,
+      "col": 2
+    },
+    {
+      "id": "D5",
+      "name": "Xena",
+      "profession": "Musician",
+      "row": 4,
+      "col": 3
+    },
+    {
+      "id": "E5",
+      "name": "Yuri",
+      "profession": "Engineer",
+      "row": 4,
+      "col": 4
+    }
+  ],
+  "hidden_solution": {
+    "A1": false,
+    "B1": true,
+    "C1": false,
+    "D1": false,
+    "E1": true,
+    "A2": false,
+    "B2": true,
+    "C2": false,
+    "D2": true,
+    "E2": true,
+    "A3": true,
+    "B3": false,
+    "C3": true,
+    "D3": false,
+    "E3": true,
+    "A4": false,
+    "B4": true,
+    "C4": false,
+    "D4": false,
+    "E4": false,
+    "A5": true,
+    "B5": true,
+    "C5": false,
+    "D5": true,
+    "E5": true
+  },
+  "initial_revealed": [
+    "E2",
+    "C1",
+    "E3"
+  ],
+  "clues": [
+    {
+      "clue_id": "CLUE_A1",
+      "owner_id": "A1",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 4,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "B2",
+          "C2",
+          "A5",
+          "E5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_B1",
+      "owner_id": "B1",
+      "type": "DIFFERENT",
+      "parameters": {
+        "target1": "D4",
+        "target2": "B5"
+      }
+    },
+    {
+      "clue_id": "CLUE_C1",
+      "owner_id": "C1",
+      "type": "DIFFERENT",
+      "parameters": {
+        "target1": "E1",
+        "target2": "B3"
+      }
+    },
+    {
+      "clue_id": "CLUE_D1",
+      "owner_id": "D1",
+      "type": "SAME",
+      "parameters": {
+        "target1": "B1",
+        "target2": "D2"
+      }
+    },
+    {
+      "clue_id": "CLUE_E1",
+      "owner_id": "E1",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E2",
+          "E4",
+          "D5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_A2",
+      "owner_id": "A2",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "A2",
+          "E2",
+          "A3",
+          "B3"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_B2",
+      "owner_id": "B2",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "D2",
+          "C5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_C2",
+      "owner_id": "C2",
+      "type": "SAME",
+      "parameters": {
+        "target1": "A4",
+        "target2": "D4"
+      }
+    },
+    {
+      "clue_id": "CLUE_D2",
+      "owner_id": "D2",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B1",
+          "E2",
+          "A4",
+          "C4",
+          "B5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_E2",
+      "owner_id": "E2",
+      "type": "SAME",
+      "parameters": {
+        "target1": "A3",
+        "target2": "E1"
+      }
+    },
+    {
+      "clue_id": "CLUE_A3",
+      "owner_id": "A3",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 1,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B3",
+          "E4",
+          "A5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_B3",
+      "owner_id": "B3",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "D1",
+          "A3",
+          "B3",
+          "A5",
+          "D5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_C3",
+      "owner_id": "C3",
+      "type": "EXACTLY",
+      "parameters": {
+        "region_type": "NEIGHBORS",
+        "center": "C3",
+        "k": 3
+      }
+    },
+    {
+      "clue_id": "CLUE_D3",
+      "owner_id": "D3",
+      "type": "FACT",
+      "parameters": {
+        "target": "E3",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "clue_id": "CLUE_E3",
+      "owner_id": "E3",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A2",
+          "E2",
+          "A3",
+          "B3",
+          "E3"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_A4",
+      "owner_id": "A4",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 3,
+        "region_type": "ROW",
+        "index": 2
+      }
+    },
+    {
+      "clue_id": "CLUE_B4",
+      "owner_id": "B4",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 4,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B1",
+          "B2",
+          "D2",
+          "E2",
+          "C5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_C4",
+      "owner_id": "C4",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A1",
+          "B2",
+          "A4",
+          "D4",
+          "B5"
+        ]
+      }
+    },
+    {
+      "clue_id": "CLUE_D4",
+      "owner_id": "D4",
+      "type": "FACT",
+      "parameters": {
+        "target": "E2",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "clue_id": "CLUE_E4",
+      "owner_id": "E4",
+      "type": "DIFFERENT",
+      "parameters": {
+        "target1": "E5",
+        "target2": "C2"
+      }
+    },
+    {
+      "clue_id": "CLUE_A5",
+      "owner_id": "A5",
+      "type": "SAME",
+      "parameters": {
+        "target1": "B2",
+        "target2": "E5"
+      }
+    },
+    {
+      "clue_id": "CLUE_B5",
+      "owner_id": "B5",
+      "type": "FACT",
+      "parameters": {
+        "target": "C1",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "clue_id": "CLUE_C5",
+      "owner_id": "C5",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "COLUMN",
+        "index": 3
+      }
+    },
+    {
+      "clue_id": "CLUE_D5",
+      "owner_id": "D5",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 1,
+        "region_type": "NEIGHBORS",
+        "center": "B1"
+      }
+    },
+    {
+      "clue_id": "CLUE_E5",
+      "owner_id": "E5",
+      "type": "EXACTLY",
+      "parameters": {
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B1",
+          "D1",
+          "B4",
+          "E4",
+          "C5"
+        ]
+      }
+    }
+  ]
+}

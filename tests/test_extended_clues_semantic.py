@@ -106,5 +106,9 @@ def main():
     print("OK: violated_clues.")
 
 
+def test_exhaustive_extended_semantics():
+    main()
+
+
 if __name__ == "__main__":
     main()
