@@ -2,13 +2,18 @@
 
 No solver algorithms live here. Each analysis uses a fresh variable map so a
 background request cannot mutate the engine's primary/auxiliary mapping.
+
+The reasoning itself (finding the first forced cell and its minimal evidence)
+lives in ``src.agent.forced_move.analyze_public_kb``, the same function the
+LogicAgent uses, so GUI and CLI can never disagree.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
 
-from src.agent.entailment import ClassificationResult, EntailmentChecker, Verdict
+from src.agent.entailment import ClassificationResult, EntailmentChecker
+from src.agent.forced_move import analyze_public_kb
 from src.core.game_engine import GameEngine
 from src.core.variable_map import VariableMap
 from src.encoder.cnf_encoder import CNFEncoder
@@ -122,32 +127,28 @@ class GameplaySession:
                               tuple(primary or refs), tuple(secondary), tuple(badges))
 
     def analyze(self, cell_id: str | None = None) -> Analysis:
-        """Classify a guess or find the next forced step using only the public KB."""
+        """Classify a guess or find the next forced step using only the public KB.
+
+        Delegates to the shared ``analyze_public_kb`` (same path as LogicAgent).
+        A fresh encoder/checker/solver is created per call, so this is safe to
+        run on a worker thread.
+        """
         snapshot = self.engine.get_public_snapshot()
         encoder = self._encoder()
-        groups = [("clue", c.clue_id, encoder.encode_clue(c)) for c in snapshot.revealed_clues]
-        groups += [("cell", cid, [encoder.encode_verdict(cid, value)])
-                   for cid, value in snapshot.proved_verdicts.items()]
-        clauses = [clause for _, _, group in groups for clause in group]
         solver = DPLLSolver()
         checker = EntailmentChecker(solver, variable_map=encoder.var_map)
-        targets = [cell_id] if cell_id else self.engine.get_unsolved_characters()
-        for cid in targets:
-            result = checker.classify(clauses, encoder.var_map.get_var(cid))
-            if result.verdict is Verdict.INCONSISTENT:
-                return Analysis(snapshot.version, cid, result, inconsistent=True)
-            if result.verdict in (Verdict.CRIMINAL, Verdict.INNOCENT):
-                opposite = -encoder.var_map.get_var(cid) if result.verdict is Verdict.CRIMINAL else encoder.var_map.get_var(cid)
-                # Deletion-based, subset-minimal evidence. Never infer causality
-                # merely from a clue mentioning the target character.
-                support = list(groups)
-                for group in groups:
-                    trial = [g for g in support if g is not group]
-                    if not solver.solve([c for _, _, cs in trial for c in cs] + [[opposite]]):
-                        support = trial
-                evidence = Evidence(tuple(key for kind, key, _ in support if kind == "clue"),
-                                    tuple(key for kind, key, _ in support if kind == "cell"))
-                return Analysis(snapshot.version, cid, result, evidence)
-            if cell_id:
-                return Analysis(snapshot.version, cid, result)
-        return Analysis(snapshot.version, None, None)
+        result = analyze_public_kb(
+            snapshot,
+            self.engine.get_unsolved_characters(),
+            encoder,
+            checker,
+            solver=solver,
+            target=cell_id,
+        )
+        return Analysis(
+            result.version,
+            result.cell_id,
+            result.classification,
+            Evidence(result.clue_ids, result.support_cell_ids),
+            result.inconsistent,
+        )

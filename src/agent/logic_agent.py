@@ -1,31 +1,29 @@
-"""Vòng lặp suy luận No-Guess của Logic Agent (TV5).
+"""Vòng lặp suy luận No-Guess của Logic Agent.
 
 Thuật toán No-Guess Deduction Loop:
   Lặp cho đến khi không còn nhân vật nào có thể suy luận được:
     1. Lấy snapshot KB hiện tại (phiên bản + manh mối đã mở + phán quyết đã biết).
-    2. Mã hóa KB thành CNF bằng CNFEncoder.
-    3. Gọi EntailmentChecker.first_forced() để tìm nhân vật *bị ép buộc đầu tiên*
-       theo thứ tự row-major.
-    4. Nếu tìm thấy:
+    2. ``find_next_forced`` (không đổi trạng thái): mã hóa KB, duyệt ô chưa giải
+       theo thứ tự row-major, tìm ô *bị ép buộc đầu tiên* và tập chứng cứ tối tiểu.
+       Đây cũng chính là hàm GUI dùng (xem ``forced_move.analyze_public_kb``).
+    3. Nếu tìm thấy:
        a. Chuyển ClassificationResult → EntailmentResult.
        b. Gọi GameEngine.submit_verdict() để xác nhận và nhận Clue mới.
-       c. Tính tập chứng cứ TỐI TIỂU (manh mối + ô đã chứng minh thực sự cần).
-       d. Ghi vết vào DeductionTrace.
-       e. Tiếp tục vòng lặp (KB đã được cập nhật tự động qua GameEngine).
-    5. Nếu không tìm thấy → kết thúc vòng lặp (puzzle hết khả năng suy luận
-       thuần túy, hoặc đã giải hoàn toàn).
+       c. Ghi vết vào DeductionTrace (chứng cứ, manh mối mới, thời gian).
+       d. Tiếp tục vòng lặp (KB đã được cập nhật tự động qua GameEngine).
+    4. Nếu không tìm thấy → kết thúc vòng lặp và ghi trạng thái SOLVED hoặc STUCK.
+
+API:
+  - find_next_forced(): chỉ PHÂN TÍCH, không lật thẻ, không ghi trace. Dùng cho Gợi ý.
+  - step() / hint_step(): phân tích rồi lật ĐÚNG MỘT ô và ghi trace.
+  - iter_steps(): generator, mỗi next() chạy đúng một step() (QTimer / CLI tự nghỉ giữa các bước).
+  - auto_solve(): chạy liên tục (CLI / benchmark).
 
 Thiết kế:
   - Không nhìn vào hidden solution; chỉ dùng PublicKBSnapshot.
-  - Mỗi lần submit thành công tăng KB version, nên vòng lặp luôn hội tụ
-    (số nhân vật giảm dần hoặc không có bước nào được thực hiện).
-  - hint_step() chạy đúng một bước suy luận.
-  - iter_steps() là generator: mỗi lần next() chạy đúng MỘT bước, caller
-    (QTimer / CLI) tự quyết định nghỉ bao lâu giữa hai bước.
-  - auto_solve() chạy liên tục (dành cho CLI / benchmark).
-  - Chứng cứ tối tiểu cần một solver có solve(cnf) -> bool. Nếu không lấy được
-    solver (hoặc việc mã hóa lại lỗi) thì bước vẫn được ghi, với
-    minimal_evidence=False và clue_ids là toàn bộ manh mối đang mở.
+  - Thứ tự row-major lấy từ GameEngine.get_unsolved_characters().
+  - Encoder/checker được inject là đối tượng của riêng agent (không thread-safe);
+    GUI không dùng LogicAgent mà tự tạo encoder/checker mới cho mỗi lần phân tích.
 """
 
 from __future__ import annotations
@@ -37,17 +35,11 @@ from typing import Any, Callable, Iterator
 from src.agent.deduction_trace import (
     DeductionStep,
     DeductionTrace,
-    SATMetrics,
+    TraceStatus,
     build_step,
 )
-from src.agent.entailment import (
-    ClassificationResult,
-    EntailmentChecker,
-    Verdict,
-    row_major_key,
-)
-from src.agent.evidence import EvidenceGroup, minimize_support
-from src.core.entailment_result import EntailmentResult, EntailmentStatus
+from src.agent.entailment import EntailmentChecker
+from src.agent.forced_move import StepAnalysis, analyze_public_kb
 from src.core.game_engine import GameEngine, VerdictResponse
 from src.encoder.cnf_encoder import CNFEncoder
 
@@ -81,8 +73,8 @@ class LogicAgent:
         on_step:    Callback tuỳ chọn được gọi sau mỗi bước thành công.
                     Nhận (DeductionStep, PublicKBSnapshot) làm đối số.
         solver:     Solver có solve(cnf) -> bool dùng để tính chứng cứ tối tiểu.
-                    Nếu None, thử lấy từ checker; nếu vẫn không có thì bỏ qua
-                    việc tối thiểu hoá chứng cứ.
+                    Nếu None, thử lấy từ checker; nếu vẫn không có thì chứng cứ
+                    của mỗi bước là toàn bộ KB (minimal_evidence=False).
     """
 
     def __init__(
@@ -122,15 +114,39 @@ class LogicAgent:
         """Truy cập vết suy luận đã tích lũy."""
         return self._trace
 
-    def hint_step(self) -> DeductionStep | None:
-        """Thực hiện đúng MỘT bước suy luận.
+    def reset_trace(self) -> None:
+        """Xóa vết suy luận. Gọi sau ``engine.restart()`` để vết khớp với ván mới."""
+        self._trace.clear()
+
+    def find_next_forced(self) -> StepAnalysis:
+        """Tìm ô bị ép buộc đầu tiên (row-major) mà KHÔNG đổi trạng thái game.
+
+        Không gọi ``submit_verdict``, không lật thẻ, không ghi trace. Phù hợp cho
+        Gợi ý: kết quả cho biết ô nào, manh mối nào liên quan, nhưng caller tự
+        quyết định có nêu kết luận hay không.
 
         Returns:
-            DeductionStep nếu tìm thấy nhân vật bị ép buộc, hoặc
-            None nếu không còn bước nào có thể suy luận được.
+            StepAnalysis; ``cell_id is None`` nếu không còn ô nào bị ép buộc,
+            ``inconsistent=True`` nếu KB mâu thuẫn.
+        """
+        return self._analyze(self._engine.get_public_snapshot())
+
+    def step(self) -> DeductionStep | None:
+        """Phân tích rồi lật ĐÚNG MỘT ô bị ép buộc và ghi vào trace.
+
+        Returns:
+            DeductionStep nếu thành công, None nếu không còn bước nào.
 
         Raises:
-            LogicAgentError: Nếu KB mâu thuẫn hoặc lỗi nội bộ nghiêm trọng.
+            LogicAgentError: Nếu KB mâu thuẫn hoặc GameEngine từ chối verdict.
+        """
+        return self._run_one_step()
+
+    def hint_step(self) -> DeductionStep | None:
+        """Tên cũ của :meth:`step`, giữ lại để không làm hỏng code gọi hiện có.
+
+        Lưu ý: hàm này LẬT Ô THẬT. Nếu chỉ cần gợi ý không đổi trạng thái, dùng
+        :meth:`find_next_forced`.
         """
         return self._run_one_step()
 
@@ -140,6 +156,10 @@ class LogicAgent:
         Mỗi lần next() chỉ chạy ĐÚNG một bước: chọn ô bị ép buộc đầu tiên
         (row-major), lật bài, cập nhật KB. Caller tự quyết định nghỉ bao lâu
         giữa hai bước (ví dụ QTimer trong GUI).
+
+        Khi generator chạy hết, vết được đánh dấu SOLVED (đã giải xong) hoặc
+        STUCK (còn ô chưa giải nhưng không còn bước ép buộc). Nếu dừng vì
+        ``max_steps`` mà ván chưa xong thì vết vẫn ở trạng thái IN_PROGRESS.
 
         Args:
             max_steps: Số bước tối đa (None = không giới hạn).
@@ -156,8 +176,9 @@ class LogicAgent:
                 break
             done += 1
             yield step
-        if exhausted:
-            self._trace.mark_finished()
+        if exhausted or self._engine.is_solved():
+            status = TraceStatus.SOLVED if self._engine.is_solved() else TraceStatus.STUCK
+            self._trace.mark_finished(status)
 
     def auto_solve(self, max_steps: int | None = None) -> int:
         """Chạy vòng lặp suy luận liên tục cho đến khi không còn bước nào.
@@ -171,8 +192,21 @@ class LogicAgent:
         return sum(1 for _ in self.iter_steps(max_steps))
 
     # ------------------------------------------------------------------
-    # Nội bộ: một bước suy luận
+    # Nội bộ
     # ------------------------------------------------------------------
+
+    def _analyze(self, snapshot: Any) -> StepAnalysis:
+        """Phân tích trên một snapshot cụ thể (đường suy luận dùng chung với GUI)."""
+        unsolved = self._engine.get_unsolved_characters()  # đã row-major
+        if not unsolved:
+            return StepAnalysis(snapshot.version, None, None)
+        return analyze_public_kb(
+            snapshot,
+            unsolved,
+            self._encoder,
+            self._checker,
+            solver=self._solver,
+        )
 
     def _run_one_step(self) -> DeductionStep | None:
         """Tìm và thực hiện bước suy luận tiếp theo.
@@ -180,109 +214,70 @@ class LogicAgent:
         Returns:
             DeductionStep nếu thành công, None nếu không có bước nào.
         """
-        snapshot = self._engine.get_public_snapshot()
-
-        # Danh sách nhân vật chưa giải (theo thứ tự row-major để xây unresolved)
-        unresolved_char_ids = self._engine.get_unsolved_characters()
-        if not unresolved_char_ids:
-            return None  # Đã giải hết
-
-        # Mã hóa KB hiện tại thành CNF
-        encoded = self._encoder.encode_public_kb(snapshot, reset_aux=True)
-        cnf = encoded.clauses
-
-        # Xây dựng {char_id: var_id} cho các nhân vật chưa giải
-        # (Thứ tự đã được đảm bảo row-major từ get_unsolved_characters)
-        var_map = self._engine.var_map
-        unresolved: dict[str, int] = {}
-        for char_id in unresolved_char_ids:
-            # Chuyển char_id sang định dạng cell_id mà row_major_key() chấp nhận
-            cell_id = self._char_id_to_cell_id(char_id, var_map)
-            var_id = var_map.get_var(char_id)
-            unresolved[cell_id] = var_id
-
-        if not unresolved:
-            return None
-
-        # Tìm nhân vật đầu tiên bị ép buộc theo thứ tự row-major
         t_start = time.perf_counter()
-        forced = self._checker.first_forced(cnf, unresolved)
-        t_elapsed = time.perf_counter() - t_start
 
-        if forced is None:
-            return None  # Không có nhân vật nào bị ép buộc (KB không đủ ràng buộc)
+        while True:
+            snapshot = self._engine.get_public_snapshot()
+            analysis = self._analyze(snapshot)
 
-        cell_id, classification = forced
+            if analysis.inconsistent:
+                self._trace.mark_finished(TraceStatus.INCONSISTENT)
+                raise LogicAgentError(
+                    f"KB mâu thuẫn (INCONSISTENT) tại KB version={snapshot.version}. "
+                    "Puzzle có thể bị lỗi hoặc có manh mối xung đột."
+                )
+            if not analysis.is_forced:
+                return None  # Đã giải hết, hoặc KB chưa đủ ràng buộc
 
-        # Xác định verdict và char_id thực
-        verdict_enum = classification.verdict
-        if verdict_enum is Verdict.INCONSISTENT:
-            raise LogicAgentError(
-                f"KB mâu thuẫn (INCONSISTENT) tại KB version={snapshot.version}. "
-                "Puzzle có thể bị lỗi hoặc có manh mối xung đột."
+            classification = analysis.classification
+            char_id = analysis.cell_id
+            assert classification is not None and char_id is not None
+            is_criminal = analysis.is_criminal
+            verdict_str = "CRIMINAL" if is_criminal else "INNOCENT"
+
+            # Chuyển ClassificationResult → EntailmentResult rồi gửi lên GameEngine
+            entailment_result = classification.to_engine_result(
+                character_id=char_id,
+                kb_version=analysis.version,
             )
-        if verdict_enum is Verdict.UNKNOWN:
-            # first_forced() không nên trả về UNKNOWN — bảo vệ
-            return None
-
-        char_id = self._cell_id_to_char_id(cell_id, var_map)
-        is_criminal: bool = verdict_enum is Verdict.CRIMINAL
-        claimed_status = is_criminal
-        verdict_str = "CRIMINAL" if is_criminal else "INNOCENT"
-
-        # Chuyển ClassificationResult → EntailmentResult
-        entailment_result = classification.to_engine_result(
-            character_id=char_id,
-            kb_version=snapshot.version,
-        )
-
-        # Gửi verdict lên GameEngine
-        response, clue_dict = self._engine.submit_verdict(
-            char_id=char_id,
-            claimed_status=claimed_status,
-            entailment=entailment_result,
-        )
-
-        if response is VerdictResponse.STALE_PROOF:
-            raise StaleProofError(
-                f"Bằng chứng cho {char_id!r} đã cũ (KB đã thay đổi). "
-                "Thử lại bước suy luận."
-            )
-        if response is VerdictResponse.ALREADY_SOLVED:
-            # Trường hợp hiếm gặp: nhân vật đã được giải từ trước
-            return self._run_one_step()
-        if response not in (VerdictResponse.ACCEPTED,):
-            raise LogicAgentError(
-                f"GameEngine từ chối verdict cho {char_id!r}: {response.value}"
+            response, clue_dict = self._engine.submit_verdict(
+                char_id=char_id,
+                claimed_status=is_criminal,
+                entailment=entailment_result,
             )
 
-        # Metrics từ các truy vấn SAT của bước phân loại
+            if response is VerdictResponse.ALREADY_SOLVED:
+                continue  # Hiếm gặp: ô đã được giải từ trước, phân tích lại
+            if response is VerdictResponse.STALE_PROOF:
+                raise StaleProofError(
+                    f"Bằng chứng cho {char_id!r} đã cũ (KB đã thay đổi). "
+                    "Thử lại bước suy luận."
+                )
+            if response is not VerdictResponse.ACCEPTED:
+                raise LogicAgentError(
+                    f"GameEngine từ chối verdict cho {char_id!r}: {response.value}"
+                )
+            break
+
+        # Metrics: các truy vấn phân loại + các lần giải để tìm chứng cứ
         sat_metrics_list = [dict(q.metrics) for q in classification.queries]
+        sat_metrics_list.extend(analysis.extra_metrics)
 
-        # Tính tập chứng cứ tối tiểu trên KB *trước* khi lật (snapshot cũ)
-        evidence = self._compute_evidence(snapshot, char_id, is_criminal)
-        if evidence is not None:
-            clue_ids, support_cells, extra_metrics = evidence
-            sat_metrics_list.extend(extra_metrics)
-            step = build_step(
-                step_index=self._trace.step_count + 1,
-                character_id=char_id,
-                verdict=verdict_str,
-                kb_version=snapshot.version,
-                revealed_clues=list(snapshot.revealed_clues),
-                sat_metrics_list=sat_metrics_list,
-                evidence_clue_ids=clue_ids,
-                support_cell_ids=support_cells,
-            )
-        else:
-            step = build_step(
-                step_index=self._trace.step_count + 1,
-                character_id=char_id,
-                verdict=verdict_str,
-                kb_version=snapshot.version,
-                revealed_clues=list(snapshot.revealed_clues),
-                sat_metrics_list=sat_metrics_list,
-            )
+        new_clue_id = clue_dict.get("clue_id") if isinstance(clue_dict, dict) else None
+        elapsed_ms = (time.perf_counter() - t_start) * 1000.0
+
+        step = build_step(
+            step_index=self._trace.step_count + 1,
+            character_id=char_id,
+            verdict=verdict_str,
+            kb_version=analysis.version,
+            revealed_clues=list(snapshot.revealed_clues),
+            sat_metrics_list=sat_metrics_list,
+            evidence_clue_ids=analysis.clue_ids if analysis.minimal_evidence else None,
+            support_cell_ids=analysis.support_cell_ids,
+            newly_revealed_clue_id=new_clue_id,
+            elapsed_ms=elapsed_ms,
+        )
         self._trace.record(step)
 
         # Gọi callback nếu có (ví dụ GUI cập nhật hiển thị)
@@ -291,100 +286,6 @@ class LogicAgent:
             self._on_step(step, updated_snapshot)
 
         return step
-
-    # ------------------------------------------------------------------
-    # Chứng cứ tối tiểu
-    # ------------------------------------------------------------------
-
-    def _compute_evidence(
-        self,
-        snapshot: Any,
-        char_id: str,
-        is_criminal: bool,
-    ) -> tuple[tuple[str, ...], tuple[str, ...], list[dict[str, float]]] | None:
-        """Tính tập manh mối + ô đã chứng minh tối tiểu dẫn tới kết luận.
-
-        Returns:
-            (clue_ids, support_cell_ids, extra_metrics) hoặc None nếu không tính
-            được (không có solver, mã hóa lỗi, hoặc KB ∧ ¬C không UNSAT như kỳ vọng).
-        """
-        solver = self._solver
-        if solver is None:
-            return None
-        try:
-            encoder = self._encoder
-            groups: list[EvidenceGroup] = [
-                ("clue", clue.clue_id, [list(cl) for cl in encoder.encode_clue(clue)])
-                for clue in snapshot.revealed_clues
-            ]
-            groups += [
-                ("cell", cid, [list(encoder.encode_verdict(cid, value))])
-                for cid, value in snapshot.proved_verdicts.items()
-            ]
-
-            var = self._engine.var_map.get_var(char_id)
-            opposite = -var if is_criminal else var
-
-            extra: list[dict[str, float]] = []
-
-            def record() -> None:
-                stats = solver.get_stats() if hasattr(solver, "get_stats") else {}
-                extra.append(dict(stats))
-
-            # Kiểm tra an toàn: toàn bộ KB ∧ ¬C phải UNSAT thì mới tối thiểu hoá được.
-            base = [list(c) for _, _, cs in groups for c in cs] + [[opposite]]
-            satisfiable = solver.solve(base)
-            record()
-            if satisfiable:
-                logger.warning(
-                    "Không xác nhận được ¬C mâu thuẫn khi tính chứng cứ cho %r; "
-                    "dùng toàn bộ KB.",
-                    char_id,
-                )
-                return None
-
-            support = minimize_support(groups, opposite, solver, on_solve=record)
-            clue_ids = tuple(key for kind, key, _ in support if kind == "clue")
-            cell_ids = tuple(key for kind, key, _ in support if kind == "cell")
-            return clue_ids, cell_ids, extra
-        except Exception:  # noqa: BLE001 — chứng cứ chỉ là phần trình bày, không được làm hỏng suy luận
-            logger.exception("Không tính được chứng cứ tối tiểu cho %r", char_id)
-            return None
-
-    # ------------------------------------------------------------------
-    # Tiện ích chuyển đổi định danh
-    # ------------------------------------------------------------------
-
-    def _char_id_to_cell_id(self, char_id: str, var_map: Any) -> str:
-        """Chuyển char_id về dạng cell_id (ví dụ 'A1') mà row_major_key() chấp nhận.
-
-        Nếu char_id đã có dạng 'A1', trả về ngay. Nếu không,
-        tra cứu entry trong VariableMap để lấy coord.
-        """
-        # Thử parse trực tiếp như cell_id
-        try:
-            row_major_key(char_id)
-            return char_id  # char_id đã là cell_id hợp lệ
-        except (ValueError, TypeError):
-            pass
-        # Tra cứu qua VariableMap
-        try:
-            entry = var_map.get_entry(char_id)
-            if entry.coord:
-                # Chuyển coord (định dạng 'C2') thành row-major key
-                # row_major_key() dùng định dạng '{col}{row}' (A1, B2, ...)
-                return entry.coord
-        except (KeyError, AttributeError):
-            pass
-        # Fallback: trả về char_id và hy vọng EntailmentChecker xử lý được
-        return char_id
-
-    def _cell_id_to_char_id(self, cell_id: str, var_map: Any) -> str:
-        """Chuyển cell_id trở về char_id chính tắc trong VariableMap."""
-        try:
-            return var_map.resolve_canonical(cell_id)
-        except (KeyError, ValueError):
-            return cell_id  # Fallback
 
 
 # ---------------------------------------------------------------------------

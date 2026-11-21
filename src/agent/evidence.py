@@ -1,4 +1,4 @@
-"""Tìm tập chứng cứ tối tiểu cho một bước suy luận (TV5).
+"""Tìm tập chứng cứ tối tiểu cho một bước suy luận .
 
 Một bước suy luận "KB ⊨ C" được chứng minh bằng cách chỉ ra KB ∧ ¬C là UNSAT.
 Thông thường KB chứa nhiều manh mối không liên quan đến kết luận. Module này

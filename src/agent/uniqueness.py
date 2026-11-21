@@ -1,4 +1,4 @@
-"""Kiểm tra tính duy nhất nghiệm toàn bàn cờ (TV5).
+"""Kiểm tra tính duy nhất nghiệm toàn bàn cờ .
 
 Nguyên lý (Blocking clause):
   1. Tìm nghiệm đầu tiên M₁ bằng DPLLSolver.solve_with_model().
