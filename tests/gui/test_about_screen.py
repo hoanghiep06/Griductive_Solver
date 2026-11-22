@@ -34,7 +34,7 @@ def test_main_menu_replaces_how_to_play_with_about_button_preserving_geometry(qt
 
     menu = window.main_menu_screen
     assert menu.play_button.text() == "Chơi ngay — Mở Kho Hồ Sơ"
-    assert menu.about_button.text() == "About"
+    assert menu.about_button.text() == "Giới thiệu"
     assert menu.exit_button.text() == "Thoát ứng dụng"
     assert menu.about_button.minimumWidth() == menu.play_button.minimumWidth() == 300
     assert menu.about_button.minimumHeight() == 46
@@ -60,9 +60,9 @@ def test_about_screen_displays_project_overview_tech_specs_and_five_members(qtbo
 
     all_text = "\n".join(lbl.text() for lbl in about.findChildren(QLabel))
 
-    assert "ABOUT GRIDUCTIVE" in all_text
+    assert "GIỚI THIỆU GRIDUCTIVE SOLVER" in all_text
     assert "GRIDUCTIVE SOLVER" in all_text
-    assert "Detective Case Files" in all_text
+    assert "Hồ Sơ Phá Án" in all_text
     for para in PROJECT_INTRO_PARAGRAPHS:
         assert para in all_text
 
@@ -96,7 +96,7 @@ def test_about_screen_github_and_youtube_link_behavior(qtbot):
     qtbot.addWidget(about)
 
     assert about.github_button.isEnabled()
-    assert about.github_button.text() == "GitHub Repository"
+    assert about.github_button.text() == "Mã nguồn GitHub"
     about.github_button.click()
     assert opened_urls == [GITHUB_REPO_URL]
 
@@ -115,7 +115,7 @@ def test_about_screen_github_and_youtube_link_behavior(qtbot):
     demo_url = "https://youtu.be/exampleDemo123"
     about.set_youtube_url(demo_url)
     assert about.youtube_button.isEnabled()
-    assert about.youtube_button.text() == "YouTube Demo"
+    assert about.youtube_button.text() == "Video minh họa"
     about.youtube_button.click()
     assert opened_urls == [GITHUB_REPO_URL, demo_url]
 

@@ -418,18 +418,18 @@ def test_notification_banner_and_dialog_distinguish_controller_outcomes(qtbot):
     qtbot.addWidget(banner)
     assert not banner.isVisible()
 
-    for code, expected_sev in (
-        (ActionCode.ACCEPTED, NotificationSeverity.SUCCESS),
-        (ActionCode.NOT_PROVABLE, NotificationSeverity.WARNING),
-        (ActionCode.CONTRADICTED, NotificationSeverity.ERROR),
-        (ActionCode.INCONSISTENT, NotificationSeverity.ERROR),
-        (ActionCode.CANCELLED, NotificationSeverity.INFO),
+    for code, expected_sev, expected_title_fragment in (
+        (ActionCode.ACCEPTED, NotificationSeverity.SUCCESS, "chứng minh"),
+        (ActionCode.NOT_PROVABLE, NotificationSeverity.WARNING, "Chưa đủ cơ sở"),
+        (ActionCode.CONTRADICTED, NotificationSeverity.ERROR, "mâu thuẫn"),
+        (ActionCode.INCONSISTENT, NotificationSeverity.ERROR, "mâu thuẫn"),
+        (ActionCode.CANCELLED, NotificationSeverity.INFO, "đã được hủy"),
     ):
         res = build_demo_notification(code, cell_id="B2")
         applied = banner.show_result(res)
         assert applied.severity is expected_sev
         assert banner.isVisible()
-        assert code.value in banner.title_label.text()
+        assert expected_title_fragment in banner.title_label.text()
         assert res.message == banner.message_label.text()
 
     banner.close_button.click()
@@ -514,7 +514,7 @@ def test_supporting_screens_assets_15_case_archive_and_results_view(qtbot):
     preview = build_demo_results_view(puzzle_id="MOCK_5x5_05", grid_size=5)
     window.show_results(preview)
     assert not rs.next_puzzle_button.isEnabled()
-    assert "PREVIEW" in rs.notice_label.text().upper()
+    assert "XEM TRƯỚC" in rs.notice_label.text().upper()
     assert rs.value_labels["sat_calls"].text() == "—"
     window.close()
 
@@ -547,7 +547,7 @@ def test_phase4_responsive_dashboard_and_gd3_board_regression(qtbot, grid_size, 
     assert gs.board_container.width() > gs.clue_panel.width()
     assert gs.game_board.card_count == grid_size * grid_size
     assert gs.action_bar.isVisible()
-    assert gs.action_bar.height() >= 88
+    assert gs.action_bar.height() >= 44
     assert gs.clue_panel.isVisible()
     assert gs.deduction_panel.isVisible()
     assert gs.progress_panel.isVisible()

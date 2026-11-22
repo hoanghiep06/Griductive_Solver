@@ -293,10 +293,10 @@ def test_notification_banner_motion_persistence_dedup_and_no_reveal(qtbot):
     qtbot.addWidget(banner)
     banner.show()
 
-    # Accepted (Teal, VERDICT CONFIRMED, auto-dismiss armed)
+    # Accepted (Teal, ĐÃ CHỨNG MINH, auto-dismiss armed)
     r_acc = ActionResult(ActionCode.ACCEPTED, "Phán quyết hợp lệ.", cell_id="C1")
     banner.show_result(r_acc)
-    assert "VERDICT CONFIRMED" in banner.title_label.text()
+    assert "Phán quyết đã được chứng minh" in banner.title_label.text()
     assert banner.badge_label.tone == "success"
     assert banner.is_auto_dismiss_active is True
     assert banner.show_count == 1
@@ -305,9 +305,9 @@ def test_notification_banner_motion_persistence_dedup_and_no_reveal(qtbot):
     banner.show_result(r_acc)
     assert banner.show_count == 1
 
-    # Not Provable (Amber/Gold, INSUFFICIENT EVIDENCE)
+    # Not Provable (Amber/Gold, CHƯA ĐỦ DỮ KIỆN)
     banner.show_result(ActionResult(ActionCode.NOT_PROVABLE, "Chưa đủ dữ kiện.", cell_id="C1"))
-    assert "INSUFFICIENT EVIDENCE" in banner.title_label.text()
+    assert "Chưa đủ cơ sở chứng minh" in banner.title_label.text()
     assert banner.badge_label.tone == "warning"
     assert banner.show_count == 2
 

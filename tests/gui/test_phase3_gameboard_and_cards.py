@@ -145,14 +145,16 @@ def test_character_card_hidden_vs_revealed_criminal_and_innocent(qtbot):
     assert card_a1._card_front_pixmap is not None and not card_a1._card_front_pixmap.isNull()
     assert card_a1._card_back_pixmap is card_c1._card_back_pixmap
 
-    # Hidden tooltip must never mention CRIMINAL or INNOCENT
+    # Hidden tooltip must never mention verdicts
+    assert "Tội phạm" not in card_c1.toolTip()
+    assert "Vô tội" not in card_c1.toolTip()
     assert "CRIMINAL" not in card_c1.toolTip()
     assert "INNOCENT" not in card_c1.toolTip()
     assert "Clara" in card_c1.toolTip()
 
-    # Revealed tooltips reflect public verdict accurately
-    assert "INNOCENT" in card_a1.toolTip()
-    assert "CRIMINAL" in card_b1.toolTip()
+    # Revealed tooltips reflect public verdict accurately in Vietnamese
+    assert "Vô tội" in card_a1.toolTip()
+    assert "Tội phạm" in card_b1.toolTip()
 
 
 def test_update_character_in_place_without_rebuilding_board(qtbot):
