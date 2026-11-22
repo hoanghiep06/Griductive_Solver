@@ -33,7 +33,7 @@ def create_application(argv: Optional[Sequence[str]] = None):
     app = QApplication.instance()
     if app is None:
         app = QApplication(list(argv) if argv is not None else sys.argv)
-        app.setApplicationName("GRIDUCTIVE — Detective Case Files")
+        app.setApplicationName("GRIDUCTIVE SOLVER — Hồ Sơ Phá Án")
         app.setOrganizationName("HCMUS-CSC14003")
 
     theme_manager = ThemeManager()

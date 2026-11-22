@@ -16,6 +16,7 @@ from PySide6.QtCore import QAbstractAnimation, QObject, QPropertyAnimation, QVar
 from PySide6.QtGui import QTransform
 
 from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
+from src.gui.animations.motion_tokens import SPRING_POP
 from src.gui.components.character_card import CardDisplayMode, CharacterCard
 from src.gui.view_models import PublicCharacterView
 
@@ -37,6 +38,7 @@ class FlipFrameState:
     shadow_offset_y: float
     shadow_scale_x: float
     shadow_alpha: float
+    pitch_deg: float = 0.0    # subtle X-axis pitch arc during physical hand lift
 
 
 def _smoothstep(x: float) -> float:
@@ -52,11 +54,9 @@ def _ease_in_out_cubic(x: float) -> float:
 
 
 def _ease_out_back_subtle(x: float) -> float:
-    """Subtle damped settle (no multi-bounce) for landing back onto the table."""
+    """Animate UI spring.pop damped settle for landing cleanly back onto the table."""
     x = max(0.0, min(1.0, x))
-    c1 = 0.65  # Gentle single-settle feel
-    c3 = c1 + 1.0
-    return 1.0 + c3 * ((x - 1.0) ** 3) + c1 * ((x - 1.0) ** 2)
+    return SPRING_POP.evaluate(x)
 
 
 def compute_flip_frame(
@@ -123,6 +123,7 @@ def compute_flip_frame(
     shadow_offset_y = 5.0 + 12.0 * lift_factor
     shadow_scale_x = max(0.14, abs(cos_a)) * (1.0 + 0.04 * lift_factor)
     shadow_alpha = (0.28 + 0.24 * lift_factor) * (0.45 + 0.55 * abs(cos_a))
+    pitch_deg = -7.5 * math.sin(math.pi * t) * lift_factor
 
     return FlipFrameState(
         t=t,
@@ -138,49 +139,40 @@ def compute_flip_frame(
         shadow_offset_y=shadow_offset_y,
         shadow_scale_x=shadow_scale_x,
         shadow_alpha=shadow_alpha,
+        pitch_deg=pitch_deg,
     )
 
 
-def build_perspective_y_transform(
+def build_perspective_3d_transform(
     width: float,
     height: float,
-    effective_angle_deg: float,
+    yaw_deg: float,
+    pitch_deg: float = 0.0,
     *,
     lift_y: float = 0.0,
     lift_scale: float = 1.0,
     perspective_distance: float = DEFAULT_MOTION.card_perspective_distance,
 ) -> QTransform:
-    """Build a TRUE 3D projective ``QTransform`` rotating a card around its center Y-axis.
-
-    For ``effective_angle_deg == 0.0`` and ``lift_scale == 1.0``, returns a pure
-    translation (identity when ``lift_y == 0``), ensuring crisp unmirrored rest.
-    For intermediate angles (e.g. +45° or -45°), the projective ``m13`` term
-    produces genuine trapezoidal perspective foreshortening where the closer
-    vertical edge projects taller than the receding vertical edge.
-    """
+    """Build a TRUE 3D dual-axis projective ``QTransform`` (Yaw around Y + Pitch around X)."""
     cx = width * 0.5
     cy = height * 0.5
-    rad = math.radians(effective_angle_deg)
-    cos_a = math.cos(rad)
-    sin_a = math.sin(rad)
+    rad_y = math.radians(yaw_deg)
+    rad_x = math.radians(pitch_deg)
+    cos_y = math.cos(rad_y)
+    sin_y = math.sin(rad_y)
+    cos_x = math.cos(rad_x)
+    sin_x = math.sin(rad_x)
 
-    # Guard against exact singular 90° collapse while painting thin edge
-    if abs(cos_a) < 0.015:
-        cos_a = 0.015 if cos_a >= 0.0 else -0.015
+    if abs(cos_y) < 0.015:
+        cos_y = 0.015 if cos_y >= 0.0 else -0.015
+    if abs(cos_x) < 0.015:
+        cos_x = 0.015 if cos_x >= 0.0 else -0.015
 
-    # Explicit homogeneous 3x3 projective matrix for Y-axis rotation around origin:
-    #   x_h = (cos_a * x)
-    #   y_h = y
-    #   w_h = 1 + (sin_a / D) * x
-    # Qt QTransform maps row-vector [x, y, 1] * M -> [x', y', w']:
-    #   m11 = cos_a, m12 = 0, m13 = sin_a / D
-    #   m21 = 0,     m22 = 1, m23 = 0
-    #   m31 = 0,     m32 = 0, m33 = 1
-    proj_m13 = sin_a / max(120.0, perspective_distance)
+    d = max(120.0, perspective_distance)
     rot_3d = QTransform(
-        cos_a, 0.0, proj_m13,
-        0.0,   1.0, 0.0,
-        0.0,   0.0, 1.0,
+        cos_y,        sin_y * sin_x, (sin_y * cos_x) / d,
+        0.0,          cos_x,         -sin_x / d,
+        0.0,          0.0,           1.0,
     )
 
     tx = QTransform()
@@ -190,6 +182,28 @@ def build_perspective_y_transform(
     tx = rot_3d * tx
     pre = QTransform.fromTranslate(-cx, -cy)
     return pre * tx
+
+
+def build_perspective_y_transform(
+    width: float,
+    height: float,
+    effective_angle_deg: float,
+    *,
+    pitch_deg: float = 0.0,
+    lift_y: float = 0.0,
+    lift_scale: float = 1.0,
+    perspective_distance: float = DEFAULT_MOTION.card_perspective_distance,
+) -> QTransform:
+    """Build a TRUE 3D projective ``QTransform`` rotating a card around its center Y-axis."""
+    return build_perspective_3d_transform(
+        width,
+        height,
+        effective_angle_deg,
+        pitch_deg,
+        lift_y=lift_y,
+        lift_scale=lift_scale,
+        perspective_distance=perspective_distance,
+    )
 
 
 class CardFlipAnimation(QObject):
@@ -221,7 +235,7 @@ class CardFlipAnimation(QObject):
         self._anim = QVariantAnimation(self)
         self._anim.setStartValue(0.0)
         self._anim.setEndValue(1.0)
-        self._anim.setDuration(max(1, int(config.card_flip_duration)))
+        self._anim.setDuration(max(1, config.scaled_ms(config.card_flip_duration)))
         self._anim.valueChanged.connect(self._on_value_changed)
         self._anim.finished.connect(self._on_anim_finished)
 

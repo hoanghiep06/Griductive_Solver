@@ -14,8 +14,11 @@ from enum import Enum
 import logging
 from typing import Optional
 
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Signal
+from PySide6.QtCore import QPropertyAnimation, Signal
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QStackedWidget, QWidget
+
+from src.gui.animations.motion_config import DEFAULT_MOTION
+from src.gui.animations.motion_tokens import EASE_SOFT, build_easing
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +45,16 @@ class ScreenRouter(QStackedWidget):
         self._current_screen: Optional[ScreenId] = None
         self._transition: Optional[QPropertyAnimation] = None
         self._transition_widget: Optional[QWidget] = None
+        self._reduced_motion: bool = bool(DEFAULT_MOTION.reduced_motion)
+
+    def set_reduced_motion(self, enabled: bool) -> None:
+        self._reduced_motion = bool(enabled)
+        if self._reduced_motion and self._transition is not None:
+            self._transition.stop()
+            if self._transition_widget is not None:
+                self._transition_widget.setGraphicsEffect(None)
+                self._transition_widget = None
+            self._transition = None
 
     @property
     def current_screen(self) -> Optional[ScreenId]:
@@ -89,19 +102,23 @@ class ScreenRouter(QStackedWidget):
         return True
 
     def _fade_in(self, target: QWidget) -> None:
-        """Give Load/Menu navigation a restrained cinematic cross-page entrance."""
+        """Give Load/Menu navigation a restrained Animate UI ease.soft cross-page entrance."""
         if self._transition is not None:
             self._transition.stop()
         if self._transition_widget is not None:
             self._transition_widget.setGraphicsEffect(None)
+            self._transition_widget = None
+        if self._reduced_motion:
+            self._transition = None
+            return
         effect = QGraphicsOpacityEffect(target)
         effect.setOpacity(0.0)
         target.setGraphicsEffect(effect)
         animation = QPropertyAnimation(effect, b"opacity", self)
-        animation.setDuration(260)
+        animation.setDuration(DEFAULT_MOTION.scaled_ms(260))
         animation.setStartValue(0.0)
         animation.setEndValue(1.0)
-        animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        animation.setEasingCurve(build_easing(EASE_SOFT))
         self._transition = animation
         self._transition_widget = target
 

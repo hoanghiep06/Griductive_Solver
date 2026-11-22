@@ -35,6 +35,7 @@ class EvidenceGlowController(QObject):
         self._config = config
         self._reduced_motion: bool = bool(config.reduced_motion)
         self._active_cards: dict[str, CharacterCard] = {}
+        self._entering_cards: dict[str, CharacterCard] = {}
         self._fading_cards: dict[str, CharacterCard] = {}
         self._active_ids: tuple[str, ...] = ()
 
@@ -77,16 +78,12 @@ class EvidenceGlowController(QObject):
         """Highlight only valid ``cell_ids`` present in ``cards_by_id``."""
         requested = {cid for cid in cell_ids if cid in cards_by_id}
 
-        # Stop in-flight animations cleanly before updating membership
-        if self._enter_anim.state() == QAbstractAnimation.State.Running:
-            self._enter_anim.stop()
-        if self._fade_anim.state() == QAbstractAnimation.State.Running:
-            self._fade_anim.stop()
-            self._finalize_fading_cards()
+        prev_active = dict(self._active_cards)
+        prev_entering = dict(self._entering_cards)
 
         # Cards leaving highlight set fade out smoothly (or clear immediately in reduced motion)
         leaving: dict[str, CharacterCard] = {}
-        for cid, card in list(self._active_cards.items()):
+        for cid, card in prev_active.items():
             if cid not in requested:
                 leaving[cid] = card
         for cid, card in cards_by_id.items():
@@ -95,13 +92,31 @@ class EvidenceGlowController(QObject):
 
         # Cards entering or remaining in highlight set
         next_active: dict[str, CharacterCard] = {}
+        staying: dict[str, CharacterCard] = {}
+        entering: dict[str, CharacterCard] = {}
         ordered_ids: list[str] = []
         for cid, card in cards_by_id.items():
             if cid in requested:
                 next_active[cid] = card
                 ordered_ids.append(cid)
+                if cid in prev_active and cid not in prev_entering:
+                    staying[cid] = card
+                else:
+                    entering[cid] = card
+
+        # Fast no-op when membership is completely unchanged (prevents double-flash on flip finish)
+        if not leaving and not entering and set(next_active.keys()) == set(prev_active.keys()):
+            return self._active_ids
+
+        # Stop in-flight animations cleanly before updating membership
+        if self._enter_anim.state() == QAbstractAnimation.State.Running:
+            self._enter_anim.stop()
+        if self._fade_anim.state() == QAbstractAnimation.State.Running:
+            self._fade_anim.stop()
+            self._finalize_fading_cards()
 
         self._active_cards = next_active
+        self._entering_cards = entering
         self._active_ids = tuple(ordered_ids)
 
         if self._reduced_motion:
@@ -109,6 +124,7 @@ class EvidenceGlowController(QObject):
                 self._safe_clear_card_glow(card)
             for card in self._active_cards.values():
                 self._safe_set_card_glow(card, highlighted=True, intensity=self._config.glow_hold_intensity, pulse=0.0)
+            self._entering_cards.clear()
             return self._active_ids
 
         # Smooth fade out for leaving cards (immediately clear semantic flag while fading glow)
@@ -121,10 +137,19 @@ class EvidenceGlowController(QObject):
             self._fading_cards = leaving
             self._fade_anim.start()
 
-        # Light-up + 2-wave pulse -> steady hold for active cards
-        if self._active_cards:
-            for card in self._active_cards.values():
-                self._safe_set_card_glow(card, highlighted=True, intensity=0.15, pulse=0.0)
+        # Staying cards keep their steady hold glow with ZERO drop or re-pulse
+        for card in staying.values():
+            self._safe_set_card_glow(
+                card,
+                highlighted=True,
+                intensity=self._config.glow_hold_intensity,
+                pulse=0.0,
+            )
+
+        # Light-up + restrained pulse -> steady hold ONLY for newly entering cards
+        if self._entering_cards:
+            for card in self._entering_cards.values():
+                self._safe_set_card_glow(card, highlighted=True, intensity=max(0.15, card.glow_intensity), pulse=0.0)
             self._enter_anim.start()
 
         return self._active_ids
@@ -143,6 +168,7 @@ class EvidenceGlowController(QObject):
                 to_clear[cid] = card
 
         self._active_cards.clear()
+        self._entering_cards.clear()
         self._active_ids = ()
 
         if not to_clear:
@@ -171,6 +197,7 @@ class EvidenceGlowController(QObject):
         for card in list(self._active_cards.values()) + list(self._fading_cards.values()):
             self._safe_clear_card_glow(card)
         self._active_cards.clear()
+        self._entering_cards.clear()
         self._fading_cards.clear()
         self._active_ids = ()
 
@@ -212,17 +239,18 @@ class EvidenceGlowController(QObject):
             pulse = damping * wave
             intensity = hold + (1.0 - hold) * damping * (0.4 + 0.6 * wave)
 
-        for card in list(self._active_cards.values()):
+        for card in list(self._entering_cards.values()):
             self._safe_set_card_glow(card, highlighted=True, intensity=intensity, pulse=pulse)
 
     def _on_enter_finished(self) -> None:
-        for card in list(self._active_cards.values()):
+        for card in list(self._entering_cards.values()):
             self._safe_set_card_glow(
                 card,
                 highlighted=True,
                 intensity=self._config.glow_hold_intensity,
                 pulse=0.0,
             )
+        self._entering_cards.clear()
 
     def _on_fade_tick(self, value: object) -> None:
         factor = max(0.0, min(1.0, float(value)))

@@ -17,6 +17,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 
+from src.gui.animations.stardust_overlay import AmbientStardustOverlay
 from src.gui.asset_registry import AssetId
 from src.gui.components.notification_dialog import HowToPlayDialog, NotificationDialog
 from src.gui.navigation.screen_router import ScreenId, ScreenRouter
@@ -73,7 +74,7 @@ class MainWindow(QMainWindow):
     ) -> None:
         super().__init__(parent)
         self.setObjectName("GriductiveMainWindow")
-        self.setWindowTitle("GRIDUCTIVE — Detective Case Files")
+        self.setWindowTitle("GRIDUCTIVE SOLVER — Hồ Sơ Phá Án")
 
         self._theme_manager = theme_manager or ThemeManager()
         self._pixmap_loader = pixmap_loader or default_pixmap_loader()
@@ -131,6 +132,11 @@ class MainWindow(QMainWindow):
         self._router.register_screen(ScreenId.LEVEL_SELECTION, self._level_selection_screen)
         self._router.register_screen(ScreenId.GAMEPLAY, self._gameplay_screen)
         self._router.register_screen(ScreenId.RESULTS, self._results_screen)
+
+        # Global click-through Shooting Stars & Golden Stardust atmospheric overlay
+        self._stardust_overlay = AmbientStardustOverlay(central)
+        self._stardust_overlay.setGeometry(central.rect())
+        self._stardust_overlay.raise_()
 
         # Apply global theme if QApplication has no stylesheet yet (supports isolated widget tests)
         app = QApplication.instance()
@@ -270,12 +276,13 @@ class MainWindow(QMainWindow):
 
     def _demo_on_verdict_requested(self, cell_id: str, verdict: object) -> None:
         # Demo explicitly demonstrates that GUI NEVER flips a card on click without Controller!
+        verdict_vi = "Tội phạm" if verdict == "CRIMINAL" else "Vô tội"
         self.show_notification(
             ActionResult(
                 code=ActionCode.NOT_PROVABLE,
                 message=(
-                    f"[MẪU DEMO] Đã phát signal verdict_requested({cell_id}, {verdict}). "
-                    "GUI độc lập không tự lật thẻ hay chạy SAT — chờ GameController (Hiệp) xử lý."
+                    f"[MẪU THỬ] Đã gửi yêu cầu phán quyết ô {cell_id} là {verdict_vi}. "
+                    "Chế độ xem trước không tự lật thẻ khi chưa có bộ điều phối xử lý."
                 ),
                 cell_id=cell_id,
                 severity=NotificationSeverity.INFO,
@@ -293,8 +300,7 @@ class MainWindow(QMainWindow):
             ActionResult(
                 code=ActionCode.BUSY,
                 message=(
-                    "[MẪU DEMO] Đã phát signal auto_solve_requested(). "
-                    "Chế độ tự giải tuần tự cần GameController (Hiệp) + LogicAgent (Tài)."
+                    "[MẪU THỬ] Chế độ tự giải tuần tự chỉ hoạt động khi kết nối bộ suy luận thật."
                 ),
                 severity=NotificationSeverity.INFO,
             )
@@ -358,7 +364,7 @@ class MainWindow(QMainWindow):
         self.show_notification(
             ActionResult(
                 code=ActionCode.ACCEPTED,
-                message=f"[MẪU DEMO QA] Mô phỏng Controller gọi reveal_card({d.cell_id}) -> {mock_verdict}.",
+                message=f"[MẪU THỬ] Mô phỏng lật thẻ 3D ô {d.cell_id} → {'Vô tội' if mock_verdict == 'INNOCENT' else 'Tội phạm'}.",
                 cell_id=d.cell_id,
             )
         )
@@ -527,10 +533,20 @@ class MainWindow(QMainWindow):
         return self.cancel_animations(revert_to_original=revert_to_original)
 
     def set_reduced_motion(self, enabled: bool) -> None:
-        """Toggle reduced-motion accessibility mode across theme, board & notifications."""
+        """Toggle reduced-motion accessibility mode across theme, router, board & all screens."""
         flag = bool(enabled)
         self._theme_manager.set_reduced_motion(flag)
+        self._router.set_reduced_motion(flag)
+        self._main_menu_screen.set_reduced_motion(flag)
+        self._about_screen.set_reduced_motion(flag)
+        self._level_selection_screen.set_reduced_motion(flag)
         self._gameplay_screen.set_reduced_motion(flag)
+        self._results_screen.set_reduced_motion(flag)
+        self._stardust_overlay.set_reduced_motion(flag)
+
+    @property
+    def stardust_overlay(self) -> AmbientStardustOverlay:
+        return self._stardust_overlay
 
     def set_animation_enabled(self, enabled: bool) -> None:
         """Inverse alias of ``set_reduced_motion`` matching Phase 5 §9."""
@@ -593,7 +609,15 @@ class MainWindow(QMainWindow):
         self._active_help_dialog.raise_()
         self._active_help_dialog.activateWindow()
 
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        central = self.centralWidget()
+        if central is not None and hasattr(self, "_stardust_overlay"):
+            self._stardust_overlay.setGeometry(central.rect())
+            self._stardust_overlay.raise_()
+
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802
+        self._stardust_overlay.hide()
         self.cancel_animations(revert_to_original=False)
         self._gameplay_screen.game_board.motion_coordinator.reset_visuals(
             self._gameplay_screen.game_board.cards_by_id

@@ -20,6 +20,36 @@ from src.gui.animations.motion_config import (
     SELECTION_DURATION,
     MotionConfig,
 )
+from src.gui.animations.motion_tokens import (
+    EASE_AWAY,
+    EASE_COLOR,
+    EASE_DRAWER,
+    EASE_IN_OUT,
+    EASE_OUT,
+    EASE_SOFT,
+    SCALE_CHOICE,
+    SCALE_PRESS,
+    SHIFT_SHAKE,
+    SPRING_BOUNCE,
+    SPRING_CHECK_POP,
+    SPRING_DIALOG,
+    SPRING_ENTRANCE,
+    SPRING_HIGHLIGHT,
+    SPRING_NUMBER,
+    SPRING_POP,
+    SPRING_PRESS,
+    SPRING_PROGRESS,
+    SPRING_SELECTION,
+    SPRING_TOAST,
+    STAGGER_STACK_MS,
+    STAGGER_WAVE_MS,
+    CubicBezierSpec,
+    SpringSpec,
+    build_easing,
+    clamp_tempo,
+    damped_shake_keyframes,
+    scale_duration_ms,
+)
 
 
 def __getattr__(name: str):
