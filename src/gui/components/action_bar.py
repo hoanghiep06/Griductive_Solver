@@ -13,7 +13,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QPointF, Qt, Signal
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -35,6 +36,33 @@ from src.gui.view_models import (
 )
 
 
+class _TargetSuspectIcon(QWidget):
+    """Crisp antique-bronze chess-knight/detective piece icon left of selected cell label."""
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self.setFixedSize(22, 24)
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        p.setBrush(QColor("#8C6024"))
+        p.setPen(QPen(QColor("#4F3310"), 1.2))
+        path = QPainterPath(QPointF(6.0, 21.0))
+        path.lineTo(QPointF(17.0, 21.0))
+        path.lineTo(QPointF(15.5, 17.5))
+        path.quadTo(QPointF(16.5, 11.0), QPointF(14.5, 5.5))
+        path.lineTo(QPointF(12.5, 3.0))
+        path.lineTo(QPointF(10.0, 5.5))
+        path.lineTo(QPointF(5.5, 8.5))
+        path.lineTo(QPointF(6.8, 11.2))
+        path.lineTo(QPointF(10.2, 10.5))
+        path.quadTo(QPointF(8.0, 14.5), QPointF(7.2, 17.5))
+        path.closeSubpath()
+        p.drawPath(path)
+        p.end()
+
+
 class ActionBar(QWidget):
     """Combined Verdict Strip (top) and Game Action Controls (bottom)."""
 
@@ -47,6 +75,7 @@ class ActionBar(QWidget):
     auto_solve_speed_changed = Signal(int)
     back_requested = Signal()
     demo_results_requested = Signal()
+    session_stats_updated = Signal(int, int)  # (hints, mistakes)
 
     def __init__(
         self,
@@ -61,40 +90,52 @@ class ActionBar(QWidget):
         self._selected_character: Optional[PublicCharacterView] = None
         self._auto_solving = False
         self._accepted_steps = 0
+        self._nav_docked = False
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(SPACING.space_1)
 
         # ------------------------------------------------------------------
-        # 1. VERDICT STRIP: Selected Suspect + CRIMINAL / INNOCENT (Cream Dossier)
+        # 1. UNIFIED HERO ACTION STRIP: Selected Suspect + Verdict + Assist + Pace
         # ------------------------------------------------------------------
         self._verdict_panel = StyledPanel(
             variant="dossier",
-            padding=SPACING.space_1,
+            padding=6,
             accent_bar="brass",
             parent=self,
         )
+        self._verdict_panel.setObjectName("ActionBarVerdictPanel")
+        self._verdict_panel.setStyleSheet(
+            "QFrame#ActionBarVerdictPanel {"
+            "  background: transparent;"
+            "  border: none;"
+            "}"
+        )
         verdict_row = QHBoxLayout()
-        verdict_row.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
-        verdict_row.setSpacing(SPACING.space_3)
+        verdict_row.setContentsMargins(6, 0, 6, 0)
+        verdict_row.setSpacing(6)
+
+        verdict_row.addWidget(_TargetSuspectIcon(self._verdict_panel), 0, Qt.AlignmentFlag.AlignVCenter)
 
         self._selected_label = QLabel(
-            "Chưa chọn nghi phạm — Nhấp vào một thẻ chưa mở trên bàn cờ",
+            "Chọn thẻ chưa mở trên bàn cờ",
             self._verdict_panel,
         )
         self._selected_label.setTextFormat(Qt.TextFormat.PlainText)
         self._selected_label.setProperty("role", "paperSubheading")
-        self._selected_label.setWordWrap(True)
-        self._selected_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self._selected_label.setWordWrap(False)
+        self._selected_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self._selected_label.setMinimumWidth(110)
         verdict_row.addWidget(self._selected_label, 1)
 
         self._criminal_btn = StyledButton(
             "▲ Tội phạm",
             variant="danger",
-            min_height=44,
+            min_height=36,
             parent=self._verdict_panel,
         )
+        self._criminal_btn.setProperty("compactAction", "true")
         self._criminal_btn.setToolTip(
             "Chứng minh nhân vật này là tội phạm từ các manh mối đang mở"
         )
@@ -104,35 +145,104 @@ class ActionBar(QWidget):
         self._innocent_btn = StyledButton(
             "✓ Vô tội",
             variant="success",
-            min_height=44,
+            min_height=36,
             parent=self._verdict_panel,
         )
+        self._innocent_btn.setProperty("compactAction", "true")
         self._innocent_btn.setToolTip(
             "Chứng minh nhân vật này vô tội từ các manh mối đang mở"
         )
         self._innocent_btn.clicked.connect(lambda: self._emit_verdict("INNOCENT"))
         verdict_row.addWidget(self._innocent_btn)
 
+        action_divider = QFrame(self._verdict_panel)
+        action_divider.setFrameShape(QFrame.Shape.VLine)
+        action_divider.setFixedHeight(24)
+        verdict_row.addWidget(action_divider)
+
+        self._hint_btn = StyledButton(
+            "? Gợi ý",
+            variant="secondary",
+            min_height=36,
+            parent=self._verdict_panel,
+        )
+        self._hint_btn.setProperty("compactAction", "true")
+        self._hint_btn.setToolTip("Chỉ ra ô nên xét và các manh mối liên quan, không tiết lộ kết luận")
+        self._hint_btn.clicked.connect(self.hint_requested.emit)
+        verdict_row.addWidget(self._hint_btn)
+
+        self._auto_solve_btn = StyledButton(
+            "▶ Tự giải",
+            variant="primary",
+            min_height=36,
+            parent=self._verdict_panel,
+        )
+        self._auto_solve_btn.setProperty("compactAction", "true")
+        self._auto_solve_btn.setStyleSheet(
+            "QPushButton {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1D324D, stop:1 #112034);"
+            "  color: #FFFDF7;"
+            "  border: 1.8px solid #D9B365;"
+            "  border-radius: 7px;"
+            "  font-weight: 700;"
+            "  padding: 0 14px;"
+            "}"
+            "QPushButton:hover {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #264164, stop:1 #172B45);"
+            "  border: 1.8px solid #F0D088;"
+            "}"
+            "QPushButton:disabled {"
+            "  background: #425062;"
+            "  color: #B4BECB;"
+            "  border: 1.4px solid #8A8170;"
+            "}"
+        )
+        self._auto_solve_btn.setToolTip("Tự động giải tuần tự theo suy luận logic")
+        self._auto_solve_btn.clicked.connect(self.auto_solve_requested.emit)
+        verdict_row.addWidget(self._auto_solve_btn)
+
+        pace_divider = QFrame(self._verdict_panel)
+        pace_divider.setFrameShape(QFrame.Shape.VLine)
+        pace_divider.setFixedHeight(24)
+        verdict_row.addWidget(pace_divider)
+
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal, self._verdict_panel)
+        self.speed_slider.setProperty("widgetKind", "autoSpeedSlider")
+        self.speed_slider.setRange(600, 3000)
+        self.speed_slider.setSingleStep(100)
+        self.speed_slider.setPageStep(300)
+        self.speed_slider.setValue(1500)
+        self.speed_slider.setFixedWidth(72)
+        self.speed_slider.setToolTip("Nhịp tự giải: Nhanh (0.6s) ↔ Chậm (3.0s)")
+        self.speed_slider.setAccessibleName("Tốc độ tự giải")
+        self.speed_slider.valueChanged.connect(self._on_speed_changed)
+        verdict_row.addWidget(self.speed_slider)
+
+        self.speed_value_label = QLabel("1.50s", self._verdict_panel)
+        self.speed_value_label.setProperty("role", "paperMono")
+        self.speed_value_label.setMinimumWidth(40)
+        self.speed_value_label.setToolTip("Khoảng nghỉ giữa mỗi bước tự giải")
+        verdict_row.addWidget(self.speed_value_label)
+
         self._verdict_panel.content_layout.addLayout(verdict_row)
         root.addWidget(self._verdict_panel)
 
         # ------------------------------------------------------------------
-        # 2. GAME CONTROLS STRIP: Load | Restart | Hint | Auto Solve | Back
+        # 2. NAVIGATION CONTROLS CAPSULE: Load | Restart | Back
+        #    (Docked into GameplayScreen Top Bar; stays inline when standalone)
         # ------------------------------------------------------------------
-        self._controls_panel = StyledPanel(variant="paper", padding=SPACING.space_1, parent=self)
+        self._controls_panel = StyledPanel(variant="paper", padding=3, parent=self)
         controls_row = QHBoxLayout()
-        controls_row.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
-        controls_row.setSpacing(SPACING.space_2)
-        management_label = QLabel("MÀN CHƠI", self)
-        management_label.setProperty("role", "paperCaption")
-        controls_row.addWidget(management_label)
+        controls_row.setContentsMargins(4, 0, 4, 0)
+        controls_row.setSpacing(4)
 
         self._load_btn = StyledButton(
             "▣ Đổi hồ sơ",
             variant="ghost",
-            min_height=44,
+            min_height=32,
             parent=self._controls_panel,
         )
+        self._load_btn.setProperty("compact", "true")
         self._load_btn.setToolTip("Mở màn hình chọn vụ án (Kho Hồ Sơ)")
         self._load_btn.clicked.connect(self.level_selection_requested.emit)
         controls_row.addWidget(self._load_btn)
@@ -140,63 +250,35 @@ class ActionBar(QWidget):
         self._restart_btn = StyledButton(
             "↻ Chơi lại",
             variant="ghost",
-            min_height=44,
+            min_height=32,
             parent=self._controls_panel,
         )
+        self._restart_btn.setProperty("compact", "true")
         self._restart_btn.setToolTip("Khởi động lại vụ án hiện tại")
         self._restart_btn.clicked.connect(self._request_restart)
         controls_row.addWidget(self._restart_btn)
 
-        divider = QFrame(self)
-        divider.setFrameShape(QFrame.Shape.VLine)
-        controls_row.addWidget(divider)
-        assist_label = QLabel("TRỢ GIÚP", self)
-        assist_label.setProperty("role", "paperCaption")
-        controls_row.addWidget(assist_label)
-
-        self._hint_btn = StyledButton(
-            "? Gợi ý",
-            variant="secondary",
-            min_height=44,
-            parent=self._controls_panel,
-        )
-        self._hint_btn.setToolTip("Chỉ ra ô nên xét và các manh mối liên quan, không tiết lộ kết luận")
-        self._hint_btn.clicked.connect(self.hint_requested.emit)
-        controls_row.addWidget(self._hint_btn)
-
-        self._auto_solve_btn = StyledButton(
-            "▶ Tự giải",
+        self._demo_results_btn = StyledButton(
+            "Biên bản khép án →",
             variant="primary",
-            min_height=44,
+            min_height=32,
             parent=self._controls_panel,
         )
-        self._auto_solve_btn.setToolTip("Tự động giải tuần tự theo suy luận logic")
-        self._auto_solve_btn.clicked.connect(self.auto_solve_requested.emit)
-        controls_row.addWidget(self._auto_solve_btn)
-
-        controls_row.addStretch(1)
-
-        self._demo_results_btn: Optional[StyledButton] = None
-        if self._demo_mode:
-            self._demo_results_btn = StyledButton(
-                "Xem kết quả (Demo) →",
-                variant="ghost",
-                min_height=44,
-                parent=self._controls_panel,
-            )
-            self._demo_results_btn.setToolTip(
-                "Nút dành cho lập trình viên: mở màn hình Results với dữ liệu mẫu preview"
-            )
-            self._demo_results_btn.clicked.connect(self.demo_results_requested.emit)
-            self._demo_results_btn.setVisible(False)
-            controls_row.addWidget(self._demo_results_btn)
+        self._demo_results_btn.setProperty("compact", "true")
+        self._demo_results_btn.setToolTip(
+            "Mở Biên Bản Khép Án và chuyển sang vụ án tiếp theo"
+        )
+        self._demo_results_btn.clicked.connect(self.demo_results_requested.emit)
+        self._demo_results_btn.setVisible(False)
+        controls_row.addWidget(self._demo_results_btn)
 
         self._back_btn = StyledButton(
-            "← Menu chính",
+            "← Trang chủ",
             variant="ghost",
-            min_height=44,
+            min_height=32,
             parent=self._controls_panel,
         )
+        self._back_btn.setProperty("compact", "true")
         self._back_btn.setToolTip("Quay lại màn hình chính")
         self._back_btn.clicked.connect(self.back_requested.emit)
         controls_row.addWidget(self._back_btn)
@@ -207,38 +289,23 @@ class ActionBar(QWidget):
         self.status_label = QLabel("Đã giải 0 / 0  ·  Gợi ý 0  ·  Đoán lỗi 0", self)
         self.status_label.setProperty("role", "paperCaption")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
-        footer = QHBoxLayout()
-        footer.setContentsMargins(SPACING.space_2, 0, SPACING.space_2, 0)
-        footer.setSpacing(SPACING.space_2)
-        footer.addWidget(self.status_label, 1)
-        speed_title = QLabel("NHỊP TỰ GIẢI", self)
-        speed_title.setProperty("role", "paperCaption")
-        footer.addWidget(speed_title)
-        fast_label = QLabel("Nhanh", self)
-        fast_label.setProperty("role", "paperCaption")
-        footer.addWidget(fast_label)
-        self.speed_slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.speed_slider.setProperty("widgetKind", "autoSpeedSlider")
-        self.speed_slider.setRange(600, 3000)
-        self.speed_slider.setSingleStep(100)
-        self.speed_slider.setPageStep(300)
-        self.speed_slider.setValue(1500)
-        self.speed_slider.setFixedWidth(150)
-        self.speed_slider.setToolTip("Điều chỉnh khoảng nghỉ giữa các bước tự giải")
-        self.speed_slider.setAccessibleName("Tốc độ tự giải")
-        self.speed_slider.valueChanged.connect(self._on_speed_changed)
-        footer.addWidget(self.speed_slider)
-        slow_label = QLabel("Chậm", self)
-        slow_label.setProperty("role", "paperCaption")
-        footer.addWidget(slow_label)
-        self.speed_value_label = QLabel("1.50 giây / bước", self)
-        self.speed_value_label.setProperty("role", "paperMono")
-        self.speed_value_label.setMinimumWidth(105)
-        footer.addWidget(self.speed_value_label)
-        root.addLayout(footer)
+        self.status_label.setVisible(False)
+        root.addWidget(self.status_label)
 
         self._apply_enablement()
+
+    def dock_navigation_bar(self, target_layout: QHBoxLayout, insert_index: int = -1) -> None:
+        """Move navigation controls capsule into GameplayScreen's Top Bar to free board height."""
+        if self._nav_docked:
+            return
+        self._nav_docked = True
+        self.layout().removeWidget(self._controls_panel)
+        self._controls_panel.setProperty("widgetKind", "topNavCapsule")
+        if insert_index >= 0:
+            target_layout.insertWidget(insert_index, self._controls_panel)
+        else:
+            target_layout.addWidget(self._controls_panel)
+        self._controls_panel.show()
 
     # ------------------------------------------------------------------
     # Public State Control API
@@ -252,6 +319,7 @@ class ActionBar(QWidget):
     def set_session_stats(self, revealed: int, total: int, hints: int, mistakes: int, accepted_steps: int = 0) -> None:
         self._accepted_steps = accepted_steps
         self.status_label.setText(f"Đã giải {revealed} / {total}  ·  Gợi ý {hints}  ·  Đoán lỗi {mistakes}")
+        self.session_stats_updated.emit(hints, mistakes)
 
     def set_auto_solving(self, running: bool) -> None:
         self._auto_solving = running
@@ -266,7 +334,7 @@ class ActionBar(QWidget):
             self.restart_requested.emit()
 
     def _on_speed_changed(self, value: int) -> None:
-        self.speed_value_label.setText(f"{value / 1000:.2f} giây / bước")
+        self.speed_value_label.setText(f"{value / 1000:.2f}s")
         self.auto_solve_speed_changed.emit(value)
 
     def set_actions_enabled(self, state: GameState | str) -> None:
@@ -277,17 +345,21 @@ class ActionBar(QWidget):
         """Update selected suspect summary and verdict button enablement."""
         self._selected_character = character
         if character is None:
-            self._selected_label.setText(
+            self._selected_label.setText("Chọn thẻ chưa mở trên bàn cờ")
+            self._selected_label.setToolTip(
                 "Chưa chọn nghi phạm — Nhấp vào một thẻ chưa mở trên bàn cờ"
             )
         else:
             if character.visibility is CardVisibility.HIDDEN:
                 status_text = "Chưa mở"
             elif character.verdict == "CRIMINAL":
-                status_text = "Tội phạm (Đã mở)"
+                status_text = "Tội phạm"
             else:
-                status_text = "Vô tội (Đã mở)"
+                status_text = "Vô tội"
             self._selected_label.setText(
+                f"[{character.cell_id}] {character.name} · {status_text}"
+            )
+            self._selected_label.setToolTip(
                 f"Đang chọn: [{character.cell_id}] {character.name} ({character.profession}) · {status_text}"
             )
         self._apply_enablement()
@@ -379,3 +451,6 @@ class ActionBar(QWidget):
         # Load & Back remain enabled across all states per STAGE2_API_CONTRACT §C cancellation policy
         self._load_btn.setEnabled(True)
         self._back_btn.setEnabled(True)
+        if self._demo_results_btn is not None:
+            self._demo_results_btn.setVisible(state is GameState.SOLVED)
+            self._demo_results_btn.setEnabled(state is GameState.SOLVED)

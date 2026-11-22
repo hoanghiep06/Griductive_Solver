@@ -222,6 +222,14 @@ QLabel[role="paperMono"] {
     background: transparent;
 }
 
+QLabel[role="caseNumber"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{BRASS_INK}};
+    font-size: {{SIZE_METADATA}}px;
+    font-weight: 700;
+    background: transparent;
+}
+
 QLabel[role="paperKicker"] {
     font-family: "{{FONT_MONO}}";
     color: {{BRICK_ACCENT}};
@@ -336,9 +344,10 @@ QFrame[widgetKind="emblemBadge"] {
     border: none;
 }
 
-QFrame[widgetKind="demoToolbarGroup"] {
+QFrame[widgetKind="demoToolbarGroup"],
+QFrame[widgetKind="topNavCapsule"] {
     background-color: {{PAPER_LINEN}};
-    border: 1px solid {{PAPER_BORDER_STRONG}};
+    border: 1px solid {{PAPER_BORDER}};
     border-radius: {{RADIUS_SM}}px;
 }
 
@@ -386,6 +395,13 @@ QPushButton[widgetKind="styledButton"][compact="true"] {
     padding: 0px 10px;
     font-size: 12px;
     font-weight: 600;
+}
+
+QPushButton[widgetKind="styledButton"][compactAction="true"] {
+    min-height: 36px;
+    padding: 0px 11px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 QPushButton[widgetKind="styledButton"][compactLinks="true"] {
@@ -610,14 +626,14 @@ QScrollArea[widgetKind="cleanScroll"] > QWidget > QWidget {
 
 QScrollBar:vertical {
     background: transparent;
-    width: 9px;
+    width: 6px;
     margin: 2px 0px;
 }
 
 QScrollBar::handle:vertical {
-    background: rgba(138, 125, 102, 165);
+    background: rgba(138, 125, 102, 120);
     min-height: 28px;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:vertical:hover {
@@ -631,14 +647,14 @@ QScrollBar::sub-line:vertical {
 
 QScrollBar:horizontal {
     background: transparent;
-    height: 9px;
+    height: 6px;
     margin: 0px 2px;
 }
 
 QScrollBar::handle:horizontal {
-    background: rgba(138, 125, 102, 165);
+    background: rgba(138, 125, 102, 120);
     min-width: 28px;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 QScrollBar::handle:horizontal:hover {
@@ -729,112 +745,214 @@ QSlider[widgetKind="autoSpeedSlider"]::handle:horizontal {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Editorial Evidence Slips, Deduction Trace & HintBox (Warm Paper Material)  */
+/* Editorial Evidence Ledger, Deduction Timeline & HintBox (Cream Editorial)  */
 /* -------------------------------------------------------------------------- */
 
+QLabel[widgetKind="activeEvidenceStrip"] {
+    background-color: #EDF3F7;
+    border: 1px solid #C6D8E4;
+    border-radius: 5px;
+    color: {{INK_PRIMARY}};
+    font-family: "{{FONT_MONO}}";
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0px 8px;
+}
+
 QFrame[widgetKind="clueCard"] {
-    background-color: {{PAPER_CANVAS}};
+    background-color: {{PAPER_SHEET}};
     border: 1px solid {{PAPER_BORDER}};
-    border-left: 3px solid {{BRASS_ACCENT}};
-    border-radius: {{RADIUS_SM}}px;
+    border-left: 3px solid {{PAPER_BORDER}};
+    border-radius: 9px;
 }
 
 QFrame[widgetKind="clueCard"]:hover {
-    background-color: {{PAPER_HOVER}};
-    border: 1px solid {{BRASS_INK}};
-    border-left: 3px solid {{BRASS_INK}};
+    background-color: #F7F1E5;
+    border: 1px solid {{BRASS_ACCENT}};
+    border-left: 3px solid {{BRASS_ACCENT}};
+}
+
+QFrame[widgetKind="clueCard"]:focus {
+    border: 1px solid {{INK_PRIMARY}};
+    border-left: 3px solid {{BRASS_ACCENT}};
 }
 
 QFrame[widgetKind="clueCard"][selected="true"] {
-    background-color: {{PAPER_SELECTED}};
-    border: 2px solid {{INK_PRIMARY}};
-    border-left: 4px solid {{BRICK_ACCENT}};
+    background-color: #F6EFE2;
+    border: 1px solid {{INFO_CLUE_SEMANTIC}};
+    border-left: 3px solid {{INFO_CLUE_SEMANTIC}};
+}
+
+QFrame[widgetKind="clueCard"][used="true"] {
+    background-color: #F5EFE4;
+    border-color: {{PAPER_BORDER}};
 }
 
 QFrame[widgetKind="clueCard"][interactive="false"]:hover {
-    background-color: {{PAPER_CANVAS}};
+    background-color: {{PAPER_SHEET}};
     border: 1px solid {{PAPER_BORDER}};
-    border-left: 3px solid {{BRASS_ACCENT}};
+    border-left: 3px solid {{PAPER_BORDER}};
+}
+
+QLabel[widgetKind="clueIconFrame"] {
+    background: transparent;
+    border: none;
 }
 
 QLabel[widgetKind="clueFallbackBadge"] {
     font-family: "{{FONT_MONO}}";
     background-color: {{PAPER_LINEN}};
-    border: 1px solid {{BRASS_ACCENT}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
     border-radius: {{RADIUS_SM}}px;
     color: {{INK_PRIMARY}};
-    font-size: {{SIZE_METADATA}}px;
+    font-size: 11px;
     font-weight: 700;
+}
+
+QLabel[widgetKind="clueTypeCaption"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{INK_SECONDARY}};
+    font-size: 11px;
+    font-weight: 600;
+    background: transparent;
 }
 
 QLabel[widgetKind="clueTypePill"] {
     font-family: "{{FONT_MONO}}";
     background-color: {{PAPER_LINEN}};
-    border: 1px solid {{PAPER_BORDER_STRONG}};
-    border-radius: {{RADIUS_SM}}px;
-    padding: 2px 7px;
+    border: 1px solid {{PAPER_BORDER}};
+    border-radius: 5px;
+    padding: 1px 6px;
     color: {{BRASS_INK}};
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
 }
 
-QFrame[widgetKind="traceEntry"] {
-    background-color: {{PAPER_CANVAS}};
+QLabel[widgetKind="evidenceChip"] {
+    font-family: "{{FONT_MONO}}";
+    background-color: {{PAPER_LINEN}};
     border: 1px solid {{PAPER_BORDER}};
-    border-left: 4px solid {{PAPER_BORDER_STRONG}};
-    border-radius: {{RADIUS_SM}}px;
+    border-radius: 5px;
+    padding: 2px 7px;
+    color: {{INK_PRIMARY}};
+    font-size: 11px;
+    font-weight: 600;
 }
 
-QFrame[widgetKind="traceEntry"][verdictTone="criminal"] {
-    border-left: 4px solid {{BRICK_ACCENT}};
+QLabel[widgetKind="evidenceChip"][chipRole="primary"] {
+    background-color: #E7EEF4;
+    border: 1px solid #B8CBD9;
+    color: {{INK_PRIMARY}};
 }
 
-QFrame[widgetKind="traceEntry"][verdictTone="innocent"] {
-    border-left: 4px solid {{PAPER_INNOCENT}};
+/* Investigation Notebook Deduction Timeline Rows */
+QFrame[widgetKind="traceEntry"] {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #E8DEC9;
 }
 
-QFrame[widgetKind="traceEntry"][verdictTone="unknown"] {
-    border-left: 4px solid {{PAPER_BORDER_STRONG}};
+QFrame[widgetKind="traceEntry"][isLast="true"] {
+    border-bottom: none;
 }
 
+QLabel[widgetKind="timelineStepType"] {
+    font-family: "{{FONT_MONO}}";
+    color: {{INK_SECONDARY}};
+    font-size: 10px;
+    font-weight: 700;
+    background: transparent;
+}
+
+QLabel[widgetKind="timelineVerdictBadge"] {
+    font-family: "{{FONT_MONO}}";
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    background-color: {{PAPER_LINEN}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+}
+
+QLabel[widgetKind="timelineVerdictBadge"][tone="danger"] {
+    background-color: #F4E4E4;
+    border: 1px solid {{BRICK_ACCENT}};
+    color: {{BRICK_ACCENT_DARK}};
+}
+
+QLabel[widgetKind="timelineVerdictBadge"][tone="success"] {
+    background-color: #E4F0EE;
+    border: 1px solid {{EVIDENCE_TEAL}};
+    color: {{PAPER_INNOCENT}};
+}
+
+QLabel[widgetKind="timelineVerdictBadge"][tone="neutral"] {
+    background-color: {{PAPER_LINEN}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+    color: {{INK_SECONDARY}};
+}
+
+/* Compact Collapsible Investigation Hint Strip */
 QFrame[widgetKind="hintBox"] {
-    background-color: {{PAPER_SELECTED}};
-    border: 1px dashed {{BRASS_ACCENT}};
-    border-left: 4px solid {{BRASS_ACCENT}};
-    border-radius: {{RADIUS_SM}}px;
+    background-color: #F3E9D6;
+    border: 1px solid {{PAPER_BORDER}};
+    border-left: 3px solid {{BRASS_ACCENT}};
+    border-radius: 8px;
+}
+
+QPushButton[widgetKind="hintActionBtn"] {
+    font-family: "{{FONT_UI}}";
+    min-height: 22px;
+    max-height: 24px;
+    padding: 0px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: {{PAPER_SHEET}};
+    color: {{INK_PRIMARY}};
+    border: 1px solid {{PAPER_BORDER_STRONG}};
+}
+
+QPushButton[widgetKind="hintActionBtn"]:hover {
+    background-color: {{PAPER_LINEN}};
+    border-color: {{INK_PRIMARY}};
+}
+
+QPushButton[widgetKind="hintActionBtn"]:focus {
+    border: 2px solid {{FOCUS_RING}};
 }
 
 QLabel[widgetKind="logicChain"] {
-    background-color: rgba(228, 185, 109, 38);
-    border: 1px solid {{BRASS_ACCENT}};
-    border-radius: {{RADIUS_SM}}px;
-    color: {{BRASS_INK}};
+    background-color: {{PAPER_SHEET}};
+    border: 1px solid {{PAPER_BORDER}};
+    border-radius: 5px;
+    color: {{INK_SECONDARY}};
     font-family: "{{FONT_MONO}}";
     font-size: 10px;
-    font-weight: 700;
-    padding: 5px 8px;
+    font-weight: 600;
+    padding: 3px 7px;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Progress Bar & Non-Blocking Notification Banner (Cream Editorial)          */
+/* Sleek Editorial Progress Track & Non-Blocking Notification Banner          */
 /* -------------------------------------------------------------------------- */
 
 QProgressBar[widgetKind="caseProgress"] {
-    font-family: "{{FONT_MONO}}";
-    background-color: {{PAPER_BEIGE}};
-    border: 1px solid {{PAPER_BORDER_STRONG}};
-    border-radius: {{RADIUS_SM}}px;
-    text-align: center;
-    color: {{INK_PRIMARY}};
-    font-size: {{SIZE_METADATA}}px;
-    font-weight: 700;
-    min-height: 18px;
-    max-height: 20px;
+    background-color: {{PAPER_LINEN}};
+    border: none;
+    border-radius: 4px;
+    min-height: 8px;
+    max-height: 8px;
 }
 
 QProgressBar[widgetKind="caseProgress"]::chunk {
     background-color: {{BRASS_ACCENT}};
-    border-radius: 5px;
+    border-radius: 4px;
+}
+
+QProgressBar[widgetKind="caseProgress"][complete="true"]::chunk {
+    background-color: {{EVIDENCE_TEAL}};
 }
 
 QFrame[widgetKind="notificationBanner"] {

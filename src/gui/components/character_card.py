@@ -23,6 +23,7 @@ Strict presentation rules:
 
 from __future__ import annotations
 
+import math
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
@@ -50,8 +51,21 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsObject, QStyleOptionGraphicsItem, QWidget
 
+from src.gui.case_catalog import localize_profession
 from src.gui.styles.tokens import COLORS, GEOMETRY, TYPOGRAPHY
 from src.gui.animations.motion_config import DEFAULT_MOTION
+from src.gui.animations.motion_tokens import (
+    EASE_IN_OUT,
+    EASE_OUT,
+    SCALE_CHOICE,
+    SHIFT_SHAKE,
+    SPRING_HIGHLIGHT,
+    SPRING_POP,
+    SPRING_PRESS,
+    SPRING_SELECTION,
+    build_easing,
+    damped_shake_keyframes,
+)
 from src.gui.view_models import CardVisibility, PublicCharacterView
 
 if TYPE_CHECKING:
@@ -105,6 +119,7 @@ class CharacterCard(QGraphicsObject):
         self._selected: bool = False
         self._highlighted: bool = False
         self._evidence_role: str = "primary"
+        self._role_badge_text: str = ""
         self._focus_dimmed = False
         self._focus_anim = QPropertyAnimation(self, b"opacity", self)
         self._focus_anim.setDuration(DEFAULT_MOTION.focus_dim_duration)
@@ -114,25 +129,47 @@ class CharacterCard(QGraphicsObject):
         self._interactive: bool = True
         self._reduced_motion: bool = bool(reduced_motion)
 
-        # Phase 5 smooth visual properties (never mutate grid pos() or domain data)
+        # Phase 5 + Animate UI Expressive visual properties (never mutate grid pos() or domain data)
         self._flip_progress: float = 1.0
         self._hover_level: float = 0.0
         self._selection_level: float = 0.0
+        self._press_level: float = 0.0
+        self._reveal_burst: float = 0.0
+        self._hint_pulse: float = 0.0
+        self._error_flash: float = 0.0
         self._glow_intensity: float = 0.0
         self._glow_pulse: float = 0.0
+        self._tilt_x: float = 0.0  # 3D magnetic cursor pitch (deg)
+        self._tilt_y: float = 0.0  # 3D magnetic cursor yaw (deg)
 
         # Active 3D flip transient state (never exposed as committed data before finish)
         self._flip_frame: Optional["FlipFrameState"] = None
         self._flip_target_data: Optional[PublicCharacterView] = None
 
-        # Lightweight property animations for hover & selection feedback
+        # Lightweight property animations driven by Animate UI spring/bezier tokens
         self._hover_anim = QPropertyAnimation(self, b"hover_level", self)
-        self._hover_anim.setDuration(150)
-        self._hover_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._hover_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.hover_duration))
+        self._hover_anim.setEasingCurve(build_easing(SPRING_HIGHLIGHT, tempo=DEFAULT_MOTION.tempo))
 
         self._select_anim = QPropertyAnimation(self, b"selection_level", self)
-        self._select_anim.setDuration(210)
-        self._select_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._select_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.selection_duration))
+        self._select_anim.setEasingCurve(build_easing(SPRING_SELECTION, tempo=DEFAULT_MOTION.tempo))
+
+        self._press_anim = QPropertyAnimation(self, b"press_level", self)
+        self._press_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.press_duration))
+        self._press_anim.setEasingCurve(build_easing(SPRING_PRESS, tempo=DEFAULT_MOTION.tempo))
+
+        self._burst_anim = QPropertyAnimation(self, b"reveal_burst", self)
+        self._burst_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.reveal_burst_duration))
+        self._burst_anim.setEasingCurve(build_easing(EASE_OUT))
+
+        self._hint_pulse_anim = QPropertyAnimation(self, b"hint_pulse", self)
+        self._hint_pulse_anim.setDuration(DEFAULT_MOTION.scaled_ms(SPRING_POP.duration_ms))
+        self._hint_pulse_anim.setEasingCurve(build_easing(EASE_OUT))
+
+        self._error_flash_anim = QPropertyAnimation(self, b"error_flash", self)
+        self._error_flash_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.contradiction_shake_duration))
+        self._error_flash_anim.setEasingCurve(build_easing(EASE_OUT))
 
         self.setAcceptHoverEvents(True)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
@@ -190,6 +227,22 @@ class CharacterCard(QGraphicsObject):
     @property
     def glow_pulse(self) -> float:
         return self._glow_pulse
+
+    @property
+    def tilt_x(self) -> float:
+        return self._tilt_x
+
+    @property
+    def tilt_y(self) -> float:
+        return self._tilt_y
+
+    @property
+    def role_badge_text(self) -> str:
+        return self._role_badge_text
+
+    @property
+    def evidence_role(self) -> str:
+        return self._evidence_role
 
     @property
     def reduced_motion(self) -> bool:
@@ -253,6 +306,50 @@ class CharacterCard(QGraphicsObject):
 
     selection_level = Property(float, _get_selection_level, _set_selection_level)
 
+    def _get_press_level(self) -> float:
+        return self._press_level
+
+    def _set_press_level(self, value: float) -> None:
+        clamped = max(0.0, min(1.2, float(value)))
+        if clamped != self._press_level:
+            self._press_level = clamped
+            self.update()
+
+    press_level = Property(float, _get_press_level, _set_press_level)
+
+    def _get_reveal_burst(self) -> float:
+        return self._reveal_burst
+
+    def _set_reveal_burst(self, value: float) -> None:
+        clamped = max(0.0, min(1.0, float(value)))
+        if clamped != self._reveal_burst:
+            self._reveal_burst = clamped
+            self.update()
+
+    reveal_burst = Property(float, _get_reveal_burst, _set_reveal_burst)
+
+    def _get_hint_pulse(self) -> float:
+        return self._hint_pulse
+
+    def _set_hint_pulse(self, value: float) -> None:
+        clamped = max(0.0, min(1.0, float(value)))
+        if clamped != self._hint_pulse:
+            self._hint_pulse = clamped
+            self.update()
+
+    hint_pulse = Property(float, _get_hint_pulse, _set_hint_pulse)
+
+    def _get_error_flash(self) -> float:
+        return self._error_flash
+
+    def _set_error_flash(self, value: float) -> None:
+        clamped = max(0.0, min(1.0, float(value)))
+        if clamped != self._error_flash:
+            self._error_flash = clamped
+            self.update()
+
+    error_flash = Property(float, _get_error_flash, _set_error_flash)
+
     def set_reduced_motion(self, enabled: bool) -> None:
         self._reduced_motion = bool(enabled)
         if self._reduced_motion:
@@ -260,6 +357,10 @@ class CharacterCard(QGraphicsObject):
             self._focus_anim.stop()
             self._shake_anim.stop()
             self._shake_offset = 0.0
+            self._press_level = 0.0
+            self._reveal_burst = 0.0
+            self._hint_pulse = 0.0
+            self._error_flash = 0.0
             self.setOpacity(DEFAULT_MOTION.focus_dim_opacity if self._focus_dimmed else 1.0)
             self._hover_level = 1.0 if self._hovered else 0.0
             self._selection_level = 1.0 if self._selected else 0.0
@@ -304,12 +405,27 @@ class CharacterCard(QGraphicsObject):
                 self._glow_pulse = 0.0
             self.update()
 
-    def set_focus_context(self, dimmed: bool, role: str = "reference") -> None:
-        self._focus_dimmed = dimmed
+    def set_focus_context(self, dimmed: bool, role: str = "reference", badge_text: str = "") -> None:
+        dim_flag = bool(dimmed)
+        target = DEFAULT_MOTION.focus_dim_opacity if dim_flag else 1.0
+        clean_badge = badge_text.strip() if (not dim_flag and badge_text) else ""
+        role_changed = self._evidence_role != role or self._role_badge_text != clean_badge
+        dim_changed = self._focus_dimmed != dim_flag
+
+        self._focus_dimmed = dim_flag
         self._evidence_role = role
+        self._role_badge_text = clean_badge
+
+        if not dim_changed:
+            # Keep any in-flight focus transition or steady opacity completely untouched
+            if self._reduced_motion and abs(self.opacity() - target) > 0.01:
+                self.setOpacity(target)
+            if role_changed:
+                self.update()
+            return
+
         self._focus_anim.stop()
-        target = DEFAULT_MOTION.focus_dim_opacity if dimmed else 1.0
-        if self._reduced_motion:
+        if self._reduced_motion or abs(self.opacity() - target) < 0.01:
             self.setOpacity(target)
         else:
             self._focus_anim.setStartValue(self.opacity())
@@ -327,16 +443,40 @@ class CharacterCard(QGraphicsObject):
         if self._reduced_motion:
             return
         self._shake_anim.stop()
-        self._shake_anim.setDuration(DEFAULT_MOTION.contradiction_shake_duration)
-        for t, value in ((0, 0), (.18, -3), (.36, 3), (.54, -2), (.72, 2), (1, 0)):
+        self._shake_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.contradiction_shake_duration))
+        self._shake_anim.setEasingCurve(build_easing(EASE_IN_OUT))
+        for t, value in damped_shake_keyframes(SHIFT_SHAKE):
             self._shake_anim.setKeyValueAt(t, value)
         self._shake_anim.start()
+
+        self._error_flash_anim.stop()
+        self._error_flash_anim.setStartValue(1.0)
+        self._error_flash_anim.setEndValue(0.0)
+        self._error_flash_anim.start()
+
+    def trigger_hint_arrival_pulse(self) -> None:
+        """Play a bounded luminous arrival ring when hint particles reach this card."""
+        if self._reduced_motion:
+            return
+        self._hint_pulse_anim.stop()
+        self._hint_pulse_anim.setStartValue(1.0)
+        self._hint_pulse_anim.setEndValue(0.0)
+        self._hint_pulse_anim.start()
 
     def reset_interaction_visuals(self) -> None:
         self._focus_anim.stop()
         self._shake_anim.stop()
+        self._error_flash_anim.stop()
+        self._hint_pulse_anim.stop()
+        self._press_anim.stop()
+        self._burst_anim.stop()
         self._shake_offset = 0.0
+        self._error_flash = 0.0
+        self._hint_pulse = 0.0
+        self._press_level = 0.0
+        self._reveal_burst = 0.0
         self._focus_dimmed = False
+        self._role_badge_text = ""
         self.setOpacity(1.0)
         self.update()
 
@@ -392,6 +532,11 @@ class CharacterCard(QGraphicsObject):
         self._data = committed_data
         self._sync_z_order()
         self._refresh_tooltip()
+        if not self._reduced_motion and committed_data.is_revealed:
+            self._burst_anim.stop()
+            self._burst_anim.setStartValue(1.0)
+            self._burst_anim.setEndValue(0.0)
+            self._burst_anim.start()
         self.update()
 
     def cancel_flip_animation(
@@ -417,8 +562,14 @@ class CharacterCard(QGraphicsObject):
         self._flip_progress = 1.0
         self._hover_level = 1.0 if self._hovered else 0.0
         self._selection_level = 1.0 if self._selected else 0.0
+        self._press_level = 0.0
+        self._reveal_burst = 0.0
+        self._hint_pulse = 0.0
+        self._error_flash = 0.0
         self._glow_intensity = 0.86 if self._highlighted else 0.0
         self._glow_pulse = 0.0
+        self._tilt_x = 0.0
+        self._tilt_y = 0.0
         self._sync_z_order()
         self.update()
 
@@ -439,10 +590,39 @@ class CharacterCard(QGraphicsObject):
             self.setZValue(0.0)
 
     def _stop_transition_anims(self) -> None:
-        if self._hover_anim.state() != QAbstractAnimation.State.Stopped:
-            self._hover_anim.stop()
-        if self._select_anim.state() != QAbstractAnimation.State.Stopped:
-            self._select_anim.stop()
+        for anim in (
+            self._hover_anim,
+            self._select_anim,
+            self._press_anim,
+            self._burst_anim,
+            self._hint_pulse_anim,
+            self._error_flash_anim,
+        ):
+            if anim.state() != QAbstractAnimation.State.Stopped:
+                anim.stop()
+
+    def _animate_press(self, target: float) -> None:
+        if self._press_anim.state() != QAbstractAnimation.State.Stopped:
+            self._press_anim.stop()
+        if self._reduced_motion:
+            self._press_level = 0.0
+            self.update()
+            return
+        self._press_anim.setKeyValues([])
+        self._press_anim.setDuration(DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.press_duration))
+        self._press_anim.setStartValue(self._press_level)
+        self._press_anim.setEndValue(target)
+        self._press_anim.start()
+
+    def _trigger_press_pulse(self) -> None:
+        """Play a snappy spring.press down-and-up impulse for keyboard/click feedback."""
+        if self._reduced_motion:
+            return
+        if self._press_anim.state() != QAbstractAnimation.State.Stopped:
+            self._press_anim.stop()
+        self._press_anim.setDuration(DEFAULT_MOTION.scaled_ms(190))
+        self._press_anim.setKeyValues([(0.0, self._press_level), (0.38, 1.0), (1.0, 0.0)])
+        self._press_anim.start()
 
     def _animate_hover(self, target: float) -> None:
         if self._hover_anim.state() != QAbstractAnimation.State.Stopped:
@@ -468,18 +648,19 @@ class CharacterCard(QGraphicsObject):
 
     def _refresh_tooltip(self) -> None:
         d = self._data
+        prof_vi = localize_profession(d.profession)
         if d.visibility is CardVisibility.HIDDEN:
             tip = (
                 f"{d.cell_id} — {d.name}\n"
-                f"Nghề nghiệp: {d.profession}\n"
-                f"Trạng thái: Chưa chứng minh (HIDDEN)"
+                f"Nghề nghiệp: {prof_vi}\n"
+                f"Trạng thái: Chưa chứng minh"
             )
         else:
-            verdict_vi = "Tội phạm (CRIMINAL)" if d.verdict == "CRIMINAL" else "Vô tội (INNOCENT)"
+            verdict_vi = "Tội phạm" if d.verdict == "CRIMINAL" else "Vô tội"
             clue_line = "\nManh mối: Đã công khai" if d.has_public_clue else ""
             tip = (
                 f"{d.cell_id} — {d.name}\n"
-                f"Nghề nghiệp: {d.profession}\n"
+                f"Nghề nghiệp: {prof_vi}\n"
                 f"Kết luận: {verdict_vi}{clue_line}"
             )
         self.setToolTip(tip)
@@ -499,9 +680,16 @@ class CharacterCard(QGraphicsObject):
         if self._interactive:
             self._hovered = True
             self._sync_z_order()
+            self._update_cursor_tilt(event.pos())
             self._animate_hover(1.0)
             self.update()
         super().hoverEnterEvent(event)
+
+    def hoverMoveEvent(self, event) -> None:  # noqa: N802
+        if self._interactive and not self._reduced_motion and self._flip_frame is None:
+            self._update_cursor_tilt(event.pos())
+            self.update()
+        super().hoverMoveEvent(event)
 
     def hoverLeaveEvent(self, event) -> None:  # noqa: N802
         if self._hovered:
@@ -511,13 +699,33 @@ class CharacterCard(QGraphicsObject):
             self.update()
         super().hoverLeaveEvent(event)
 
+    def _update_cursor_tilt(self, pos: QPointF) -> None:
+        if self._reduced_motion:
+            self._tilt_x = 0.0
+            self._tilt_y = 0.0
+            return
+        cx = max(1.0, self._width * 0.5)
+        cy = max(1.0, self._height * 0.5)
+        nx = max(-1.0, min(1.0, (pos.x() - cx) / cx))
+        ny = max(-1.0, min(1.0, (pos.y() - cy) / cy))
+        max_yaw = 6.5 if self._mode is not CardDisplayMode.COMPACT else 5.2
+        max_pitch = 5.5 if self._mode is not CardDisplayMode.COMPACT else 4.5
+        self._tilt_y = nx * max_yaw
+        self._tilt_x = -ny * max_pitch
+
     def mousePressEvent(self, event) -> None:  # noqa: N802
         if self._interactive and event.button() == Qt.MouseButton.LeftButton:
             self.setFocus()
+            self._animate_press(1.0)
             self.card_selected.emit(self._data.cell_id)
             event.accept()
             return
         super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:  # noqa: N802
+        if self._press_level > 0.01 or self._press_anim.state() == QAbstractAnimation.State.Running:
+            self._animate_press(0.0)
+        super().mouseReleaseEvent(event)
 
     def keyPressEvent(self, event) -> None:  # noqa: N802
         if self._interactive and event.key() in (
@@ -525,6 +733,7 @@ class CharacterCard(QGraphicsObject):
             Qt.Key.Key_Enter,
             Qt.Key.Key_Space,
         ):
+            self._trigger_press_pulse()
             self.card_selected.emit(self._data.cell_id)
             event.accept()
             return
@@ -553,29 +762,82 @@ class CharacterCard(QGraphicsObject):
             painter.restore()
             return
 
-        # Subtle physical hover lift (visual paint offset ONLY — never mutates pos())
+        # Subtle physical hover lift & 3D magnetic cursor tilt (never mutates pos())
         hover_lift_px = (
             2.0 if self._mode is CardDisplayMode.COMPACT
             else (3.5 if self._mode is CardDisplayMode.EXPANDED else 3.0)
         )
         lift_dy = -hover_lift_px * self._hover_level
+        eff_tilt_x = 0.0 if self._reduced_motion else (self._tilt_x * self._hover_level)
+        eff_tilt_y = 0.0 if self._reduced_motion else (self._tilt_y * self._hover_level)
+        has_3d_tilt = abs(eff_tilt_x) > 0.04 or abs(eff_tilt_y) > 0.04
 
-        # Resting / Hover ground shadow beneath card
+        # Resting / Hover 3D parallax ground shadow beneath card
         if self._hover_level > 0.01 or self._selection_level > 0.01:
-            shadow_dy = 3.0 + 4.5 * self._hover_level
+            shadow_dx = 1.5 * self._hover_level - eff_tilt_y * 0.45
+            shadow_dy = 3.0 + 4.5 * self._hover_level + eff_tilt_x * 0.35
             shadow_alpha = int(52 + 48 * self._hover_level + 22 * self._selection_level)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(4, 8, 18, min(145, shadow_alpha)))
             painter.drawRoundedRect(
-                rect.translated(1.5 * self._hover_level, shadow_dy),
+                rect.translated(shadow_dx, shadow_dy),
                 radius + 1.0,
                 radius + 1.0,
             )
 
-        if abs(lift_dy) > 0.01:
-            painter.translate(0.0, lift_dy)
+        press_scale = (
+            1.0 - (1.0 - SCALE_CHOICE) * min(1.0, self._press_level)
+            if self._press_level > 0.005
+            else 1.0
+        )
+
+        if has_3d_tilt:
+            from src.gui.animations.card_flip import build_perspective_3d_transform
+
+            tx = build_perspective_3d_transform(
+                rect.width(),
+                rect.height(),
+                eff_tilt_y,
+                eff_tilt_x,
+                lift_y=lift_dy,
+                lift_scale=press_scale,
+            )
+            painter.setTransform(tx, combine=True)
+        else:
+            if abs(lift_dy) > 0.01:
+                painter.translate(0.0, lift_dy)
+            if press_scale != 1.0:
+                cx = rect.width() * 0.5
+                cy = rect.height() * 0.5
+                painter.translate(cx, cy)
+                painter.scale(press_scale, press_scale)
+                painter.translate(-cx, -cy)
 
         self._paint_card_surface(painter, rect, radius, self._data)
+
+        # Dynamic 3D Specular Foil Glare tracking cursor tilt angle
+        if has_3d_tilt:
+            clip = QPainterPath()
+            clip.addRoundedRect(rect, radius, radius)
+            painter.save()
+            painter.setClipPath(clip)
+            w, h = rect.width(), rect.height()
+            shift_x = (eff_tilt_y / 7.0) * w * 0.42
+            shift_y = (-eff_tilt_x / 6.0) * h * 0.38
+            grad = QLinearGradient(
+                w * 0.15 + shift_x,
+                h * 0.10 + shift_y,
+                w * 0.85 + shift_x,
+                h * 0.90 + shift_y,
+            )
+            glare_alpha = int(min(38, (abs(eff_tilt_x) + abs(eff_tilt_y)) * 3.2))
+            grad.setColorAt(0.0, QColor(255, 248, 225, 0))
+            grad.setColorAt(0.48, QColor(255, 246, 218, glare_alpha))
+            grad.setColorAt(0.55, QColor(228, 185, 109, int(glare_alpha * 0.7)))
+            grad.setColorAt(1.0, QColor(255, 248, 225, 0))
+            painter.fillRect(rect, grad)
+            painter.restore()
+
         self._paint_state_overlays(painter, rect, radius)
         painter.restore()
 
@@ -630,11 +892,12 @@ class CharacterCard(QGraphicsObject):
             painter.drawRoundedRect(edge_rect, 2.0, 2.0)
             painter.restore()
 
-        # 4. Apply TRUE 3D projective perspective QTransform around card center Y-axis
+        # 4. Apply TRUE 3D dual-axis projective perspective QTransform (Yaw + Pitch arc)
         tx = build_perspective_y_transform(
             w,
             h,
             frame.effective_angle_deg,
+            pitch_deg=frame.pitch_deg,
             lift_y=frame.lift_y,
             lift_scale=frame.lift_scale,
         )
@@ -718,25 +981,31 @@ class CharacterCard(QGraphicsObject):
         radius: float,
     ) -> None:
         """Render independent SELECTED (Gold), HIGHLIGHTED (Luminous Cyan), and FOCUS layers."""
-        # Overlay 1 (Outer Halo): LUMINOUS CLUE HIGHLIGHT (Clue Cyan — localized 3-layer glow)
+        # Overlay 1 (Outer Halo): SEMANTIC ROLE-CODED CLUE HIGHLIGHT (3-layer glow + floating role pill)
         effective_glow = self._glow_intensity if self._glow_intensity > 0.01 else (0.86 if self._highlighted else 0.0)
-        accent = QColor(COLORS.clue_highlight if self._evidence_role == "primary" else COLORS.info_clue_semantic)
+        role_palette = {
+            "source": QColor("#C48728"),      # Antique Brass Gold — Clue Speaker / Owner
+            "primary": QColor("#2B6BA0"),     # Deep Evidence Blue — Primary Subject / Target
+            "secondary": QColor("#A14B33"),   # Terracotta Brick — Compared / Reference Subject
+            "reference": QColor(COLORS.info_clue_semantic),
+        }
+        accent = QColor(role_palette.get(self._evidence_role, QColor(COLORS.clue_highlight)))
         if effective_glow > 0.01:
             tint = QColor(accent)
-            tint.setAlpha(int(20 * effective_glow))
+            tint.setAlpha(int(22 * effective_glow))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(tint)
             painter.drawRoundedRect(rect, radius, radius)
             pulse_boost = 0.72 + 0.28 * self._glow_pulse
             lum = effective_glow * pulse_boost
-            # Outer offset keeps Cyan glow strictly outside Gold selected border
+            # Outer offset keeps role glow strictly outside Gold selected border
             outer_pad = 5.5 if self._selection_level > 0.05 else 4.0
             hl_rect = rect.adjusted(-outer_pad, -outer_pad, outer_pad, outer_pad)
 
             # Layer 2: Soft localized concentric outer glow (bounded <= 9px; no heavy blur)
             for expand, alpha_mul, pen_w in (
-                (3.5, 38, 4.5),
-                (1.8, 72, 3.2),
+                (3.5, 42, 4.5),
+                (1.8, 82, 3.2),
             ):
                 g_rect = hl_rect.adjusted(-expand, -expand, expand, expand)
                 glow_color = QColor(accent)
@@ -746,20 +1015,51 @@ class CharacterCard(QGraphicsObject):
                 painter.setBrush(Qt.BrushStyle.NoBrush)
                 painter.drawRoundedRect(g_rect, radius + outer_pad + expand * 0.5, radius + outer_pad + expand * 0.5)
 
-            # Layer 1: Crisp Cyan accent border
-            accent.setAlpha(int(235 * effective_glow))
-            hl_pen = QPen(accent, 2.2)
+            # Layer 1: Crisp role-coded accent border
+            border_col = QColor(accent)
+            border_col.setAlpha(int(245 * effective_glow))
+            hl_pen = QPen(border_col, 2.5)
             painter.setPen(hl_pen)
             painter.drawRoundedRect(hl_rect, radius + outer_pad * 0.65, radius + outer_pad * 0.65)
 
-            # Layer 3: Luminous cyan corner brackets (color-blind & high-clarity evidence framing)
+            # Layer 3: Role-colored corner brackets (color-blind & high-clarity evidence framing)
+            bracket_col = QColor(accent).lighter(120)
+            bracket_col.setAlpha(int(255 * min(1.0, lum * 1.1)))
             self._paint_corner_brackets(
                 painter,
                 hl_rect,
-                QColor(101, 185, 233, int(255 * min(1.0, lum * 1.1))),
+                bracket_col,
                 seg=11.0,
                 thickness=2.8,
             )
+
+            # Layer 4: Floating Semantic Role Pill on top edge (never covers portrait face!)
+            if self._role_badge_text:
+                pill_font = self._ui_font(9 if self._mode is CardDisplayMode.COMPACT else 10, bold=True)
+                fm = QFontMetricsF(pill_font)
+                text_w = fm.horizontalAdvance(self._role_badge_text)
+                pill_w = min(rect.width() + 10.0, max(54.0, text_w + 16.0))
+                pill_h = 18.0 if self._mode is CardDisplayMode.COMPACT else 20.0
+                px = rect.center().x() - pill_w * 0.5
+                py = rect.top() - pill_h * 0.78
+                pill_rect = QRectF(px, py, pill_w, pill_h)
+
+                painter.save()
+                # Subtle elevation shadow under pill
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(QColor(12, 18, 30, int(115 * effective_glow)))
+                painter.drawRoundedRect(pill_rect.translated(0.0, 1.8), pill_h * 0.5, pill_h * 0.5)
+
+                pill_bg = QColor(accent)
+                pill_bg.setAlpha(int(248 * effective_glow))
+                painter.setBrush(pill_bg)
+                painter.setPen(QPen(QColor(252, 248, 240, int(245 * effective_glow)), 1.3))
+                painter.drawRoundedRect(pill_rect, pill_h * 0.5, pill_h * 0.5)
+
+                painter.setFont(pill_font)
+                painter.setPen(QColor(255, 252, 246, int(255 * effective_glow)))
+                painter.drawText(pill_rect, Qt.AlignmentFlag.AlignCenter, self._role_badge_text)
+                painter.restore()
 
         # Overlay 2 (Inner Frame): SELECTED (Evidence Gold border + inner corner markers)
         sel = self._selection_level if self._selection_level > 0.01 else (1.0 if self._selected else 0.0)
@@ -788,6 +1088,42 @@ class CharacterCard(QGraphicsObject):
             painter.setPen(focus_pen)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawRoundedRect(rect.adjusted(-3.5, -3.5, 3.5, 3.5), radius + 2.0, radius + 2.0)
+
+        # Overlay 4 (Expressive): Verdict landing halo burst after 3D reveal completes
+        if self._reveal_burst > 0.01 and self._data.is_revealed:
+            p = 1.0 - self._reveal_burst  # 0 -> 1 expansion
+            expand = 2.0 + 12.0 * p
+            base_hex = COLORS.criminal_verdict if self._data.verdict == "CRIMINAL" else COLORS.innocent_verdict
+            ring_col = QColor(base_hex)
+            ring_col.setAlpha(int(215 * self._reveal_burst))
+            painter.setPen(QPen(ring_col, 2.8 * (0.4 + 0.6 * self._reveal_burst)))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRoundedRect(
+                rect.adjusted(-expand, -expand, expand, expand),
+                radius + expand * 0.5,
+                radius + expand * 0.5,
+            )
+
+        # Overlay 5 (Expressive): Hint particle arrival pulse
+        if self._hint_pulse > 0.01:
+            p = 1.0 - self._hint_pulse
+            expand = 1.5 + 11.0 * p
+            pulse_col = QColor(228, 185, 109, int(230 * self._hint_pulse))
+            painter.setPen(QPen(pulse_col, 2.6))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRoundedRect(
+                rect.adjusted(-expand, -expand, expand, expand),
+                radius + expand * 0.5,
+                radius + expand * 0.5,
+            )
+
+        # Overlay 6 (Expressive): Brief contradiction crimson flash during damped shake
+        if self._error_flash > 0.01:
+            flash_col = QColor(COLORS.criminal_verdict)
+            flash_col.setAlpha(int(195 * self._error_flash))
+            painter.setPen(QPen(flash_col, 3.0))
+            painter.setBrush(QColor(flash_col.red(), flash_col.green(), flash_col.blue(), int(32 * self._error_flash)))
+            painter.drawRoundedRect(rect.adjusted(-1.0, -1.0, 1.0, 1.0), radius + 1.0, radius + 1.0)
 
     def _compute_portrait_frame_rect(self, rect: QRectF) -> QRectF:
         """Return the upper portrait frame rect scaled proportionally for 3x3 / 4x4 / 5x5."""
@@ -944,7 +1280,7 @@ class CharacterCard(QGraphicsObject):
         self._draw_elided_text(
             painter,
             prof_rect,
-            data.profession,
+            localize_profession(data.profession),
             self._ui_font(10 if compact else 11, bold=False),
             QColor(COLORS.secondary_text),
         )
@@ -1019,7 +1355,7 @@ class CharacterCard(QGraphicsObject):
         self._draw_elided_text(
             painter,
             prof_rect,
-            data.profession,
+            localize_profession(data.profession),
             self._ui_font(11 if self._mode is CardDisplayMode.EXPANDED else 10, bold=False),
             QColor(COLORS.ink_secondary),
         )
@@ -1041,15 +1377,15 @@ class CharacterCard(QGraphicsObject):
         pad_x = 6.5
 
         if data.has_public_clue:
-            clue_badge = QRectF(w - 39.0, 6.0, 33.0, 16.0)
+            clue_badge = QRectF(w - 53.0, 6.0, 47.0, 16.0)
             painter.setPen(QPen(QColor(COLORS.brass_ink), 1.0))
             painter.setBrush(QColor(COLORS.paper_linen))
             painter.drawRoundedRect(clue_badge, 3.5, 3.5)
             self._draw_elided_text(
                 painter,
                 clue_badge,
-                "CLUE",
-                self._ui_font(8, bold=True),
+                "MANH MỐI",
+                self._ui_font(7, bold=True),
                 QColor(COLORS.brass_ink),
             )
 
@@ -1074,7 +1410,7 @@ class CharacterCard(QGraphicsObject):
         self._draw_elided_text(
             painter,
             prof_rect,
-            data.profession,
+            localize_profession(data.profession),
             self._ui_font(10, bold=False),
             QColor(COLORS.ink_secondary),
         )
@@ -1093,6 +1429,15 @@ class CharacterCard(QGraphicsObject):
         bg = QColor(COLORS.criminal_verdict if is_criminal else COLORS.innocent_verdict)
         fg = QColor(COLORS.text_on_crimson if is_criminal else COLORS.text_on_innocent)
         border = QColor(COLORS.criminal_text if is_criminal else COLORS.innocent_text)
+
+        painter.save()
+        if self._reveal_burst > 0.01 and not self._reduced_motion:
+            # 3D verdict stamp impact pop as card lands on the board
+            stamp_scale = 1.0 + 0.12 * math.sin(math.pi * self._reveal_burst)
+            c = rect.center()
+            painter.translate(c.x(), c.y())
+            painter.scale(stamp_scale, stamp_scale)
+            painter.translate(-c.x(), -c.y())
 
         painter.setPen(QPen(border, 1.2))
         painter.setBrush(QBrush(bg))
@@ -1127,7 +1472,7 @@ class CharacterCard(QGraphicsObject):
             )
         painter.restore()
 
-        label = "CRIMINAL" if is_criminal else "INNOCENT"
+        label = "TỘI PHẠM" if is_criminal else "VÔ TỘI"
         text_rect = QRectF(icon_rect.right() + 3.0, rect.y(), rect.right() - icon_rect.right() - 5.0, rect.height())
         self._draw_elided_text(
             painter,
@@ -1137,6 +1482,7 @@ class CharacterCard(QGraphicsObject):
             fg,
             align=Qt.AlignmentFlag.AlignCenter,
         )
+        painter.restore()
 
     def _paint_cell_id_badge(
         self,

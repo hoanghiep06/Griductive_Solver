@@ -16,7 +16,8 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen, QPolygonF
 from PySide6.QtWidgets import (
     QFrame,
     QApplication,
@@ -29,6 +30,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.asset_registry import AssetId
+from src.gui.case_catalog import format_gameplay_case_header
 from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
 from src.gui.components.action_bar import ActionBar
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
@@ -66,6 +68,64 @@ _HEADER_STATE_STYLE: dict[GameState, tuple[str, str]] = {
 }
 
 
+class _TopBrandPlaque(QWidget):
+    """Centered vintage dark-navy & antique-brass nameplate for GameplayScreen Top Bar."""
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self.setFixedSize(264, 42)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        w, h = float(self.width()), float(self.height())
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        # Decorative brass side curls flanking the nameplate
+        p.setPen(QPen(QColor("#B68D46"), 1.3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        cy = h * 0.5
+        for sign in (-1.0, 1.0):
+            x_edge = 24.0 if sign < 0 else (w - 24.0)
+            p.drawLine(QPointF(x_edge, cy), QPointF(x_edge + sign * 14.0, cy))
+            p.drawEllipse(QPointF(x_edge + sign * 16.0, cy), 2.2, 2.2)
+
+        # Notched navy-and-brass medallion plaque
+        r = QRectF(24.0, 2.0, w - 48.0, h - 4.0)
+        cut = 8.0
+        poly = QPolygonF(
+            [
+                QPointF(r.left() + cut, r.top()),
+                QPointF(r.right() - cut, r.top()),
+                QPointF(r.right(), r.center().y()),
+                QPointF(r.right() - cut, r.bottom()),
+                QPointF(r.left() + cut, r.bottom()),
+                QPointF(r.left(), r.center().y()),
+            ]
+        )
+        grad = QLinearGradient(r.topLeft(), r.bottomLeft())
+        grad.setColorAt(0.0, QColor("#21344D"))
+        grad.setColorAt(1.0, QColor("#121E2E"))
+        p.setBrush(grad)
+        p.setPen(QPen(QColor("#D2AA5C"), 1.7))
+        p.drawPolygon(poly)
+
+        title_font = QFont("Georgia")
+        title_font.setPixelSize(13)
+        title_font.setBold(True)
+        title_font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 0.7)
+        p.setFont(title_font)
+        p.setPen(QColor("#F2D492"))
+        p.drawText(QRectF(r.left() + 10.0, r.top() + 3.0, r.width() - 20.0, 18.0), Qt.AlignmentFlag.AlignCenter, "GRIDUCTIVE SOLVER")
+
+        sub_font = QFont("Georgia")
+        sub_font.setPixelSize(10)
+        sub_font.setItalic(True)
+        p.setFont(sub_font)
+        p.setPen(QColor("#D8C9A8"))
+        p.drawText(QRectF(r.left() + 10.0, r.top() + 20.0, r.width() - 20.0, 14.0), Qt.AlignmentFlag.AlignCenter, "Hồ Sơ Phá Án")
+        p.end()
+
+
 class GameplayScreen(BackdropScreen):
     """Completed Phase 4 Gameplay Screen hosting GĐ3 ``GameBoard`` + GĐ4 Dashboard."""
 
@@ -99,7 +159,7 @@ class GameplayScreen(BackdropScreen):
     ) -> None:
         super().__init__(
             AssetId.A05_GAMEPLAY_BACKGROUND,
-            scrim_rgba=COLORS.scrim_gameplay_rgba,
+            scrim_rgba=(24, 17, 13, 232),
             pixmap_loader=pixmap_loader,
             parent=parent,
         )
@@ -110,13 +170,20 @@ class GameplayScreen(BackdropScreen):
         self.ui_state = InteractionState()
 
         # ------------------------------------------------------------------
-        # 1. TOP BAR: GRIDUCTIVE | CASE ID | DEV DEMO SWITCHER | STATUS
+        # 1. VINTAGE BRASS TOP BAR: Logo + Case | Center Brand Plaque | Nav + Status
         # ------------------------------------------------------------------
         top_bar = QFrame(self)
+        top_bar.setObjectName("GameplayVintageTopBar")
         top_bar.setProperty("widgetKind", "pageHeader")
+        top_bar.setStyleSheet(
+            "QFrame#GameplayVintageTopBar {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FBF5E8, stop:1 #EFE2C7);"
+            "  border-bottom: 2px solid #C6A262;"
+            "}"
+        )
         top_bar.setMinimumHeight(52)
         top_layout = QHBoxLayout(top_bar)
-        top_layout.setContentsMargins(SPACING.space_4, SPACING.space_1, SPACING.space_4, SPACING.space_1)
+        top_layout.setContentsMargins(SPACING.space_3, 4, SPACING.space_3, 4)
         top_layout.setSpacing(SPACING.space_2)
 
         compact_logo = AssetImageView(
@@ -126,13 +193,19 @@ class GameplayScreen(BackdropScreen):
             pixmap_loader=pixmap_loader,
             parent=top_bar,
         )
-        compact_logo.setFixedSize(124, 36)
+        compact_logo.setFixedSize(108, 34)
         top_layout.addWidget(compact_logo)
 
         self._case_label = QLabel("Hồ sơ: Chưa nạp vụ án", top_bar)
         self._case_label.setTextFormat(Qt.TextFormat.PlainText)
         self._case_label.setProperty("role", "paperSubheading")
+        self._case_label.setStyleSheet("color: #202836; font-weight: 700; font-size: 13.5px; background: transparent;")
         top_layout.addWidget(self._case_label, 1)
+
+        # Centered ornate GRIDUCTIVE SOLVER · Hồ Sơ Phá Án brass plaque
+        self._brand_plaque = _TopBrandPlaque(top_bar)
+        top_layout.addWidget(self._brand_plaque, 0, Qt.AlignmentFlag.AlignCenter)
+        top_layout.addStretch(1)
 
         # Developer standalone demo toolbar (grouped cleanly in a secondary Demo QA capsule)
         self._demo_size_buttons: dict[int, StyledButton] = {}
@@ -145,28 +218,28 @@ class GameplayScreen(BackdropScreen):
             demo_row.setContentsMargins(SPACING.space_2, 2, SPACING.space_2, 2)
             demo_row.setSpacing(4)
 
-            demo_lbl = QLabel("DEMO QA", demo_group)
+            demo_lbl = QLabel("MẪU THỬ", demo_group)
             demo_lbl.setProperty("role", "demoGroupLabel")
             demo_row.addWidget(demo_lbl)
 
             for sz in (3, 4, 5):
-                btn = StyledButton(f"Demo {sz}×{sz}", variant="ghost", min_height=30, parent=demo_group)
+                btn = StyledButton(f"Mẫu {sz}×{sz}", variant="ghost", min_height=30, parent=demo_group)
                 btn.setProperty("compact", "true")
                 btn.setToolTip(
-                    f"Dữ liệu mẫu công khai {sz}×{sz} (không dùng DPLL/hidden_solution)"
+                    f"Dữ liệu mẫu công khai {sz}×{sz}"
                 )
                 btn.clicked.connect(lambda _checked=False, n=sz: self.demo_size_requested.emit(n))
                 demo_row.addWidget(btn)
                 self._demo_size_buttons[sz] = btn
 
             for code, label in (
-                (ActionCode.NOT_PROVABLE, "Mock: Chưa rõ"),
-                (ActionCode.CONTRADICTED, "Mock: Mâu thuẫn"),
+                (ActionCode.NOT_PROVABLE, "Thử: Chưa rõ"),
+                (ActionCode.CONTRADICTED, "Thử: Mâu thuẫn"),
             ):
                 nbtn = StyledButton(label, variant="ghost", min_height=30, parent=demo_group)
                 nbtn.setProperty("compact", "true")
                 nbtn.setToolTip(
-                    f"Nút QA lập trình viên: xem thử thông báo {code.value} (dữ liệu mẫu)"
+                    f"Xem thử thông báo mẫu"
                 )
                 nbtn.clicked.connect(
                     lambda _checked=False, c=code: self.demo_notification_requested.emit(c)
@@ -174,17 +247,17 @@ class GameplayScreen(BackdropScreen):
                 demo_row.addWidget(nbtn)
                 self._demo_notify_buttons[code] = nbtn
 
-            self._demo_flip_btn = StyledButton("Mock Flip 3D", variant="ghost", min_height=30, parent=demo_group)
+            self._demo_flip_btn = StyledButton("Thử lật 3D", variant="ghost", min_height=30, parent=demo_group)
             self._demo_flip_btn.setProperty("compact", "true")
             self._demo_flip_btn.setToolTip(
-                "Nút QA lập trình viên: mô phỏng Controller gọi reveal_card() lật 3D cho thẻ đang chọn"
+                "Mô phỏng hiệu ứng lật thẻ 3D cho thẻ đang chọn"
             )
             self._demo_flip_btn.clicked.connect(self.demo_flip_requested.emit)
             demo_row.addWidget(self._demo_flip_btn)
 
             self._demo_reduced_btn = StyledButton("Giảm hiệu ứng: Tắt", variant="ghost", min_height=30, parent=demo_group)
             self._demo_reduced_btn.setProperty("compact", "true")
-            self._demo_reduced_btn.setToolTip("Bật/tắt chế độ Reduced Motion để kiểm thử GĐ5")
+            self._demo_reduced_btn.setToolTip("Bật hoặc tắt chế độ giảm chuyển động")
             self._demo_reduced_btn.clicked.connect(self._on_demo_reduced_clicked)
             demo_row.addWidget(self._demo_reduced_btn)
 
@@ -193,9 +266,9 @@ class GameplayScreen(BackdropScreen):
             self._demo_group.setVisible(False)
             top_layout.addWidget(demo_group)
 
-            self._demo_qa_toggle_btn = StyledButton("Công cụ QA", variant="ghost", min_height=28, parent=top_bar)
+            self._demo_qa_toggle_btn = StyledButton("Công cụ thử", variant="ghost", min_height=28, parent=top_bar)
             self._demo_qa_toggle_btn.setProperty("compact", "true")
-            self._demo_qa_toggle_btn.setToolTip("Ẩn/hiện thanh công cụ kiểm thử nhanh (Demo 3×3 / 4×4 / 5×5 / Flip 3D)")
+            self._demo_qa_toggle_btn.setToolTip("Ẩn hoặc hiện thanh công cụ xem thử nhanh")
             self._demo_qa_toggle_btn.clicked.connect(
                 lambda: self._demo_group.setVisible(not self._demo_group.isVisible())
             )
@@ -218,28 +291,37 @@ class GameplayScreen(BackdropScreen):
         # 2. NON-BLOCKING NOTIFICATION BANNER (never obscures GameBoard)
         # ------------------------------------------------------------------
         banner_wrap = QHBoxLayout()
-        banner_wrap.setContentsMargins(SPACING.space_4, SPACING.space_1, SPACING.space_4, 0)
+        banner_wrap.setContentsMargins(SPACING.space_3, 2, SPACING.space_3, 0)
         self._notification_banner = NotificationBanner(parent=self)
         banner_wrap.addWidget(self._notification_banner)
         self.body_layout.addLayout(banner_wrap)
 
         # ------------------------------------------------------------------
-        # 3. MAIN WORKSPACE: QSplitter — Dominant GameBoard (~65%) + Sidebar (~35%)
+        # 3. MAIN WORKSPACE: Full-Height QSplitter over Cozy Dark Study Desk
+        #    Left (~58%): Hero GameBoard (with Dark Leather & Brass Filigree Frame)
+        #    Right (~42%): Full-Height CluePanel + DeductionPanel (extra ~80px height!)
         # ------------------------------------------------------------------
         workspace_wrap = QHBoxLayout()
-        workspace_wrap.setContentsMargins(SPACING.space_4, SPACING.space_1, SPACING.space_4, SPACING.space_1)
+        workspace_wrap.setContentsMargins(SPACING.space_3, 6, SPACING.space_3, 6)
         workspace_wrap.setSpacing(0)
 
         self._splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self._splitter.setObjectName("GameplaySplitter")
         self._splitter.setChildrenCollapsible(False)
 
-        # Left: Preserved GĐ3 GameBoard inside warm Paper Beige investigation tabletop panel
+        # Left column: Dominant full-height GameBoard
+        self._left_column = QWidget(self._splitter)
+        self._left_column.setObjectName("GameplayHeroColumn")
+        self._left_column.setMinimumWidth(540)
+        left_layout = QVBoxLayout(self._left_column)
+        left_layout.setContentsMargins(0, 0, SPACING.space_2, 0)
+        left_layout.setSpacing(0)
+
         self._board_panel = StyledPanel(
             variant="translucent",
-            padding=SPACING.space_2,
-            accent_bar="brass",
-            parent=self._splitter,
+            padding=3,
+            accent_bar=None,
+            parent=self._left_column,
         )
         self._board_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._board_panel.setMinimumWidth(520)
@@ -254,16 +336,18 @@ class GameplayScreen(BackdropScreen):
         self._game_board.animation_finished.connect(self._on_board_animation_finished)
         self._game_board.animation_cancelled.connect(self.animation_cancelled.emit)
         self._board_panel.content_layout.addWidget(self._game_board, 1)
-        self._splitter.addWidget(self._board_panel)
+        left_layout.addWidget(self._board_panel, 1)
 
-        # Right: Dashboard Sidebar (CluePanel + DeductionPanel + ProgressPanel)
+        self._splitter.addWidget(self._left_column)
+
+        # Right column: Full-height Investigation Dossier (CluePanel + DeductionPanel)
         self._sidebar_widget = QWidget(self._splitter)
         self._sidebar_widget.setObjectName("GameplaySidebar")
-        self._sidebar_widget.setMinimumWidth(320)
-        self._sidebar_widget.setMaximumWidth(540)
+        self._sidebar_widget.setMinimumWidth(340)
+        self._sidebar_widget.setMaximumWidth(620)
         sidebar_layout = QVBoxLayout(self._sidebar_widget)
         sidebar_layout.setContentsMargins(SPACING.space_2, 0, 0, 0)
-        sidebar_layout.setSpacing(SPACING.space_2)
+        sidebar_layout.setSpacing(8)
 
         self._clue_panel = CluePanel(pixmap_loader=pixmap_loader, parent=self._sidebar_widget)
         self._clue_panel.clue_selected.connect(self._on_clue_selected)
@@ -273,26 +357,32 @@ class GameplayScreen(BackdropScreen):
 
         self._deduction_panel = DeductionPanel(parent=self._sidebar_widget)
         self._deduction_panel.hint_changed.connect(self._on_hint_changed)
-        sidebar_layout.addWidget(self._deduction_panel, 3)
-
-        self._progress_panel = ProgressPanel(parent=self._sidebar_widget)
-        sidebar_layout.addWidget(self._progress_panel, 0)
+        sidebar_layout.addWidget(self._deduction_panel, 5)
 
         self._splitter.addWidget(self._sidebar_widget)
-        self._splitter.setStretchFactor(0, 65)
-        self._splitter.setStretchFactor(1, 35)
-        self._splitter.setSizes([860, 440])
+        self._splitter.setStretchFactor(0, 58)
+        self._splitter.setStretchFactor(1, 42)
+        self._splitter.setSizes([770, 550])
 
         workspace_wrap.addWidget(self._splitter, 1)
         self.body_layout.addLayout(workspace_wrap, 1)
 
         # ------------------------------------------------------------------
-        # 4. BOTTOM ACTION BAR (Verdict Strip + Game Controls)
+        # 4. UNIFIED BOTTOM PARCHMENT DOCK: ActionBar (Left) | ProgressPanel (Right)
         # ------------------------------------------------------------------
-        action_wrap = QHBoxLayout()
-        action_wrap.setContentsMargins(SPACING.space_4, 0, SPACING.space_4, SPACING.space_2)
+        bottom_dock = QFrame(self)
+        bottom_dock.setObjectName("GameplayBottomDock")
+        bottom_dock.setStyleSheet(
+            "QFrame#GameplayBottomDock {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FBF5E8, stop:1 #EFE2C6);"
+            "  border-top: 2px solid #C6A262;"
+            "}"
+        )
+        dock_row = QHBoxLayout(bottom_dock)
+        dock_row.setContentsMargins(SPACING.space_3, 4, SPACING.space_3, 4)
+        dock_row.setSpacing(12)
 
-        self._action_bar = ActionBar(demo_mode=self._demo_mode, parent=self)
+        self._action_bar = ActionBar(demo_mode=self._demo_mode, parent=bottom_dock)
         self._action_bar.verdict_requested.connect(self.verdict_requested.emit)
         self._action_bar.level_selection_requested.connect(self.level_selection_requested.emit)
         self._action_bar.restart_requested.connect(self.restart_requested.emit)
@@ -302,9 +392,24 @@ class GameplayScreen(BackdropScreen):
         self._action_bar.auto_solve_speed_changed.connect(self.auto_solve_speed_changed.emit)
         self._action_bar.back_requested.connect(self.back_requested.emit)
         self._action_bar.demo_results_requested.connect(self.demo_results_requested.emit)
+        # Dock navigation capsule (Đổi hồ sơ | Chơi lại | Trang chủ) into Top Bar
+        self._action_bar.dock_navigation_bar(top_layout, top_layout.indexOf(self._status_pill))
+        dock_row.addWidget(self._action_bar, 62)
 
-        action_wrap.addWidget(self._action_bar)
-        self.body_layout.addLayout(action_wrap)
+        dock_divider = QFrame(bottom_dock)
+        dock_divider.setFixedSize(1, 44)
+        dock_divider.setStyleSheet("background-color: #D0B88C; border: none;")
+        dock_row.addWidget(dock_divider, 0, Qt.AlignmentFlag.AlignVCenter)
+
+        self._progress_panel = ProgressPanel(parent=bottom_dock)
+        self._progress_panel.setObjectName("ProgressPanel")
+        self._progress_panel.setStyleSheet(
+            "QFrame#ProgressPanel { background: transparent; border: none; }"
+        )
+        self._action_bar.session_stats_updated.connect(self._progress_panel.set_session_metrics)
+        dock_row.addWidget(self._progress_panel, 38)
+
+        self.body_layout.addWidget(bottom_dock, 0)
 
         self._restart_dialog = InteractionDialog(self)
         self._restart_dialog.confirmed.connect(self.restart_requested.emit)
@@ -321,7 +426,7 @@ class GameplayScreen(BackdropScreen):
     # Public Controller -> GUI Presentation API (ViewPort-aligned)
     # ------------------------------------------------------------------
 
-    def set_board(self, snapshot: Any) -> None:
+    def set_board(self, snapshot: Any, *, preserve_hint: bool = False) -> None:
         """Render a complete public snapshot, syncing clues, progress, and selection."""
         norm: PublicBoardSnapshot = normalize_board_snapshot(snapshot)
         prev_kb = self._current_kb_version
@@ -332,7 +437,7 @@ class GameplayScreen(BackdropScreen):
         n = self._game_board.grid_size
         pid = self._game_board.puzzle_id
         revealed_count = sum(1 for c in norm.characters if c.visibility is CardVisibility.REVEALED)
-        self._case_label.setText(f"Hồ sơ: {pid}  ·  Bàn cờ {n}×{n}")
+        self._case_label.setText(format_gameplay_case_header(pid, n))
 
         # Sync public clues & public progress counts from snapshot
         self._clue_panel.set_clues(norm.clues)
@@ -342,7 +447,8 @@ class GameplayScreen(BackdropScreen):
                                            self.ui_state.hint_count, self.ui_state.mistake_count)
 
         # Per STAGE2_API_CONTRACT §D: when KB version advances, clear stale Hint
-        if prev_kb is not None and norm.kb_version != prev_kb:
+        # (skipped when caller is immediately keeping the active Auto-Solve explanation)
+        if not preserve_hint and prev_kb is not None and norm.kb_version != prev_kb:
             self.clear_hint()
 
         self._sync_selected_character()
@@ -390,10 +496,15 @@ class GameplayScreen(BackdropScreen):
         return self._game_board.cancel_animations(revert_to_original=revert_to_original)
 
     def set_reduced_motion(self, enabled: bool) -> None:
-        """Propagate reduced-motion setting to GameBoard and NotificationBanner."""
+        """Propagate reduced-motion setting across board, panels, banners & dialogs."""
         flag = bool(enabled)
         self._game_board.set_reduced_motion(flag)
         self._notification_banner.set_reduced_motion(flag)
+        self._restart_dialog.set_reduced_motion(flag)
+        self._feedback_dialog.set_reduced_motion(flag)
+        self._clue_panel.set_reduced_motion(flag)
+        self._deduction_panel.set_reduced_motion(flag)
+        self._progress_panel.set_reduced_motion(flag)
         if self._demo_reduced_btn is not None:
             self._demo_reduced_btn.setText(f"Giảm hiệu ứng: {'Bật' if flag else 'Tắt'}")
             self._demo_reduced_btn.set_variant("primary" if flag else "ghost")
@@ -463,14 +574,25 @@ class GameplayScreen(BackdropScreen):
         resolved = coerce_game_state(state)
         self._game_state = resolved
 
-        hdr_text, hdr_tone = _HEADER_STATE_STYLE[resolved]
-        self._status_pill.set_status(hdr_text, tone=hdr_tone)
+        auto_active = (
+            self.ui_state.is_auto_solving
+            and resolved in (GameState.READY, GameState.PROCESSING, GameState.ANIMATING)
+        )
+        if auto_active:
+            self._status_pill.set_status("ĐANG TỰ GIẢI...", tone="accent")
+        else:
+            hdr_text, hdr_tone = _HEADER_STATE_STYLE[resolved]
+            self._status_pill.set_status(hdr_text, tone=hdr_tone)
         self._progress_panel.set_game_status(resolved)
         self._action_bar.set_game_state(resolved)
 
-        # Per STAGE2_API_CONTRACT §C: lock board & clue selection during PROCESSING/ANIMATING
-        interactive = resolved in (GameState.READY, GameState.STUCK, GameState.SOLVED)
+        # Per STAGE2_API_CONTRACT §C: lock board & clue selection during PROCESSING/ANIMATING/auto-solve
+        interactive = (
+            resolved in (GameState.READY, GameState.STUCK, GameState.SOLVED)
+            and not auto_active
+        )
         self._game_board.set_interactive(interactive)
+        self._clue_panel.set_auto_solving(auto_active)
         self._clue_panel.set_interactive(interactive)
 
     def set_busy(self, state: GameState | str) -> None:
@@ -491,11 +613,11 @@ class GameplayScreen(BackdropScreen):
             self._feedback_dialog.configure(
                 tone="warning",
                 icon="?",
-                kicker="CHƯA ĐỦ CHỨNG CỨ · NOT_PROVABLE",
+                kicker="CHƯA ĐỦ CHỨNG CỨ",
                 title="Kết luận này vẫn còn hai khả năng hợp lệ",
                 message=current.message,
                 detail=(
-                    "SAT vẫn tìm được ít nhất một mô hình cho mỗi giả thiết. "
+                    "Hệ thống suy luận vẫn tìm được ít nhất một phương án hợp lệ cho mỗi giả thiết. "
                     "Hãy mở thêm chuỗi suy luận hoặc xem lại một manh mối khác trước khi kết luận."
                 ),
                 cancel_text="Quay lại điều tra",
@@ -508,11 +630,11 @@ class GameplayScreen(BackdropScreen):
             self._feedback_dialog.configure(
                 tone="danger",
                 icon="×",
-                kicker="XUNG ĐỘT LOGIC · CONTRADICTED",
+                kicker="XUNG ĐỘT LOGIC",
                 title="Giả thiết vừa chọn phá vỡ chuỗi chứng cứ",
                 message=current.message,
                 detail=(
-                    "Giả thiết ngược lại đã được chứng minh từ KB hiện tại. "
+                    "Giả thiết ngược lại đã được chứng minh từ tập chứng cứ hiện tại. "
                     "Bạn có thể soi tập chứng cứ tối tiểu đang gây ra mâu thuẫn."
                 ),
                 cancel_text="Đóng",
@@ -559,21 +681,52 @@ class GameplayScreen(BackdropScreen):
     def focus_evidence(self, clue_ids: Iterable[str], cells: Iterable[str] = ()) -> None:
         ids = tuple(clue_ids)
         clues = [c for c in self._clue_panel.clues if c.clue_id in ids]
-        primary = list(cells)
-        references = []
+        cell_seq = list(dict.fromkeys(cells))
+        target_cell = cell_seq[-1] if cell_seq else None
+        owners = [c.owner_id for c in clues]
+        primary = list(cell_seq)
+        references: list[str] = []
         for clue in clues:
             primary.append(clue.owner_id)
             references.extend(clue.referenced_cells)
         self._clue_panel.set_evidence_clues(c.clue_id for c in clues)
         self.ui_state.selected_clue_id = clues[0].clue_id if clues else None
-        self.ui_state.highlighted_targets = self._game_board.focus_evidence(primary, references)
+        self.ui_state.highlighted_targets = self._game_board.focus_evidence(
+            primary,
+            references,
+            source_owners=owners,
+            target_cell_id=target_cell,
+        )
 
     def _on_clue_selected(self, clue_id: str) -> None:
         clue = next(c for c in self._clue_panel.clues if c.clue_id == clue_id)
-        primary = clue.primary_cells or (clue.referenced_cells[:1] if clue.clue_type in {"SAME", "DIFFERENT"} else clue.referenced_cells)
-        references = (*clue.referenced_cells, clue.owner_id)
+        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"}
+        primary = list(
+            clue.primary_cells
+            or (clue.referenced_cells[:1] if comparative else clue.referenced_cells)
+        )
+        secondary = list(
+            clue.secondary_cells
+            or (clue.referenced_cells[1:] if comparative else ())
+        )
+        relation_labels = {
+            "FACT": "SỰ THẬT",
+            "SAME": "= CÙNG PHE",
+            "DIFFERENT": "≠ KHÁC PHE",
+            "EXACTLY": "CHÍNH XÁC",
+            "AT_LEAST": "ÍT NHẤT",
+            "AT_MOST": "NHIỀU NHẤT",
+            "PARITY": "CHẴN / LẺ",
+            "COUNT_COMPARE": "SO SÁNH",
+        }
         self.ui_state.selected_clue_id = clue_id
-        self.ui_state.highlighted_targets = self._game_board.focus_evidence(primary, references)
+        self.ui_state.highlighted_targets = self._game_board.focus_clue_relation(
+            owner_id=clue.owner_id,
+            primary_cells=primary,
+            secondary_cells=secondary,
+            clue_type=clue.clue_type,
+            relation_label=relation_labels.get(clue.clue_type, ""),
+        )
         self.clue_selected.emit(clue_id)
 
     def _on_clue_usage_changed(self, clue_id: str, used: bool) -> None:

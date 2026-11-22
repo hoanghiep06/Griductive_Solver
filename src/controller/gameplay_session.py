@@ -36,16 +36,21 @@ class Analysis:
     classification: ClassificationResult | None
     evidence: Evidence = Evidence()
     inconsistent: bool = False
+    sat_calls: int = 0
 
 
 class GameplaySession:
     def __init__(self, path: str | Path):
         self.engine = GameEngine(path)
         self.session_id = uuid4().hex
+        self._clue_cache: dict[tuple[str, str, str], PublicClueView] = {}
+        self._cached_encoder: CNFEncoder | None = None
 
     def restart(self):
         self.engine.restart()
         self.session_id = uuid4().hex
+        self._clue_cache.clear()
+        self._cached_encoder = None
 
     def _encoder(self):
         vm = VariableMap()
@@ -55,8 +60,17 @@ class GameplaySession:
 
     def board(self) -> PublicBoardSnapshot:
         snapshot = self.engine.get_public_snapshot()
-        encoder = self._encoder()
-        clues = tuple(self._project_clue(c, encoder) for c in snapshot.revealed_clues)
+        projected: list[PublicClueView] = []
+        for c in snapshot.revealed_clues:
+            key = (c.clue_id, c.owner_id, c.clue_type)
+            cached = self._clue_cache.get(key)
+            if cached is None:
+                if self._cached_encoder is None:
+                    self._cached_encoder = self._encoder()
+                cached = self._project_clue(c, self._cached_encoder)
+                self._clue_cache[key] = cached
+            projected.append(cached)
+        clues = tuple(projected)
         owners = {c.owner_id for c in clues}
         characters = tuple(
             PublicCharacterView(
@@ -145,10 +159,15 @@ class GameplaySession:
             solver=solver,
             target=cell_id,
         )
+        sat_calls = (
+            (result.classification.sat_calls if result.classification is not None else 0)
+            + len(result.extra_metrics)
+        )
         return Analysis(
             result.version,
             result.cell_id,
             result.classification,
             Evidence(result.clue_ids, result.support_cell_ids),
             result.inconsistent,
+            sat_calls=sat_calls,
         )

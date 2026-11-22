@@ -26,6 +26,8 @@ class PixmapLoader:
     def __init__(self, registry: AssetRegistry = DEFAULT_REGISTRY) -> None:
         self._registry = registry
         self._pixmap_cache: dict[tuple[AssetId, bool], QPixmap] = {}
+        self._clue_icon_cache: dict[tuple[str, bool], QPixmap] = {}
+        self._scaled_clue_cache: dict[tuple[str, int, int, int, bool], QPixmap] = {}
         self._icon_cache: dict[tuple[AssetId, bool], QIcon] = {}
         self._warnings: list[str] = []
 
@@ -39,7 +41,74 @@ class PixmapLoader:
 
     def clear_cache(self) -> None:
         self._pixmap_cache.clear()
+        self._clue_icon_cache.clear()
+        self._scaled_clue_cache.clear()
         self._icon_cache.clear()
+
+    def load_clue_icon(
+        self,
+        clue_type: str,
+        *,
+        prefer_vietnamese: bool = True,
+    ) -> QPixmap:
+        """Load and cache the full-resolution (512x512 RGBA) Vietnamese clue icon."""
+        key = (clue_type.strip().upper(), bool(prefer_vietnamese))
+        cached = self._clue_icon_cache.get(key)
+        if cached is not None:
+            return cached
+
+        res = self._registry.resolve_clue_icon(key[0], prefer_vietnamese=key[1])
+        if res is None or not res.exists or res.path is None:
+            empty = QPixmap()
+            self._clue_icon_cache[key] = empty
+            return empty
+
+        pixmap = QPixmap(str(res.path))
+        if pixmap.isNull():
+            msg = f"Qt failed to decode clue icon for {key[0]}: {res.path}"
+            self._warnings.append(msg)
+            logger.warning(msg)
+
+        self._clue_icon_cache[key] = pixmap
+        return pixmap
+
+    def load_clue_icon_scaled(
+        self,
+        clue_type: str,
+        target_size: QSize,
+        *,
+        device_pixel_ratio: float = 1.0,
+        prefer_vietnamese: bool = True,
+    ) -> QPixmap:
+        """Load and cache a High-DPI crisp square clue icon preserving aspect ratio."""
+        dpr = max(1.0, float(device_pixel_ratio))
+        dpr_key = int(round(dpr * 100))
+        cache_key = (
+            clue_type.strip().upper(),
+            target_size.width(),
+            target_size.height(),
+            dpr_key,
+            bool(prefer_vietnamese),
+        )
+        cached = self._scaled_clue_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        raw = self.load_clue_icon(clue_type, prefer_vietnamese=prefer_vietnamese)
+        if raw.isNull() or target_size.width() <= 0 or target_size.height() <= 0:
+            empty = QPixmap()
+            self._scaled_clue_cache[cache_key] = empty
+            return empty
+
+        phys_size = QSize(
+            max(1, int(round(target_size.width() * dpr))),
+            max(1, int(round(target_size.height() * dpr))),
+        )
+        scaled = self.scale_contain(raw, phys_size, allow_upscale=False)
+        if dpr > 1.0 and not scaled.isNull():
+            scaled.setDevicePixelRatio(dpr)
+        self._scaled_clue_cache[cache_key] = scaled
+        return scaled
 
     def load_pixmap(self, asset_id: AssetId, *, prefer_derived: bool = True) -> QPixmap:
         """Load and cache the full-resolution QPixmap for ``asset_id``."""

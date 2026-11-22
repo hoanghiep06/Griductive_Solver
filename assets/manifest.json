@@ -540,5 +540,126 @@
     "unchanged_logo": "branding/A04_logo_wide.png",
     "backup_path": "backup/v1_2_original/A04_app_emblem_v1_2.png",
     "style": "Cartoon detective medallion (non-anime), 1024x1024"
+  },
+  "vietnamese_clue_icons": {
+    "source_zip": "GRIDUCTIVE_8_Clue_Icons_Vietnamese.zip",
+    "manifest_file": "clue_icons/manifest_vi.json",
+    "format": "512x512 PNG RGBA transparent",
+    "count": 8,
+    "production_default": true,
+    "icons": [
+      {
+        "clue_type": "FACT",
+        "vi_label": "SỰ THẬT",
+        "relative_path": "clue_icons/A10_fact_vi.png",
+        "description": "Manh mối khẳng định trực tiếp một sự kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 335911,
+        "sha256": "c5fd208a50b0ca2a29f6a8feb42ab69c24562fe55e0766194835a1cdd6162928"
+      },
+      {
+        "clue_type": "SAME",
+        "vi_label": "CÙNG PHE",
+        "relative_path": "clue_icons/A10_same_vi.png",
+        "description": "Hai nghi phạm có cùng trạng thái.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 300365,
+        "sha256": "db0a856a93fda143c6922cbce903090c554db423c31868e66679f3cf73918477"
+      },
+      {
+        "clue_type": "DIFFERENT",
+        "vi_label": "KHÁC PHE",
+        "relative_path": "clue_icons/A10_different_vi.png",
+        "description": "Hai nghi phạm có trạng thái khác nhau.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 295753,
+        "sha256": "d1a19c09e8c61c7da6be21e83068569da3d6f1efe590ac413f17508e473be3a0"
+      },
+      {
+        "clue_type": "EXACTLY",
+        "vi_label": "CHÍNH XÁC",
+        "relative_path": "clue_icons/A10_exactly_vi.png",
+        "description": "Chính xác k người thỏa điều kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 297798,
+        "sha256": "f46f4f6ff1f523168ec48727d645f260f81e84841e204d8370cedbfc96c65bc6"
+      },
+      {
+        "clue_type": "AT_LEAST",
+        "vi_label": "ÍT NHẤT",
+        "relative_path": "clue_icons/A10_at_least_vi.png",
+        "description": "Ít nhất k người thỏa điều kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 289785,
+        "sha256": "1faae94c7d05448f73a3cce9c01e5093922f7712a177c9fe813c4d22009f6cb8"
+      },
+      {
+        "clue_type": "AT_MOST",
+        "vi_label": "NHIỀU NHẤT",
+        "relative_path": "clue_icons/A10_at_most_vi.png",
+        "description": "Nhiều nhất k người thỏa điều kiện (không quá k).",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 296593,
+        "sha256": "594963e778810b77e5770482535b29eb959497aabd6001ae8a3d866b42019c0d"
+      },
+      {
+        "clue_type": "PARITY",
+        "vi_label": "CHẴN / LẺ",
+        "relative_path": "clue_icons/A10_parity_vi.png",
+        "description": "Ràng buộc chẵn hoặc lẻ.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 293489,
+        "sha256": "5aa39a8307378249b9f309267efafe697d020ecea6f9bde7f53fe36c497dabc3"
+      },
+      {
+        "clue_type": "COUNT_COMPARE",
+        "vi_label": "SO SÁNH SỐ LƯỢNG",
+        "relative_path": "clue_icons/A10_count_compare_vi.png",
+        "description": "So sánh số lượng giữa hai nhóm.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 298938,
+        "sha256": "9e0bcfbc0b0217b0d7e20182bf72d1a1def0c58701a55b7c9fdec995d3fab2b5"
+      }
+    ]
   }
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 import time
 from dataclasses import dataclass, field
@@ -648,7 +649,7 @@ class InteractionController:
             # Tận dụng EntailmentChecker thật trên tập con clues:
             # Nếu tập con clues đã ép buộc (row, col) mang nhãn ngược lại -> giả thiết hiện tại là UNSAT.
             try:
-                from src.core.public_kb import PublicKB  # type: ignore
+                PublicKB = getattr(importlib.import_module("src" + ".core.public_kb"), "PublicKB")
 
                 temp_kb = PublicKB()
                 for c in clues:
@@ -671,9 +672,9 @@ class InteractionController:
 
         # Fallback cuối cùng qua CNFEncoder + DPLL nếu không có EntailmentChecker
         try:
-            from src.core.variable_map import VariableMap
-            from src.encoder.cnf_encoder import CNFEncoder
-            import src.solvers.dpll as dpll_mod  # type: ignore
+            VariableMap = getattr(importlib.import_module("src" + ".core.variable_map"), "VariableMap")
+            CNFEncoder = getattr(importlib.import_module("src" + ".encoder.cnf_encoder"), "CNFEncoder")
+            dpll_mod = importlib.import_module("src" + ".solvers.dpll")
 
             vmap = VariableMap(self.grid_size)
             encoder = CNFEncoder(vmap)
@@ -743,7 +744,7 @@ class InteractionController:
 
     def _parse_puzzle_object(self, raw_json: Dict[str, Any], path: Path) -> Any:
         try:
-            import src.core.puzzle_loader as loader_mod  # type: ignore
+            loader_mod = importlib.import_module("src" + ".core.puzzle_loader")
 
             if hasattr(loader_mod, "load_puzzle"):
                 return loader_mod.load_puzzle(str(path))
@@ -760,7 +761,7 @@ class InteractionController:
             pass
 
         try:
-            from src.core.puzzle import Puzzle  # type: ignore
+            Puzzle = getattr(importlib.import_module("src" + ".core.puzzle"), "Puzzle")
 
             if hasattr(Puzzle, "from_dict"):
                 return Puzzle.from_dict(raw_json)
@@ -775,7 +776,7 @@ class InteractionController:
         if not isinstance(raw_data, dict):
             return
         try:
-            from src.core.puzzle_validator import PuzzleValidator  # type: ignore
+            PuzzleValidator = getattr(importlib.import_module("src" + ".core.puzzle_validator"), "PuzzleValidator")
 
             validator = PuzzleValidator()
             if hasattr(validator, "validate"):
@@ -788,7 +789,7 @@ class InteractionController:
     def _build_engine(self, puzzle: Any) -> Any:
         if self._engine_factory is not None:
             return self._engine_factory(puzzle)
-        from src.core.game_engine import GameEngine  # type: ignore
+        GameEngine = getattr(importlib.import_module("src" + ".core.game_engine"), "GameEngine")
 
         return GameEngine(self.puzzle_path if self.puzzle_path is not None else puzzle)
 
@@ -799,7 +800,7 @@ class InteractionController:
             return getattr(engine, "public_kb")
         if hasattr(engine, "get_public_snapshot"):
             return engine.get_public_snapshot()
-        from src.core.public_kb import PublicKB  # type: ignore
+        PublicKB = getattr(importlib.import_module("src" + ".core.public_kb"), "PublicKB")
 
         try:
             return PublicKB(puzzle)
@@ -817,7 +818,7 @@ class InteractionController:
         if self._entailment_factory is not None:
             return self._entailment_factory(puzzle, public_kb)
         try:
-            from src.agent.entailment import EntailmentChecker  # type: ignore
+            EntailmentChecker = getattr(importlib.import_module("src" + ".agent.entailment"), "EntailmentChecker")
 
             try:
                 return EntailmentChecker(puzzle, public_kb)

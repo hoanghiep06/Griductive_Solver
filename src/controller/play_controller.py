@@ -14,8 +14,9 @@ from PySide6.QtCore import QObject, QRunnable, QThreadPool, QTimer, Signal, Slot
 from src.agent.entailment import Verdict
 from src.core.game_engine import VerdictResponse
 from src.controller.gameplay_session import Analysis, Evidence, GameplaySession
+from src.gui.case_catalog import OFFICIAL_CASE_CATALOG, format_case_title, localize_difficulty
 from src.gui.view_models import (
-    ActionCode, ActionResult, DeductionStepView, GameState, HintView, LevelSummary,
+    ActionCode, ActionResult, DeductionStepView, GameState, HintView, LevelSummary, ResultsView,
 )
 from src.gui.animations.motion_config import DEFAULT_MOTION
 
@@ -59,6 +60,9 @@ class PlayController(QObject):
         self._pending = None
         self._evidence = Evidence()
         self._steps = 0
+        self._total_sat_calls = 0
+        self._session_started = perf_counter()
+        self._last_results: ResultsView | None = None
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
         self._auto_interval_ms = DEFAULT_MOTION.auto_step_interval
@@ -76,6 +80,7 @@ class PlayController(QObject):
         window.how_to_play_requested.connect(window.show_how_to_play)
         window.animation_finished.connect(self._finish_reveal)
         self.screen.auto_solve_speed_changed.connect(self.set_auto_speed)
+        self.screen.demo_results_requested.connect(self.open_results)
         self.screen.notification_banner.inspect_requested.connect(self.inspect_contradiction)
         from PySide6.QtWidgets import QApplication
         QApplication.instance().aboutToQuit.connect(self.stop)
@@ -96,7 +101,14 @@ class PlayController(QObject):
                 continue
             pid = entry["puzzle_id"]
             self._paths[pid] = target
-            catalog.append(LevelSummary(pid, f"Hồ sơ {pid}", entry["size"], entry.get("difficulty_label")))
+            catalog.append(
+                LevelSummary(
+                    pid,
+                    format_case_title(pid),
+                    entry["size"],
+                    localize_difficulty(entry.get("difficulty_label")),
+                )
+            )
         return catalog
 
     def open_levels(self):
@@ -128,7 +140,7 @@ class PlayController(QObject):
             # public view immediately and invalidate the old animation token.
             pending, self._pending = self._pending, None
             self.screen.cancel_animations(revert_to_original=False)
-            self.screen.set_board(pending[1])
+            self.screen.set_board(pending[1], preserve_hint=bool(pending[2]))
             if pending[2] is not None:
                 self.screen.show_hint(pending[2])
         if self.session is not None:
@@ -155,16 +167,34 @@ class PlayController(QObject):
 
     def _finish_restart(self):
         self._steps = 0
+        self._total_sat_calls = 0
+        self._session_started = perf_counter()
+        self._last_results = None
         self._evidence = Evidence()
         self._ready()
         self.window.show_gameplay()
 
     def _reset_screen(self):
         self._steps = 0
+        self._total_sat_calls = 0
+        self._session_started = perf_counter()
+        self._last_results = None
         self._evidence = Evidence()
         self.screen.reset_for_new_case(self.session.board())
         self._ready()
         self.window.show_gameplay()
+
+    def _next_puzzle_id(self, current_pid: str) -> str | None:
+        ordered = list(self._paths.keys()) or list(OFFICIAL_CASE_CATALOG.keys())
+        if current_pid in ordered:
+            idx = ordered.index(current_pid)
+            if idx + 1 < len(ordered):
+                return ordered[idx + 1]
+        return None
+
+    def open_results(self):
+        if self._last_results is not None:
+            self.window.show_results(self._last_results)
 
     def guess(self, cell_id, verdict):
         if self._busy or self.state.is_auto_solving or self._pending or not self.session:
@@ -237,6 +267,7 @@ class PlayController(QObject):
         if result.version != self.session.engine.public_kb_version:
             self._ready()
             return
+        self._total_sat_calls += getattr(result, "sat_calls", 0)
         if result.inconsistent:
             self.stop()
             self.screen.set_game_status(GameState.ERROR)
@@ -360,7 +391,7 @@ class PlayController(QObject):
             return
         _, board, hint = self._pending
         self._pending = None
-        self.screen.set_board(board)
+        self.screen.set_board(board, preserve_hint=bool(hint))
         self.screen.focus_evidence(self._last_analysis.evidence.clue_ids,
                                    (*self._last_analysis.evidence.cell_ids, cell_id))
         if hint:
@@ -369,7 +400,26 @@ class PlayController(QObject):
         if self.session.engine.is_solved():
             self.state.is_auto_solving = False
             self.screen.action_bar.set_auto_solving(False)
-            self._notice(ActionCode.ACCEPTED, "Đã phá án! Mọi ô đều được chứng minh bằng suy luận.")
+            elapsed_ms = max(1.0, (perf_counter() - self._session_started) * 1000.0)
+            total_cells = self.session.engine.grid_size ** 2
+            self._last_results = ResultsView(
+                session_id=self.session.session_id,
+                puzzle_id=self.session.engine.puzzle_id,
+                revealed=len(self.session.engine.get_proved_verdicts()),
+                total=total_cells,
+                accepted_steps=self._steps,
+                hint_requests=self.state.hint_count,
+                elapsed_ms=elapsed_ms,
+                sat_calls=max(1, self._total_sat_calls),
+                next_puzzle_id=self._next_puzzle_id(self.session.engine.puzzle_id),
+                grid_size=self.session.engine.grid_size,
+                is_demo_preview=False,
+            )
+            self.window.results_screen.set_results(self._last_results)
+            self._notice(
+                ActionCode.ACCEPTED,
+                "Đã phá án! Mọi ô đều được chứng minh bằng suy luận. Bấm 'Biên bản khép án →' trên thanh trên để xem tổng kết.",
+            )
         elif self.state.is_auto_solving:
             # Nghỉ trọn khoảng interval SAU khi lật xong để người xem đọc lập luận,
             # rồi mới chạy bước kế tiếp (từng bước một, không chạy một mạch).

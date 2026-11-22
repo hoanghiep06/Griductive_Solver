@@ -39,15 +39,17 @@ def minimize_support(
     Precondition:
         Toàn bộ ``groups`` ∧ ¬C phải là UNSAT (caller nên kiểm tra trước).
     """
-    support = list(groups)
-    for group in groups:
-        trial = [g for g in support if g is not group]
-        clauses = [list(clause) for _, _, cs in trial for clause in cs]
+    n = len(groups)
+    active = [True] * n
+    group_clauses = [[list(c) for c in cs] for _, _, cs in groups]
+    for idx in range(n):
+        active[idx] = False
+        clauses = [list(c) for i in range(n) if active[i] for c in group_clauses[i]]
         clauses.append([opposite_literal])
         satisfiable = solver.solve(clauses)
         if on_solve is not None:
             on_solve()
-        if not satisfiable:
-            # Bỏ nhóm này vẫn mâu thuẫn → nhóm này không cần thiết.
-            support = trial
-    return support
+        if satisfiable:
+            # Bỏ nhóm này làm mất tính mâu thuẫn → nhóm này bắt buộc phải giữ lại.
+            active[idx] = True
+    return [groups[i] for i in range(n) if active[i]]

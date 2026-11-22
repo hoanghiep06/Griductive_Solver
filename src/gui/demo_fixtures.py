@@ -46,7 +46,7 @@ def build_demo_3x3_snapshot(*, puzzle_id: str = "MOCK_3x3_DEMO") -> PublicBoardS
             clue_id="CLUE_A1",
             owner_id="A1",
             clue_type="EXACTLY",
-            text="[MẪU] Hàng 1 có chính xác 1 nghi phạm là CRIMINAL.",
+            text="[MẪU] Hàng 1 có chính xác 1 nghi phạm là tội phạm.",
             referenced_cells=("A1", "B1", "C1"),
         ),
         PublicClueView(
@@ -170,12 +170,12 @@ def build_demo_5x5_snapshot(*, puzzle_id: str = "MOCK_5x5_DEMO") -> PublicBoardS
                 )
             )
     clues = (
-        PublicClueView("CLUE_A1", "A1", "FACT", "[MẪU] Hồ sơ xác thực Abel (A1) là INNOCENT.", ("A1",)),
+        PublicClueView("CLUE_A1", "A1", "FACT", "[MẪU] Hồ sơ xác thực Abel (A1) là vô tội.", ("A1",)),
         PublicClueView("CLUE_C2", "C2", "SAME", "[MẪU] Bea (B1) và Eliza (E1) có cùng trạng thái.", ("B1", "E1")),
         PublicClueView("CLUE_D2", "D2", "DIFFERENT", "[MẪU] Franz (A2) và Grant (B2) thuộc hai phe khác nhau.", ("A2", "B2")),
-        PublicClueView("CLUE_B4", "B4", "EXACTLY", "[MẪU] Hàng 4 có chính xác 2 nghi phạm là CRIMINAL.", ("A4", "B4", "C4", "D4", "E4")),
-        PublicClueView("CLUE_A5", "A5", "AT_LEAST", "[MẪU] Nhóm lân cận của Paul (A4) có ít nhất 1 nghi phạm là CRIMINAL.", ("A3", "B3", "B4", "A5", "B5")),
-        PublicClueView("CLUE_E5", "E5", "AT_MOST", "[MẪU] Cột E có nhiều nhất 2 nghi phạm là CRIMINAL trong toàn vụ án.", ("E1", "E2", "E3", "E4", "E5")),
+        PublicClueView("CLUE_B4", "B4", "EXACTLY", "[MẪU] Hàng 4 có chính xác 2 nghi phạm là tội phạm.", ("A4", "B4", "C4", "D4", "E4")),
+        PublicClueView("CLUE_A5", "A5", "AT_LEAST", "[MẪU] Nhóm lân cận của Paul (A4) có ít nhất 1 nghi phạm là tội phạm.", ("A3", "B3", "B4", "A5", "B5")),
+        PublicClueView("CLUE_E5", "E5", "AT_MOST", "[MẪU] Cột E có nhiều nhất 2 nghi phạm là tội phạm trong toàn vụ án.", ("E1", "E2", "E3", "E4", "E5")),
     )
     return PublicBoardSnapshot(
         session_id=f"demo-mock-5x5-{puzzle_id}",
@@ -208,7 +208,7 @@ def build_demo_trace(grid_size: int, *, session_id: str = "demo-session") -> tup
                 kb_version=1,
                 cell_id="B1",
                 verdict="CRIMINAL",
-                explanation="Suy luận từ lời khai công khai xác định B1 là CRIMINAL.",
+                explanation="Suy luận từ lời khai công khai xác định B1 là tội phạm.",
                 source_clue_ids=("CLUE_A1",),
                 support_kind="PUBLIC_KB",
                 sat_calls=3,
@@ -220,7 +220,7 @@ def build_demo_trace(grid_size: int, *, session_id: str = "demo-session") -> tup
                 kb_version=1,
                 cell_id="C1",
                 verdict="INNOCENT",
-                explanation="Kết hợp các lời khai công khai chứng minh C1 là INNOCENT.",
+                explanation="Kết hợp các lời khai công khai chứng minh C1 là vô tội.",
                 source_clue_ids=("CLUE_A1", "CLUE_B1"),
                 support_kind="PUBLIC_KB",
                 sat_calls=2,
@@ -342,35 +342,16 @@ def build_demo_level_catalog() -> tuple[LevelSummary, ...]:
     Does NOT fabricate experimental difficulty scores (``difficulty_label=None``).
     """
     entries: list[LevelSummary] = []
-    titles = {
-        3: [
-            "Hồ sơ #01 — Thư viện lúc nửa đêm",
-            "Hồ sơ #02 — Chìa khóa phòng lưu trữ",
-            "Hồ sơ #03 — Nhân chứng ở hành lang",
-            "Hồ sơ #04 — Vết mực trên bản đồ",
-            "Hồ sơ #05 — Chuyến tàu cuối ngày",
-        ],
-        4: [
-            "Hồ sơ #06 — Bảo tàng cổ vật",
-            "Hồ sơ #07 — Cuộc họp kín tại cảng",
-            "Hồ sơ #08 — Bức thư không ký tên",
-            "Hồ sơ #09 — Đồng hồ tháp chuông",
-            "Hồ sơ #10 — Căn phòng khóa trái",
-        ],
-        5: [
-            "Hồ sơ #11 — Mạng lưới gián điệp",
-            "Hồ sơ #12 — Hồ sơ mật khu công nghiệp",
-            "Hồ sơ #13 — Đêm sương mù ga trung tâm",
-            "Hồ sơ #14 — Két sắt ngân hàng thành phố",
-            "Hồ sơ #15 — Chuyên án tổng lực 5×5",
-        ],
-    }
+    from src.gui.case_catalog import OFFICIAL_CASE_CATALOG
+
     for grid_size in (3, 4, 5):
-        for idx, title in enumerate(titles[grid_size], start=1):
+        for idx in range(1, 6):
+            official_id = f"{grid_size}x{grid_size}_{idx:02d}"
+            meta = OFFICIAL_CASE_CATALOG[official_id]
             entries.append(
                 LevelSummary(
-                    puzzle_id=f"MOCK_{grid_size}x{grid_size}_{idx:02d}",
-                    title=f"{title} (Dữ liệu mẫu)",
+                    puzzle_id=f"MOCK_{official_id}",
+                    title=f"{meta.full_title} (Dữ liệu mẫu)",
                     grid_size=grid_size,
                     difficulty_label=None,  # Never fabricate difficulty ratings
                 )
@@ -426,22 +407,10 @@ OFFICIAL_PUZZLE_IDS: tuple[str, ...] = (
     "5x5_05",
 )
 
+from src.gui.case_catalog import OFFICIAL_CASE_CATALOG as _OFFICIAL_CASE_CATALOG
+
 _OFFICIAL_CASE_TITLES: dict[str, str] = {
-    "3x3_01": "Vụ án #01 — Thư viện lúc nửa đêm",
-    "3x3_02": "Vụ án #02 — Chìa khóa phòng lưu trữ",
-    "3x3_03": "Vụ án #03 — Nhân chứng ở hành lang",
-    "3x3_04": "Vụ án #04 — Vết mực trên bản đồ",
-    "3x3_05": "Vụ án #05 — Chuyến tàu cuối ngày",
-    "4x4_01": "Vụ án #06 — Bảo tàng cổ vật",
-    "4x4_02": "Vụ án #07 — Cuộc họp kín tại cảng",
-    "4x4_03": "Vụ án #08 — Bức thư không ký tên",
-    "4x4_04": "Vụ án #09 — Đồng hồ tháp chuông",
-    "4x4_05": "Vụ án #10 — Căn phòng khóa trái",
-    "5x5_01": "Vụ án #11 — Mạng lưới gián điệp",
-    "5x5_02": "Vụ án #12 — Đội cảnh vệ khu công nghiệp",
-    "5x5_03": "Vụ án #13 — Đêm sương mù ga trung tâm",
-    "5x5_04": "Vụ án #14 — Két sắt ngân hàng thành phố",
-    "5x5_05": "Vụ án #15 — Tiệm bánh phố cổ",
+    pid: meta.full_title for pid, meta in _OFFICIAL_CASE_CATALOG.items()
 }
 
 # Synthetic demo-only revealed verdicts for visual QA of Hidden vs Revealed cards.

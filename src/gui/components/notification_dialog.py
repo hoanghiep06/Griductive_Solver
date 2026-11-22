@@ -37,6 +37,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
+from src.gui.animations.motion_tokens import EASE_AWAY, EASE_SOFT, build_easing
 from src.gui.asset_registry import AssetId
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
 from src.gui.components.status_label import StatusLabel
@@ -53,24 +54,24 @@ from src.gui.view_models import (
 
 _SEVERITY_VISUALS: dict[NotificationSeverity, tuple[str, str, str]] = {
     NotificationSeverity.INFO: ("ℹ", "info", "THÔNG TIN"),
-    NotificationSeverity.SUCCESS: ("✓", "success", "VERDICT CONFIRMED"),
-    NotificationSeverity.WARNING: ("▲", "warning", "INSUFFICIENT EVIDENCE"),
-    NotificationSeverity.ERROR: ("✕", "danger", "CONTRADICTED / ERROR"),
+    NotificationSeverity.SUCCESS: ("✓", "success", "ĐÃ CHỨNG MINH"),
+    NotificationSeverity.WARNING: ("▲", "warning", "CHƯA ĐỦ CHỨNG CỨ"),
+    NotificationSeverity.ERROR: ("✕", "danger", "MÂU THUẪN"),
 }
 
 _ACTION_CODE_TITLES_VI: dict[ActionCode, str] = {
-    ActionCode.ACCEPTED: "VERDICT CONFIRMED · Phán quyết được chứng minh (ACCEPTED)",
-    ActionCode.NOT_PROVABLE: "INSUFFICIENT EVIDENCE · Chưa đủ cơ sở chứng minh (NOT_PROVABLE)",
-    ActionCode.CONTRADICTED: "CONTRADICTED · Phán quyết mâu thuẫn với chứng cứ",
-    ActionCode.INCONSISTENT: "INCONSISTENT · Cơ sở tri thức mâu thuẫn (KB UNSAT)",
-    ActionCode.ALREADY_SOLVED: "ALREADY_SOLVED · Vụ án đã được phá giải",
-    ActionCode.STALE_PROOF: "STALE_PROOF · Kết quả suy luận đã cũ",
-    ActionCode.INVALID_REQUEST: "INVALID_REQUEST · Yêu cầu không hợp lệ",
-    ActionCode.BUSY: "BUSY · Hệ thống đang xử lý",
-    ActionCode.LOAD_FAILED: "LOAD_FAILED · Không thể nạp hồ sơ vụ án",
-    ActionCode.CANCELLED: "CANCELLED · Thao tác đã được hủy",
-    ActionCode.SOLVER_FAILED: "SOLVER_FAILED · Lỗi bộ giải SAT",
-    ActionCode.INTERNAL_ERROR: "INTERNAL_ERROR · Lỗi hệ thống nội bộ",
+    ActionCode.ACCEPTED: "Phán quyết đã được chứng minh",
+    ActionCode.NOT_PROVABLE: "Chưa đủ cơ sở chứng minh",
+    ActionCode.CONTRADICTED: "Phán quyết mâu thuẫn với chứng cứ",
+    ActionCode.INCONSISTENT: "Tập chứng cứ mâu thuẫn",
+    ActionCode.ALREADY_SOLVED: "Vụ án đã được phá giải",
+    ActionCode.STALE_PROOF: "Kết quả suy luận đã cũ",
+    ActionCode.INVALID_REQUEST: "Yêu cầu không hợp lệ",
+    ActionCode.BUSY: "Hệ thống đang xử lý",
+    ActionCode.LOAD_FAILED: "Không thể nạp hồ sơ vụ án",
+    ActionCode.CANCELLED: "Thao tác đã được hủy",
+    ActionCode.SOLVER_FAILED: "Lỗi bộ giải suy luận",
+    ActionCode.INTERNAL_ERROR: "Lỗi hệ thống nội bộ",
 }
 
 _PERSISTENT_CODES = frozenset(
@@ -198,11 +199,11 @@ class NotificationBanner(QFrame):
         severity = result.severity or NotificationSeverity.INFO
         symbol, pill_tone, short_label = _SEVERITY_VISUALS[severity]
         if result.code is ActionCode.CONTRADICTED:
-            short_label = "CONTRADICTED"
+            short_label = "MÂU THUẪN"
         elif result.code is ActionCode.INCONSISTENT:
-            short_label = "INCONSISTENT"
+            short_label = "KHÔNG NHẤT QUÁN"
         elif result.code in (ActionCode.LOAD_FAILED, ActionCode.SOLVER_FAILED, ActionCode.INTERNAL_ERROR):
-            short_label = "ERROR"
+            short_label = "LỖI"
         elif result.code is ActionCode.NOT_PROVABLE:
             symbol, short_label = "?", "CHƯA ĐỦ DỮ KIỆN"
 
@@ -223,8 +224,10 @@ class NotificationBanner(QFrame):
             self._opacity_effect.setOpacity(1.0)
         else:
             self._opacity_effect.setOpacity(0.0)
-            self._fade_anim.setDuration(max(1, int(self._motion_config.notification_enter_duration)))
-            self._fade_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+            self._fade_anim.setDuration(
+                max(1, self._motion_config.scaled_ms(self._motion_config.notification_enter_duration))
+            )
+            self._fade_anim.setEasingCurve(build_easing(EASE_SOFT))
             self._fade_anim.setStartValue(0.0)
             self._fade_anim.setEndValue(1.0)
             self._fade_anim.start()
@@ -251,8 +254,10 @@ class NotificationBanner(QFrame):
         self._is_hiding = True
         if self._fade_anim.state() == QAbstractAnimation.State.Running:
             self._fade_anim.stop()
-        self._fade_anim.setDuration(max(1, int(self._motion_config.notification_exit_duration)))
-        self._fade_anim.setEasingCurve(QEasingCurve.Type.InCubic)
+        self._fade_anim.setDuration(
+            max(1, self._motion_config.scaled_ms(self._motion_config.notification_exit_duration))
+        )
+        self._fade_anim.setEasingCurve(build_easing(EASE_AWAY))
         self._fade_anim.setStartValue(self._opacity_effect.opacity())
         self._fade_anim.setEndValue(0.0)
         self._fade_anim.start()
@@ -331,7 +336,7 @@ class NotificationDialog(QDialog):
         severity = self._result.severity or NotificationSeverity.INFO
         symbol, pill_tone, short_label = _SEVERITY_VISUALS[severity]
 
-        self.setWindowTitle(f"Thông báo — GRIDUCTIVE ({self._result.code.value})")
+        self.setWindowTitle("Thông báo — GRIDUCTIVE SOLVER")
         self.setMinimumWidth(460)
 
         root = QVBoxLayout(self)
@@ -391,7 +396,7 @@ class HowToPlayDialog(QDialog):
         self.setObjectName("GriductiveHowToPlayDialog")
         self.setProperty("surface", "paperCanvas")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setWindowTitle("Hướng dẫn chơi — GRIDUCTIVE")
+        self.setWindowTitle("Hướng dẫn chơi — GRIDUCTIVE SOLVER")
         self.setMinimumSize(660, 560)
         self.resize(740, 680)
 
@@ -410,20 +415,20 @@ class HowToPlayDialog(QDialog):
         body_layout.setSpacing(SPACING.space_3)
 
         rules_panel = StyledPanel(
-            title="Nguyên tắc No-Guess (Không đoán)",
+            title="Nguyên tắc Không Đoán Mò",
             variant="dossier",
             padding=SPACING.space_4,
             accent_bar="brick",
             parent=body,
         )
         rules_text = QLabel(
-            "1. Mỗi nghi phạm trên bàn cờ N×N (3×3, 4×4 hoặc 5×5) là CRIMINAL (Tội phạm) hoặc INNOCENT (Vô tội).\n"
-            "2. Chỉ những thẻ đã lật mới tiết lộ manh mối công khai ở Bảng Chứng Cứ (CluePanel).\n"
-            "3. Bạn chỉ được lật thẻ khi phán quyết CRIMINAL hoặc INNOCENT được chứng minh chắc chắn "
-            "bằng logic mệnh đề (CNF + DPLL) từ tập manh mối công khai hiện tại.\n"
-            "4. Phán quyết chưa đủ cơ sở sẽ nhận NOT_PROVABLE và KHÔNG lật thẻ; phán quyết trái với điều "
-            "đã chứng minh sẽ nhận CONTRADICTED.\n"
-            "5. Gợi ý (Hint) chỉ đề xuất một bước hợp lệ mà không tự lật thẻ; Tự giải (Auto Solve) giải từng bước không đoán.",
+            "1. Mỗi nghi phạm trên bàn cờ N×N (3×3, 4×4 hoặc 5×5) là Tội phạm hoặc Vô tội.\n"
+            "2. Chỉ những thẻ đã lật mới tiết lộ manh mối công khai ở Bảng Chứng Cứ.\n"
+            "3. Bạn chỉ được lật thẻ khi phán quyết Tội phạm hoặc Vô tội được chứng minh chắc chắn "
+            "bằng suy luận logic từ tập manh mối công khai hiện tại.\n"
+            "4. Phán quyết chưa đủ cơ sở sẽ được giữ kín và KHÔNG lật thẻ; phán quyết trái với điều "
+            "đã chứng minh sẽ báo mâu thuẫn.\n"
+            "5. Gợi ý chỉ đề xuất một bước hợp lệ mà không tự lật thẻ; Tự giải tiến hành giải từng bước chắc chắn.",
             rules_panel,
         )
         rules_text.setProperty("role", "paperBody")
@@ -434,7 +439,7 @@ class HowToPlayDialog(QDialog):
 
         atlas_panel = StyledPanel(
             title="6 loại manh mối chuẩn",
-            subtitle="FACT · SAME · DIFFERENT · EXACTLY · AT_LEAST · AT_MOST",
+            subtitle="SỰ THẬT · CÙNG PHE · KHÁC PHE · CHÍNH XÁC · ÍT NHẤT · NHIỀU NHẤT",
             variant="dossier",
             padding=SPACING.space_4,
             accent_bar="brass",

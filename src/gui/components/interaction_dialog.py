@@ -26,6 +26,13 @@ from PySide6.QtWidgets import (
 
 from src.gui.components.styled_button import StyledButton
 from src.gui.animations.motion_config import DEFAULT_MOTION
+from src.gui.animations.motion_tokens import (
+    EASE_AWAY,
+    EASE_SOFT,
+    SHIFT_TABS,
+    SPRING_DIALOG,
+    build_easing,
+)
 from src.gui.styles.tokens import SPACING
 
 
@@ -49,6 +56,7 @@ class InteractionDialog(QDialog):
         self.setMaximumWidth(680)
         self._tone = "info"
         self._closing = False
+        self._reduced_motion = bool(DEFAULT_MOTION.reduced_motion)
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(28, 28, 28, 28)
@@ -77,7 +85,7 @@ class InteractionDialog(QDialog):
 
         title_col = QVBoxLayout()
         title_col.setSpacing(2)
-        self.kicker_label = QLabel("LOGIC FEEDBACK", self.panel)
+        self.kicker_label = QLabel("PHẢN HỒI SUY LUẬN", self.panel)
         self.kicker_label.setProperty("role", "paperMono")
         self.title_label = QLabel("", self.panel)
         self.title_label.setProperty("role", "pageTitle")
@@ -158,6 +166,9 @@ class InteractionDialog(QDialog):
         self.panel.style().unpolish(self.panel)
         self.panel.style().polish(self.panel)
 
+    def set_reduced_motion(self, enabled: bool) -> None:
+        self._reduced_motion = bool(enabled)
+
     def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
         super().showEvent(event)
         self._closing = False
@@ -168,28 +179,38 @@ class InteractionDialog(QDialog):
             target = center - self.rect().center()
             self.move(target)
         target_pos = self.pos()
+        if self._reduced_motion:
+            self.setWindowOpacity(1.0)
+            self.move(target_pos)
+            return
         self.setWindowOpacity(0.0)
-        self.move(target_pos.x(), target_pos.y() + 18)
-        self._fade.setDuration(DEFAULT_MOTION.dialog_enter_duration - 40)
+        self.move(target_pos.x(), target_pos.y() + int(SHIFT_TABS))
+        enter_ms = DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.dialog_enter_duration)
+        self._fade.setDuration(max(1, enter_ms - 30))
         self._fade.setStartValue(0.0)
         self._fade.setEndValue(1.0)
-        self._fade.setEasingCurve(QEasingCurve.Type.OutCubic)
-        self._slide.setDuration(DEFAULT_MOTION.dialog_enter_duration)
+        self._fade.setEasingCurve(build_easing(EASE_SOFT))
+        self._slide.setDuration(DEFAULT_MOTION.scaled_ms(SPRING_DIALOG.duration_ms))
         self._slide.setStartValue(self.pos())
         self._slide.setEndValue(target_pos)
-        self._slide.setEasingCurve(QEasingCurve.Type.OutBack)
+        self._slide.setEasingCurve(build_easing(SPRING_DIALOG, tempo=DEFAULT_MOTION.tempo))
         self._motion.start()
 
     def close_animated(self) -> None:
         if self._closing or not self.isVisible():
             return
+        if self._reduced_motion:
+            self.force_close()
+            self.dismissed.emit()
+            return
         self._closing = True
         self._motion.stop()
-        self._fade.setDuration(DEFAULT_MOTION.dialog_exit_duration)
+        exit_ms = DEFAULT_MOTION.scaled_ms(DEFAULT_MOTION.dialog_exit_duration)
+        self._fade.setDuration(exit_ms)
         self._fade.setStartValue(self.windowOpacity())
         self._fade.setEndValue(0.0)
-        self._fade.setEasingCurve(QEasingCurve.Type.InCubic)
-        self._slide.setDuration(DEFAULT_MOTION.dialog_exit_duration)
+        self._fade.setEasingCurve(build_easing(EASE_AWAY))
+        self._slide.setDuration(exit_ms)
         self._slide.setStartValue(self.pos())
         self._slide.setEndValue(self.pos())
         self._motion.start()

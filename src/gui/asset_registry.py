@@ -52,7 +52,7 @@ class AssetId(str, Enum):
     # Evidence Texture (Non-seamless decorative artwork)
     A08_EVIDENCE_TEXTURE = "A08_EVIDENCE_TEXTURE"
 
-    # Clue Icons (Opaque RGB raster with baked labels; >=48px usage)
+    # Clue Icons (Legacy V1.2 RGB + New Vietnamese 512x512 RGBA set)
     A10_CLUE_ICON_ATLAS = "A10_CLUE_ICON_ATLAS"
     A10_FACT = "A10_FACT"
     A10_SAME = "A10_SAME"
@@ -60,6 +60,8 @@ class AssetId(str, Enum):
     A10_EXACTLY = "A10_EXACTLY"
     A10_AT_LEAST = "A10_AT_LEAST"
     A10_AT_MOST = "A10_AT_MOST"
+    A10_PARITY = "A10_PARITY"
+    A10_COUNT_COMPARE = "A10_COUNT_COMPARE"
 
 
 ORIGINAL_RELATIVE_PATHS: Mapping[AssetId, str] = {
@@ -102,6 +104,40 @@ CLUE_ICON_BY_TYPE: Mapping[str, AssetId] = {
     "EXACTLY": AssetId.A10_EXACTLY,
     "AT_LEAST": AssetId.A10_AT_LEAST,
     "AT_MOST": AssetId.A10_AT_MOST,
+}
+
+# Production 8-icon Vietnamese RGBA set (from GRIDUCTIVE_8_Clue_Icons_Vietnamese.zip)
+VIETNAMESE_CLUE_ICON_IDS: Mapping[str, AssetId] = {
+    "FACT": AssetId.A10_FACT,
+    "SAME": AssetId.A10_SAME,
+    "DIFFERENT": AssetId.A10_DIFFERENT,
+    "EXACTLY": AssetId.A10_EXACTLY,
+    "AT_LEAST": AssetId.A10_AT_LEAST,
+    "AT_MOST": AssetId.A10_AT_MOST,
+    "PARITY": AssetId.A10_PARITY,
+    "COUNT_COMPARE": AssetId.A10_COUNT_COMPARE,
+}
+
+VIETNAMESE_CLUE_ICON_PATHS: Mapping[str, str] = {
+    "FACT": "clue_icons/A10_fact_vi.png",
+    "SAME": "clue_icons/A10_same_vi.png",
+    "DIFFERENT": "clue_icons/A10_different_vi.png",
+    "EXACTLY": "clue_icons/A10_exactly_vi.png",
+    "AT_LEAST": "clue_icons/A10_at_least_vi.png",
+    "AT_MOST": "clue_icons/A10_at_most_vi.png",
+    "PARITY": "clue_icons/A10_parity_vi.png",
+    "COUNT_COMPARE": "clue_icons/A10_count_compare_vi.png",
+}
+
+VIETNAMESE_CLUE_LABELS: Mapping[str, str] = {
+    "FACT": "SỰ THẬT",
+    "SAME": "CÙNG PHE",
+    "DIFFERENT": "KHÁC PHE",
+    "EXACTLY": "CHÍNH XÁC",
+    "AT_LEAST": "ÍT NHẤT",
+    "AT_MOST": "NHIỀU NHẤT",
+    "PARITY": "CHẴN / LẺ",
+    "COUNT_COMPARE": "SO SÁNH SỐ LƯỢNG",
 }
 
 
@@ -172,7 +208,22 @@ class AssetRegistry:
                     used_derived=True,
                 )
 
-        original_path = self._root / ORIGINAL_RELATIVE_PATHS[asset_id]
+        rel = ORIGINAL_RELATIVE_PATHS.get(asset_id)
+        if rel is None:
+            for ctype, aid in VIETNAMESE_CLUE_ICON_IDS.items():
+                if aid is asset_id:
+                    rel = VIETNAMESE_CLUE_ICON_PATHS[ctype]
+                    break
+        if rel is None:
+            return AssetResolution(
+                asset_id=asset_id,
+                path=None,
+                exists=False,
+                used_derived=False,
+                warning=f"No registered path for asset {asset_id.value}.",
+            )
+
+        original_path = self._root / rel
         if original_path.is_file():
             warning = None
             if prefer_derived and asset_id in DERIVED_RELATIVE_PATHS:
@@ -202,13 +253,90 @@ class AssetRegistry:
             raise ValueError(f"Unsupported grid_size {grid_size!r}; expected 3, 4, or 5")
         return self.resolve(CASE_COVER_BY_GRID_SIZE[grid_size], prefer_derived=False)
 
-    def resolve_clue_icon(self, clue_type: str) -> Optional[AssetResolution]:
-        """Resolve the raster clue badge (>=48px usage) for a known core clue type."""
+    def load_vi_clue_manifest(self) -> dict[str, dict]:
+        """Read ``assets/clue_icons/manifest_vi.json`` keyed by canonical clue type."""
+        manifest_path = self._root / "clue_icons" / "manifest_vi.json"
+        if not manifest_path.is_file():
+            return {}
+        data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        mapping: dict[str, dict] = {}
+        for entry in data.get("mapping", []):
+            key = str(entry.get("key", "")).strip().upper()
+            if key:
+                mapping[key] = entry
+        return mapping
+
+    def resolve_clue_icon(
+        self,
+        clue_type: str,
+        *,
+        prefer_vietnamese: bool = True,
+    ) -> Optional[AssetResolution]:
+        """Resolve the clue icon for ``clue_type`` (prefers 8-icon Vietnamese RGBA set).
+
+        Uses ``assets/clue_icons/manifest_vi.json`` mapping when available,
+        falling back to ``VIETNAMESE_CLUE_ICON_PATHS`` and then legacy V1.2
+        ``CLUE_ICON_BY_TYPE`` without ever inferring type from localized text.
+        """
         key = clue_type.strip().upper()
+        if prefer_vietnamese:
+            manifest_map = self.load_vi_clue_manifest()
+            entry = manifest_map.get(key)
+            rel_vi: Optional[str] = None
+            if entry is not None and entry.get("file"):
+                rel_vi = f"clue_icons/{Path(str(entry['file'])).name}"
+            elif key in VIETNAMESE_CLUE_ICON_PATHS:
+                rel_vi = VIETNAMESE_CLUE_ICON_PATHS[key]
+
+            if rel_vi is not None:
+                vi_path = self._root / rel_vi
+                aid = VIETNAMESE_CLUE_ICON_IDS.get(key, AssetId.A10_FACT)
+                if vi_path.is_file():
+                    return AssetResolution(
+                        asset_id=aid,
+                        path=vi_path,
+                        exists=True,
+                        used_derived=True,
+                    )
+
         asset_id = CLUE_ICON_BY_TYPE.get(key)
         if asset_id is None:
             return None
         return self.resolve(asset_id, prefer_derived=False)
+
+    def validate_vietnamese_clue_icons(self, *, verify_sha256: bool = True) -> tuple[bool, tuple[str, ...]]:
+        """Validate all 8 Vietnamese RGBA clue icons against ``assets/manifest.json``."""
+        errors: list[str] = []
+        manifest = self.load_manifest()
+        vi_section = manifest.get("vietnamese_clue_icons", {})
+        icons = vi_section.get("icons", [])
+        if len(icons) != 8:
+            errors.append(f"Expected 8 Vietnamese clue icons in manifest, found {len(icons)}")
+        seen: set[str] = set()
+        for entry in icons:
+            ctype = str(entry.get("clue_type", "")).upper()
+            rel = str(entry.get("relative_path", ""))
+            seen.add(ctype)
+            full = self._root / rel
+            if not full.is_file():
+                errors.append(f"Missing Vietnamese clue icon: {rel}")
+                continue
+            try:
+                w, h = read_png_dimensions(full)
+            except ValueError as exc:
+                errors.append(str(exc))
+                continue
+            dims = entry.get("dimensions", {})
+            if (w, h) != (dims.get("width"), dims.get("height")):
+                errors.append(f"Dimension mismatch for {rel}: file={w}x{h}, manifest={dims}")
+            if verify_sha256 and entry.get("sha256"):
+                actual_sha = hashlib.sha256(full.read_bytes()).hexdigest()
+                if actual_sha != entry["sha256"]:
+                    errors.append(f"SHA-256 mismatch for {rel}")
+        missing_keys = set(VIETNAMESE_CLUE_ICON_PATHS.keys()) - seen
+        if missing_keys:
+            errors.append(f"Missing clue types in vietnamese_clue_icons manifest: {sorted(missing_keys)}")
+        return (len(errors) == 0, tuple(errors))
 
     def load_manifest(self) -> dict:
         """Load the canonical ``assets/manifest.json``."""

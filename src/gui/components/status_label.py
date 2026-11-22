@@ -51,6 +51,8 @@ class StatusLabel(QLabel):
             raise ValueError(
                 f"Unsupported StatusLabel tone {tone!r}; expected one of {sorted(VALID_STATUS_TONES)}"
             )
+        if self._tone == canonical and self.property("tone") == canonical:
+            return
         self._tone = canonical
         self.setProperty("tone", canonical)
         style = self.style()

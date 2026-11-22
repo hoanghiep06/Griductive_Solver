@@ -6,7 +6,7 @@ from typing import Optional
 
 from PySide6.QtCore import QRect, Qt
 from PySide6.QtGui import QColor, QPainter, QPixmap
-from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from src.gui.asset_registry import AssetId
 from src.gui.resources.pixmap_loader import PixmapLoader, default_pixmap_loader
@@ -86,6 +86,29 @@ class StyledPanel(QFrame):
     @property
     def subtitle_label(self) -> Optional[QLabel]:
         return self._subtitle_label
+
+    def set_header_icon(self, icon_widget: QWidget) -> None:
+        """Place a crisp vector icon cleanly beside the panel title & subtitle."""
+        if self._title_label is None:
+            return
+        self._root_layout.removeWidget(self._title_label)
+        if self._subtitle_label is not None:
+            self._root_layout.removeWidget(self._subtitle_label)
+
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 2)
+        header_row.setSpacing(8)
+        icon_widget.setParent(self)
+        header_row.addWidget(icon_widget, 0, Qt.AlignmentFlag.AlignTop)
+
+        text_col = QVBoxLayout()
+        text_col.setContentsMargins(0, 0, 0, 0)
+        text_col.setSpacing(1)
+        text_col.addWidget(self._title_label)
+        if self._subtitle_label is not None:
+            text_col.addWidget(self._subtitle_label)
+        header_row.addLayout(text_col, 1)
+        self._root_layout.insertLayout(0, header_row)
 
     def set_variant(self, variant: str) -> None:
         key = variant.strip().lower()
