@@ -407,7 +407,7 @@ class RuleEffectsLayer:
         cards = self._cards()
         ctype = (clue_type or "").strip().upper()
         prim = [c for c in dict.fromkeys(primary_ids) if c in cards]
-        sec = [c for c in dict.fromkeys(secondary_ids) if c in cards and c not in prim]
+        sec = [c for c in dict.fromkeys(secondary_ids) if c in cards and (ctype == "COUNT_COMPARE" or c not in prim)]
 
         if ctype == "IMPLIES" and prim and sec:
             self._fx_implies(prim[0], sec[0], label, animate)
@@ -508,8 +508,11 @@ class RuleEffectsLayer:
                 z=27,
             )
         for cid in group_b:
+            rect = self._rect(cid)
+            if cid in group_a:
+                rect = rect.adjusted(-4, -4, 4, 4)
             self._add(
-                _RingItem(self._rect(cid), FX_COLORS["group_b"], mode="pulse" if animate else "steady", offset=math.pi),
+                _RingItem(rect, FX_COLORS["group_b"], mode="pulse" if animate else "steady", offset=math.pi),
                 animated=animate,
                 z=27,
             )

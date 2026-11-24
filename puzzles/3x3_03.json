@@ -69,37 +69,37 @@
   ],
   "hidden_solution": {
     "A1": true,
-    "B1": true,
-    "C1": false,
+    "B1": false,
+    "C1": true,
     "A2": false,
-    "B2": false,
-    "C2": true,
+    "B2": true,
+    "C2": false,
     "A3": true,
-    "B3": false,
+    "B3": true,
     "C3": false
   },
   "initial_revealed": [
-    "B2",
-    "A3"
+    "A1",
+    "C1",
+    "A2"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "FACT",
+      "type": "EXACTLY",
       "parameters": {
-        "target": "B2",
-        "status": "INNOCENT"
+        "k": 3,
+        "region_type": "CORNERS"
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 2,
-        "region_type": "ROW",
-        "index": 0
+        "target1": "B1",
+        "target2": "B3"
       }
     },
     {
@@ -107,36 +107,41 @@
       "owner_id": "C1",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
-        "region_type": "COLUMN",
-        "index": 0
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "A3",
+          "C3",
+          "B2",
+          "A1"
+        ]
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "FACT",
+      "type": "DIFFERENT",
       "parameters": {
-        "target": "A3",
-        "status": "CRIMINAL"
+        "target1": "B3",
+        "target2": "C2"
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "DIFFERENT",
+      "type": "SAME",
       "parameters": {
-        "target1": "B1",
-        "target2": "C3"
+        "target1": "B2",
+        "target2": "A3"
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "B1",
-        "target2": "C2"
+        "target": "A2",
+        "status": "INNOCENT"
       }
     },
     {
@@ -144,36 +149,26 @@
       "owner_id": "A3",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B1",
-          "C2",
-          "C3"
-        ]
+        "k": 4,
+        "region_type": "BORDER"
       }
     },
     {
       "clue_id": "CLUE_B3",
       "owner_id": "B3",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "C1",
-        "target2": "B3"
+        "target": "C1",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "AT_MOST",
+      "type": "FACT",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A1",
-          "C1",
-          "B3"
-        ]
+        "target": "A1",
+        "status": "CRIMINAL"
       }
     }
   ]

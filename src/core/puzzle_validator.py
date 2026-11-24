@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
 from src.core.character import Character
 from src.core.clue import Clue
 from src.core.puzzle import Puzzle
+from src.core.regions import SPATIAL_REGIONS, in_spatial_region
 
 if TYPE_CHECKING:
     from src.core.sequential_solvability import SequentialSolvabilityReport
@@ -29,7 +30,7 @@ class PuzzleValidator:
     """
 
     CORE_CLUE_TYPES = {"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST"}
-    SUPPORTED_REGION_TYPES = {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT", "ALL", "PROFESSION"}
+    SUPPORTED_REGION_TYPES = {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT", "ALL", "PROFESSION"} | SPATIAL_REGIONS
     SUPPORTED_GRID_SIZES = {3, 4, 5}
 
     def __init__(self, extension_evaluators: Optional[Mapping[str, ExtensionEvaluator]] = None):
@@ -271,6 +272,7 @@ class PuzzleValidator:
                     "EXPLICIT": {"cells"},
                     "ALL": set(),
                     "PROFESSION": {"profession", "cells"},
+                    **{kind: set() for kind in SPATIAL_REGIONS},
                 }[region_type]
                 self._require_exact_parameter_keys(
                     params, {"k", "region_type"} | required_region_keys, path
@@ -334,6 +336,10 @@ class PuzzleValidator:
     ) -> tuple[str, ...]:
         if region_type == "ALL":
             return tuple(characters)
+
+        if region_type in SPATIAL_REGIONS:
+            return tuple(c.id for c in characters.values()
+                         if in_spatial_region(region_type, c.row, c.col, grid_size))
 
         if region_type == "PROFESSION":
             profession = params.get("profession")
@@ -450,7 +456,7 @@ class PuzzleValidator:
         from src.encoder.semantic_eval import evaluate_clue, normalize_cells
         from src.core.clue import _thaw
         params = _thaw(clue.parameters)
-        board = {(c.row, c.col): assignment[c.id] for c in characters.values()}
+        board = {(c.row, c.col): assignment[c.id] for c in characters.values() if c.id in assignment}
 
         if clue.clue_type == "IMPLIES":
             if set(params) != {"antecedent", "consequent"}:

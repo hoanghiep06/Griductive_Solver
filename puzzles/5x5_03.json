@@ -180,59 +180,60 @@
     }
   ],
   "hidden_solution": {
-    "A1": false,
+    "A1": true,
     "B1": false,
     "C1": true,
     "D1": true,
     "E1": true,
-    "A2": false,
+    "A2": true,
     "B2": true,
     "C2": true,
-    "D2": true,
+    "D2": false,
     "E2": false,
-    "A3": true,
-    "B3": true,
+    "A3": false,
+    "B3": false,
     "C3": true,
     "D3": true,
-    "E3": true,
+    "E3": false,
     "A4": false,
-    "B4": true,
+    "B4": false,
     "C4": false,
-    "D4": false,
+    "D4": true,
     "E4": false,
     "A5": true,
     "B5": true,
-    "C5": false,
-    "D5": false,
+    "C5": true,
+    "D5": true,
     "E5": false
   },
   "initial_revealed": [
-    "E3",
     "C5",
-    "B4"
+    "A1",
+    "A3"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "A2",
-        "target2": "A1"
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "D1",
+          "B4",
+          "C2",
+          "A1"
+        ]
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "EXACTLY",
+      "type": "FACT",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B2",
-          "E2",
-          "D5"
-        ]
+        "target": "A1",
+        "status": "CRIMINAL"
       }
     },
     {
@@ -240,74 +241,54 @@
       "owner_id": "C1",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "D1",
-          "E1",
-          "C4"
-        ]
+        "k": 3,
+        "region_type": "COLUMN",
+        "index": 0
       }
     },
     {
       "clue_id": "CLUE_D1",
       "owner_id": "D1",
-      "type": "SAME",
+      "type": "DIFFERENT",
       "parameters": {
-        "target1": "D2",
-        "target2": "D3"
+        "target1": "D3",
+        "target2": "D2"
       }
     },
     {
       "clue_id": "CLUE_E1",
       "owner_id": "E1",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "D3",
-          "E3",
-          "A4",
-          "C4"
-        ]
+        "target1": "B1",
+        "target2": "B5"
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "AT_LEAST",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A3",
-          "A5",
-          "E5"
-        ]
+        "target1": "D5",
+        "target2": "E4"
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "C1",
-          "D1",
-          "C4"
-        ]
+        "target1": "A5",
+        "target2": "A2"
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "FACT",
+      "type": "SAME",
       "parameters": {
-        "target": "E3",
-        "status": "CRIMINAL"
+        "target1": "C2",
+        "target2": "D1"
       }
     },
     {
@@ -315,18 +296,29 @@
       "owner_id": "D2",
       "type": "EXACTLY",
       "parameters": {
-        "k": 3,
-        "region_type": "ROW",
-        "index": 1
+        "k": 2,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "B2",
+          "B3",
+          "E5",
+          "A1"
+        ]
       }
     },
     {
       "clue_id": "CLUE_E2",
       "owner_id": "E2",
-      "type": "SAME",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "D1",
-        "target2": "E1"
+        "k": 3,
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "D5",
+          "E4",
+          "A1"
+        ]
       }
     },
     {
@@ -334,8 +326,8 @@
       "owner_id": "A3",
       "type": "SAME",
       "parameters": {
-        "target1": "A5",
-        "target2": "A3"
+        "target1": "D4",
+        "target2": "D3"
       }
     },
     {
@@ -343,38 +335,32 @@
       "owner_id": "B3",
       "type": "EXACTLY",
       "parameters": {
-        "k": 2,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
-          "B2",
-          "B4",
-          "E4",
-          "C5"
+          "A5",
+          "A4",
+          "C1",
+          "A1"
         ]
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B1",
-          "B3",
-          "B5"
-        ]
+        "target1": "A2",
+        "target2": "A4"
       }
     },
     {
       "clue_id": "CLUE_D3",
       "owner_id": "D3",
-      "type": "AT_MOST",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 3,
-        "region_type": "NEIGHBORS",
-        "center": "B1"
+        "target1": "C3",
+        "target2": "B3"
       }
     },
     {
@@ -382,8 +368,8 @@
       "owner_id": "E3",
       "type": "SAME",
       "parameters": {
-        "target1": "B5",
-        "target2": "B3"
+        "target1": "E3",
+        "target2": "B1"
       }
     },
     {
@@ -392,8 +378,13 @@
       "type": "EXACTLY",
       "parameters": {
         "k": 2,
-        "region_type": "ROW",
-        "index": 4
+        "region_type": "EXPLICIT",
+        "cells": [
+          "E1",
+          "E4",
+          "E2",
+          "A1"
+        ]
       }
     },
     {
@@ -404,9 +395,10 @@
         "k": 2,
         "region_type": "EXPLICIT",
         "cells": [
-          "B1",
-          "C3",
-          "B5"
+          "D4",
+          "D2",
+          "C4",
+          "A1"
         ]
       }
     },
@@ -415,63 +407,66 @@
       "owner_id": "C4",
       "type": "EXACTLY",
       "parameters": {
-        "k": 1,
+        "k": 3,
         "region_type": "EXPLICIT",
         "cells": [
+          "D4",
+          "D3",
           "D2",
-          "A4",
-          "D4"
+          "A1"
         ]
       }
     },
     {
       "clue_id": "CLUE_D4",
       "owner_id": "D4",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "D2",
-          "D3",
-          "A4"
-        ]
+        "target1": "B2",
+        "target2": "C3"
       }
     },
     {
       "clue_id": "CLUE_E4",
       "owner_id": "E4",
-      "type": "DIFFERENT",
+      "type": "FACT",
       "parameters": {
-        "target1": "E1",
-        "target2": "C4"
+        "target": "C5",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_A5",
       "owner_id": "A5",
-      "type": "FACT",
+      "type": "SAME",
       "parameters": {
-        "target": "C5",
-        "status": "INNOCENT"
+        "target1": "E1",
+        "target2": "D5"
       }
     },
     {
       "clue_id": "CLUE_B5",
       "owner_id": "B5",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "E2",
-        "target2": "E4"
+        "target": "A3",
+        "status": "INNOCENT"
       }
     },
     {
       "clue_id": "CLUE_C5",
       "owner_id": "C5",
-      "type": "DIFFERENT",
+      "type": "EXACTLY",
       "parameters": {
-        "target1": "B3",
-        "target2": "B1"
+        "k": 3,
+        "region_type": "PROFESSION",
+        "profession": "Analyst",
+        "cells": [
+          "A1",
+          "D1",
+          "B4",
+          "C5"
+        ]
       }
     },
     {
@@ -479,22 +474,17 @@
       "owner_id": "D5",
       "type": "EXACTLY",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "B2",
-          "E2",
-          "E4"
-        ]
+        "k": 9,
+        "region_type": "BORDER"
       }
     },
     {
       "clue_id": "CLUE_E5",
       "owner_id": "E5",
-      "type": "FACT",
+      "type": "EXACTLY",
       "parameters": {
-        "target": "B4",
-        "status": "CRIMINAL"
+        "k": 5,
+        "region_type": "CENTER"
       }
     }
   ]

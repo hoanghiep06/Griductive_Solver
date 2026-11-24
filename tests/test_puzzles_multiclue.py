@@ -33,10 +33,19 @@ def test_reference_cnf_matches_independent_semantics_for_every_local_assignment(
     with PublicSAT(puzzle.clues,puzzle.characters_by_id,puzzle.grid_size) as sat:
         for clue in puzzle.clues:
             scope=clue_scope(clue,puzzle.characters_by_id,puzzle.grid_size)
-            for values in product((False,True), repeat=len(scope)):
-                assignment=dict(zip(scope,values))
-                model={sat.variable_map.get_var(cid):v for cid,v in assignment.items()}
-                encoded=all(any(model[abs(lit)]==(lit>0) for lit in clause) for clause in sat.fragments[clue.clue_id])
+            # Exhaust small scopes; sample full-board constraints to avoid an
+            # exponential 2**25 test and let the reference solver resolve aux.
+            if len(scope) <= 9:
+                assignments = product((False, True), repeat=len(scope))
+            else:
+                import random
+                rng = random.Random(1234)
+                assignments = [tuple(False for _ in scope), tuple(True for _ in scope)]
+                assignments += [tuple(bool(rng.getrandbits(1)) for _ in scope) for _ in range(64)]
+            for values in assignments:
+                assignment={cid: False for cid in puzzle.characters_by_id}
+                assignment.update(zip(scope,values))
+                encoded=sat.query(assignment, [clue.clue_id])
                 assert encoded is evaluator.evaluate_clue(clue,assignment,puzzle.characters_by_id,puzzle.grid_size)
 
 

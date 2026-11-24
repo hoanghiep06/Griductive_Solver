@@ -962,5 +962,6 @@ class LevelSelectionScreen(QWidget):
         self._footer_kicker.setText("HỒ SƠ ĐANG CHỌN")
         self._selection_label.setText(
             f"{display_name}    |    ▦ {s.grid_size}×{s.grid_size}{diff_part}"
+            + (f"\n{ s.archetype_label }" if s.archetype_label else "")
         )
         self._open_case_btn.setEnabled(True)

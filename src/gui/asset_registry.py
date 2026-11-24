@@ -138,6 +138,7 @@ VIETNAMESE_CLUE_LABELS: Mapping[str, str] = {
     "AT_MOST": "NHIỀU NHẤT",
     "PARITY": "CHẴN / LẺ",
     "COUNT_COMPARE": "SO SÁNH SỐ LƯỢNG",
+    "IMPLIES": "NẾU · THÌ",
 }
 
 

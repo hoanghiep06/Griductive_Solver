@@ -357,6 +357,10 @@ class GameplayScreen(BackdropScreen):
 
         self._clue_panel = CluePanel(pixmap_loader=pixmap_loader, parent=self._sidebar_widget)
         self._clue_panel.clue_selected.connect(self._on_clue_selected)
+        self._clue_panel.clue_hovered.connect(self._on_clue_hovered)
+        self._clue_panel.clue_hover_left.connect(self._on_clue_hover_left)
+        self._preview_clue_id = None
+        self._preview_saved_targets = ()
         self._clue_panel.focus_cleared.connect(self.clear_highlights)
         self._clue_panel.clue_usage_changed.connect(self._on_clue_usage_changed)
         sidebar_layout.addWidget(self._clue_panel, 5)
@@ -447,6 +451,10 @@ class GameplayScreen(BackdropScreen):
 
         # Sync public clues & public progress counts from snapshot
         self._clue_panel.set_clues(norm.clues)
+        criminals = sum(c.verdict == "CRIMINAL" for c in norm.characters)
+        innocent = sum(c.verdict == "INNOCENT" for c in norm.characters)
+        self._clue_panel.global_card.set_public_counts(criminals, innocent, len(norm.characters) - revealed_count)
+        self._preview_clue_id = None
         self._progress_panel.set_case_info(pid, n)
         self._progress_panel.set_progress(revealed_count, len(norm.characters))
         self._action_bar.set_session_stats(revealed_count, len(norm.characters),
@@ -679,6 +687,8 @@ class GameplayScreen(BackdropScreen):
         return self.ui_state.highlighted_targets
 
     def clear_highlights(self) -> None:
+        self._preview_clue_id = None
+        self._preview_saved_targets = ()
         self._game_board.clear_highlights()
         self._clue_panel.set_selected_clue(None)
         self.ui_state.selected_clue_id = None
@@ -705,8 +715,37 @@ class GameplayScreen(BackdropScreen):
         )
 
     def _on_clue_selected(self, clue_id: str) -> None:
-        clue = next(c for c in self._clue_panel.clues if c.clue_id == clue_id)
-        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"}
+        targets = self._render_clue_focus(clue_id)
+        if targets is None:
+            return
+        self.ui_state.selected_clue_id = clue_id
+        self.ui_state.highlighted_targets = targets
+        self.clue_selected.emit(clue_id)
+
+    def _on_clue_hovered(self, clue_id):
+        if not self._clue_panel.is_interactive:
+            return
+        if self._preview_clue_id is None:
+            self._preview_saved_targets = self.ui_state.highlighted_targets
+        self._preview_clue_id = clue_id
+        self._render_clue_focus(clue_id)
+
+    def _on_clue_hover_left(self, clue_id):
+        if self._preview_clue_id != clue_id:
+            return
+        self._preview_clue_id = None
+        selected = self.ui_state.selected_clue_id
+        if selected:
+            self._render_clue_focus(selected)
+        else:
+            self._game_board.highlight_cells(self._preview_saved_targets)
+        self._preview_saved_targets = ()
+
+    def _render_clue_focus(self, clue_id):
+        clue = next((c for c in self._clue_panel.clues if c.clue_id == clue_id), None)
+        if clue is None:
+            return None
+        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"}
         primary = list(
             clue.primary_cells
             or (clue.referenced_cells[:1] if comparative else clue.referenced_cells)
@@ -722,18 +761,19 @@ class GameplayScreen(BackdropScreen):
             "EXACTLY": "CHÍNH XÁC",
             "AT_LEAST": "ÍT NHẤT",
             "AT_MOST": "NHIỀU NHẤT",
-            "PARITY": "CHẴN / LẺ",
-            "COUNT_COMPARE": "SO SÁNH",
+            "PARITY": clue.scope_label.upper() or "CHẴN / LẺ",
+            "COUNT_COMPARE": f"SO SÁNH {clue.scope_label}",
+            "IMPLIES": "NẾU → THÌ",
         }
-        self.ui_state.selected_clue_id = clue_id
-        self.ui_state.highlighted_targets = self._game_board.focus_clue_relation(
+        return self._game_board.focus_clue_relation(
             owner_id=clue.owner_id,
             primary_cells=primary,
             secondary_cells=secondary,
             clue_type=clue.clue_type,
             relation_label=relation_labels.get(clue.clue_type, ""),
+            scope=clue.scope,
+            scope_label=clue.scope_label,
         )
-        self.clue_selected.emit(clue_id)
 
     def _on_clue_usage_changed(self, clue_id: str, used: bool) -> None:
         if used:

@@ -16,11 +16,18 @@ from src.agent.entailment import ClassificationResult, EntailmentChecker
 from src.agent.forced_move import analyze_public_kb
 from src.core.game_engine import GameEngine
 from src.core.variable_map import VariableMap
+from src.core.regions import SPATIAL_REGIONS
 from src.encoder.cnf_encoder import CNFEncoder
 from src.solvers.dpll import DPLLSolver
 from src.gui.view_models import (
     CardVisibility, PublicBoardSnapshot, PublicCharacterView, PublicClueView,
 )
+from src.gui.case_catalog import localize_profession
+
+REGION_LABELS = {
+    "ALL": "Toàn bộ bàn cờ", "CORNERS": "Bốn góc", "BORDER": "Viền ngoài", "CENTER": "Vùng trung tâm",
+    "TOP_HALF": "Nửa trên", "BOTTOM_HALF": "Nửa dưới", "LEFT_HALF": "Nửa trái", "RIGHT_HALF": "Nửa phải",
+}
 
 
 @dataclass(frozen=True)
@@ -92,6 +99,7 @@ class GameplaySession:
         label = lambda cid: f"{self.engine.get_character(cid).name} ({cid})"
         refs: list[str] = []
         primary, secondary, badges = [], [], []
+        scope, scope_label = "", ""
         if kind == "FACT":
             target = next(p[k] for k in ("target", "character", "person", "cell", "subject") if k in p)
             refs = [canonical(target)]
@@ -110,11 +118,20 @@ class GameplaySession:
             right = [canonical(c) for c in p["region_b"]]
             refs = left + right
             primary, secondary = left, right
-            text = f"Số tội phạm nhóm {', '.join(left)} {p['op']} nhóm {', '.join(right)}."
+            scope_label = {"==": "=", "!=": "≠", "<=": "≤", ">=": "≥"}.get(p["op"], p["op"])
+            text = f"Số tội phạm ở {self._group_label(left)} {scope_label} ở {self._group_label(right)}."
         elif kind == "PARITY":
             refs = [canonical(c) for c in p["cells"]]
             parity = "chẵn" if str(p["parity"]).lower() in {"even", "0"} else "lẻ"
-            text = f"Nhóm {', '.join(refs)} có số tội phạm {parity}."
+            scope_label = f"Số {parity}"
+            group = self._group_label(refs)
+            text = f"{group[0].upper() + group[1:]} có số tội phạm {parity}."
+        elif kind == "IMPLIES":
+            a, b = p["antecedent"], p["consequent"]
+            primary, secondary = [canonical(a["target"])], [canonical(b["target"])]
+            refs = primary + secondary
+            status = lambda value: "tội phạm" if value == "CRIMINAL" else "vô tội"
+            text = f"Nếu {label(primary[0])} là {status(a['status'])} thì {label(secondary[0])} là {status(b['status'])}."
         else:
             region = p.get("region")
             region_type = p.get("region_type")
@@ -124,13 +141,28 @@ class GameplaySession:
                 region = f"col:{chr(65 + p['index'])}"
             elif region_type == "NEIGHBORS":
                 region = f"neighbors:{p['center']}"
-            elif region_type == "EXPLICIT":
+            elif region_type in {"EXPLICIT", "PROFESSION"}:
                 region = p["cells"]
+            elif region_type == "ALL" or region_type in SPATIAL_REGIONS:
+                region = region_type
             refs = encoder.resolve_region(region) if region else []
             quantifier = {"EXACTLY": "đúng", "AT_LEAST": "ít nhất", "AT_MOST": "nhiều nhất", "NO": "đúng"}[kind]
             k = 0 if kind == "NO" else p.get("k", p.get("count"))
-            region_label = ", ".join(refs) or "rỗng"
-            text = f"Nhóm {region_label} có {quantifier} {k} tội phạm."
+            if region_type == "PROFESSION":
+                scope_label = localize_profession(p["profession"])
+                region_label = f"Nhóm nghề {scope_label}"
+                scope = region_type
+            elif region_type in REGION_LABELS:
+                scope, scope_label = region_type, REGION_LABELS[region_type]
+                region_label = scope_label
+            else:
+                group = self._group_label(refs)
+                region_label = group[0].upper() + group[1:]
+                if region_type == "NEIGHBORS":
+                    region_label = f"Các ô xung quanh {p['center']} (kể cả đường chéo)"
+            text = f"{region_label} có {quantifier} {k} tội phạm."
+            if scope_label:
+                badges.append(scope_label)
         if refs:
             characters = [self.engine.get_character(cid) for cid in refs]
             if len(refs) == self.engine.grid_size and len({c.row for c in characters}) == 1:
@@ -138,7 +170,19 @@ class GameplaySession:
             elif len(refs) == self.engine.grid_size and len({c.col for c in characters}) == 1:
                 badges.append(f"Cột {chr(65 + characters[0].col)}")
         return PublicClueView(clue.clue_id, clue.owner_id, kind, text, tuple(dict.fromkeys(refs)),
-                              tuple(primary or refs), tuple(secondary), tuple(badges))
+                              tuple(primary or refs), tuple(secondary), tuple(badges), scope, scope_label)
+
+    def _group_label(self, cells):
+        if not cells:
+            return "nhóm rỗng"
+        characters = [self.engine.get_character(cid) for cid in cells]
+        if len(cells) == self.engine.grid_size and len({c.row for c in characters}) == 1:
+            return f"hàng {characters[0].row + 1}"
+        if len(cells) == self.engine.grid_size and len({c.col for c in characters}) == 1:
+            return f"cột {chr(65 + characters[0].col)}"
+        if len(cells) == self.engine.grid_size ** 2:
+            return "toàn bàn"
+        return f"nhóm {{{', '.join(cells)}}}"
 
     def analyze(self, cell_id: str | None = None) -> Analysis:
         """Classify a guess or find the next forced step using only the public KB.

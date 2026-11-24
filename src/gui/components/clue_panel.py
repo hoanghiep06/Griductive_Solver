@@ -48,6 +48,7 @@ _CLUE_TYPE_DESCRIPTIONS_VI: dict[str, str] = {
     "AT_MOST": "NHIỀU NHẤT · Không quá k tội phạm",
     "PARITY": "CHẴN / LẺ · Ràng buộc chẵn hoặc lẻ",
     "COUNT_COMPARE": "SO SÁNH SỐ LƯỢNG · So sánh hai nhóm",
+    "IMPLIES": "ĐIỀU KIỆN · Nếu vế trước đúng thì vế sau đúng",
 }
 
 
@@ -126,6 +127,8 @@ class _ClueCardItem(QFrame):
     """Single clickable Evidence Card rendered inside ``CluePanel``."""
 
     clicked = Signal(str)
+    hovered = Signal(str)
+    hover_left = Signal(str)
     used_toggled = Signal(str, bool)
 
     ICON_SIZE = QSize(52, 52)
@@ -189,7 +192,7 @@ class _ClueCardItem(QFrame):
         else:
             self._used_fallback_icon = True
             self._icon_label.setProperty("widgetKind", "clueFallbackBadge")
-            short_code = clue.clue_type[:4] if clue.clue_type else "?"
+            short_code = "⇒" if clue.clue_type == "IMPLIES" else (clue.clue_type[:4] if clue.clue_type else "?")
             self._icon_label.setText(short_code)
             self._icon_label.setToolTip(f"Biểu tượng dự phòng cho loại manh mối: {clue.clue_type}")
 
@@ -258,8 +261,8 @@ class _ClueCardItem(QFrame):
         chips_vbox.setSpacing(4)
 
         chip_specs: list[tuple[str, str]] = [(lbl, "reference") for lbl in clue.reference_labels]
-        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"}
-        for index, cid in enumerate(clue.referenced_cells):
+        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"}
+        for index, cid in enumerate(clue.referenced_cells[:8]):
             secondary = cid in clue.secondary_cells or (not clue.primary_cells and index > 0)
             if comparative:
                 label_text = f"{'Đối chiếu' if secondary else 'Chính'} {cid}"
@@ -268,6 +271,8 @@ class _ClueCardItem(QFrame):
                 label_text = f"Ô {cid}"
                 role = "primary" if (cid in clue.primary_cells or not clue.primary_cells) else "reference"
             chip_specs.append((label_text, role))
+        if len(clue.referenced_cells) > 8:
+            chip_specs.append((f"+{len(clue.referenced_cells) - 8} ô · di chuột để xem", "reference"))
 
         # Pack compactly in rows of up to 3 chips with trailing stretch (never stretches full-width)
         row_limit = 3
@@ -421,6 +426,15 @@ class _ClueCardItem(QFrame):
             return
         super().mousePressEvent(event)
 
+    def enterEvent(self, event):  # noqa: N802
+        if self._interactive:
+            self.hovered.emit(self._clue.clue_id)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):  # noqa: N802
+        self.hover_left.emit(self._clue.clue_id)
+        super().leaveEvent(event)
+
     def keyPressEvent(self, event: QKeyEvent) -> None:  # noqa: N802
         if self._interactive and event.key() in (
             Qt.Key.Key_Return,
@@ -460,6 +474,8 @@ class CluePanel(StyledPanel):
     """Scrollable Evidence Ledger displaying ONLY public clues supplied by Controller."""
 
     clue_selected = Signal(str)
+    clue_hovered = Signal(str)
+    clue_hover_left = Signal(str)
     clue_usage_changed = Signal(str, bool)
     focus_cleared = Signal()
 
@@ -495,6 +511,13 @@ class CluePanel(StyledPanel):
             "}"
         )
         self.content_layout.setSpacing(SPACING.space_2)
+
+        from src.gui.components.global_clue_card import GlobalClueCard
+        self.global_card = GlobalClueCard(self)
+        self.global_card.clicked.connect(self._on_card_clicked)
+        self.global_card.hovered.connect(self.clue_hovered)
+        self.global_card.hover_left.connect(self.clue_hover_left)
+        self.content_layout.addWidget(self.global_card)
 
         self._clues: list[PublicClueView] = []
         self._cards_by_id: dict[str, _ClueCardItem] = {}
@@ -554,6 +577,8 @@ class CluePanel(StyledPanel):
             seen_ids.add(clue.clue_id)
             normalized.append(clue)
 
+        self.global_card.set_clues([c for c in normalized if c.scope == "ALL"])
+
         prev_selected = self._selected_clue_id
         prev_ids = {c.clue_id for c in self._clues}
 
@@ -605,6 +630,7 @@ class CluePanel(StyledPanel):
             self.set_clues(updated)
             return
         self._clues.append(clue)
+        self.global_card.set_clues([c for c in self._clues if c.scope == "ALL"])
         card = self._insert_card_widget(clue)
         self._sync_empty_and_subtitle()
         self._animate_new_cards([card])
@@ -618,6 +644,7 @@ class CluePanel(StyledPanel):
         """Remove all clue cards and reset selection."""
         self._clear_cards_only()
         self._clues = []
+        self.global_card.set_clues([])
         self._selected_clue_id = None
         self._used_clues.clear()
         self._auto_solving = False
@@ -663,6 +690,7 @@ class CluePanel(StyledPanel):
         if self._auto_solving == flag:
             return
         self._auto_solving = flag
+        self.global_card.set_interactive(self._interactive and not flag)
         if flag:
             if not self._active_strip.text():
                 self._active_strip.setText("Đang phân tích chứng cứ...")
@@ -727,6 +755,7 @@ class CluePanel(StyledPanel):
     def set_interactive(self, enabled: bool) -> None:
         """Enable or lock user clue selection (e.g. during PROCESSING/ANIMATING)."""
         flag = bool(enabled)
+        self.global_card.set_interactive(flag and not self._auto_solving)
         if self._interactive == flag:
             return
         self._interactive = flag
@@ -773,6 +802,8 @@ class CluePanel(StyledPanel):
             parent=self._list_host,
         )
         card.clicked.connect(self._on_card_clicked)
+        card.hovered.connect(self.clue_hovered)
+        card.hover_left.connect(self.clue_hover_left)
         card.set_used(clue.clue_id in self._used_clues)
         card.used_toggled.connect(self._on_usage_changed)
         # Insert right before trailing stretch item

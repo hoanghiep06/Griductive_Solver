@@ -20,6 +20,7 @@ import math
 from typing import Any, Mapping
 
 from src.core.clue import _thaw
+from src.core.regions import SPATIAL_REGIONS, in_spatial_region
 from .extended_clues import EXTENDED_TYPES, encode_extended
 
 from .variable_map import VariableMap
@@ -221,6 +222,8 @@ class CNFEncoder:
                 return self._resolve_explicit_list(items)
             if kind in {"all", "global"}:
                 return self._all_cell_keys()
+            if kind.upper() in SPATIAL_REGIONS:
+                return self._spatial_cell_keys(kind.upper())
             raise ValueError(f"Unsupported region kind: {raw_kind!r}")
 
         raise ValueError(f"Invalid region specification: {region!r}")
@@ -236,6 +239,8 @@ class CNFEncoder:
         """Parse string region shorthands such as 'row:2', 'col:B', 'neighbors:B2' or 'all'."""
         if spec.strip().lower() in {"all", "global"}:
             return self._all_cell_keys()
+        if spec.strip().upper() in SPATIAL_REGIONS:
+            return self._spatial_cell_keys(spec.strip().upper())
         if ":" not in spec:
             raise ValueError(f"Invalid region string {spec!r}; expected 'kind:value'")
         prefix, raw_val = spec.split(":", 1)
@@ -255,6 +260,12 @@ class CNFEncoder:
             except KeyError as exc:
                 raise ValueError(str(exc)) from exc
         raise ValueError(f"Unsupported region string prefix in {spec!r}")
+
+    def _spatial_cell_keys(self, kind):
+        size = math.isqrt(self.var_map.num_primary)
+        return [cid for cid in self._all_cell_keys()
+                if in_spatial_region(kind, self.var_map.get_entry(cid).row - 1,
+                                     self.var_map.get_entry(cid).col_index - 1, size)]
 
     def _resolve_explicit_list(self, items: Any) -> list[str]:
         """Validate an explicit list of distinct character/cell identifiers."""
@@ -339,6 +350,8 @@ class CNFEncoder:
                 params["region"] = params["cells"]
             elif kind == "ALL":
                 params["region"] = self._all_cell_keys()
+            elif kind in SPATIAL_REGIONS:
+                params["region"] = self._spatial_cell_keys(kind)
         self._clue_seq += 1
         tag_prefix = f"c{self._clue_seq}_{clue_type.lower()}"
 

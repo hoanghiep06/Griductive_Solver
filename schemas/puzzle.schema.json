@@ -107,7 +107,8 @@
                   { "$ref": "#/$defs/neighborsCountParameters" },
                   { "$ref": "#/$defs/explicitCountParameters" },
                   { "$ref": "#/$defs/allCountParameters" },
-                  { "$ref": "#/$defs/professionCountParameters" }
+                  { "$ref": "#/$defs/professionCountParameters" },
+                  { "$ref": "#/$defs/spatialCountParameters" }
                 ]
               }
             }
@@ -248,6 +249,15 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "op": { "enum": ["<", "<=", "==", "!=", ">=", ">"] }
+      }
+    },
+    "spatialCountParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["k", "region_type"],
+      "properties": {
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "enum": ["CORNERS", "BORDER", "CENTER", "TOP_HALF", "BOTTOM_HALF", "LEFT_HALF", "RIGHT_HALF"] }
       }
     },
     "literalSpec": {

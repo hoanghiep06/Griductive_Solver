@@ -67,7 +67,8 @@ VALID_PUBLIC_VERDICTS = frozenset({"CRIMINAL", "INNOCENT"})
 VALID_TRACE_VERDICTS = frozenset({"CRIMINAL", "INNOCENT", "UNKNOWN"})
 VALID_SUPPORT_KINDS = frozenset({"PUBLIC_KB", "VERIFIED_SUBSET"})
 VALID_HINT_OUTCOMES = frozenset({"FORCED", "NO_FORCED"})
-VALID_CLUE_SCOPES = frozenset({"", "ALL", "PROFESSION"})
+VALID_CLUE_SCOPES = frozenset({"", "ALL", "PROFESSION", "CORNERS", "BORDER", "CENTER",
+                               "TOP_HALF", "BOTTOM_HALF", "LEFT_HALF", "RIGHT_HALF"})
 SUPPORTED_GRID_SIZES = frozenset({3, 4, 5})
 CORE_CLUE_TYPES = frozenset({"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST"})
 
@@ -505,6 +506,7 @@ class LevelSummary:
     title: str
     grid_size: int
     difficulty_label: Optional[str] = None
+    archetype_label: str = ""
 
     def __post_init__(self) -> None:
         pid = _coerce_non_empty_str(self.puzzle_id, "puzzle_id")
@@ -519,6 +521,7 @@ class LevelSummary:
         object.__setattr__(self, "puzzle_id", pid)
         object.__setattr__(self, "title", title)
         object.__setattr__(self, "difficulty_label", diff)
+        object.__setattr__(self, "archetype_label", (self.archetype_label or "").strip())
 
 
 @dataclass(frozen=True, slots=True)
@@ -765,6 +768,7 @@ def normalize_level_summary(obj: Any) -> LevelSummary:
         title=getattr(obj, "title", None) or getattr(obj, "puzzle_id", None),
         grid_size=getattr(obj, "grid_size", None),
         difficulty_label=getattr(obj, "difficulty_label", None),
+        archetype_label=getattr(obj, "archetype_label", "") or "",
     )
 
 

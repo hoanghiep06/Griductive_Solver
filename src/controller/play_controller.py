@@ -121,6 +121,7 @@ class PlayController(QObject):
                     format_case_title(pid),
                     entry["size"],
                     localize_difficulty(entry.get("difficulty_label")),
+                    entry.get("archetype_label", ""),
                 )
             )
         return catalog

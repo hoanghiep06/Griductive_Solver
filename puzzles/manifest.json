@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generator_version": "2.0",
+  "generator_version": "3.0",
   "generator_seed": 20261110,
   "max_attempts": 40,
   "puzzles": [
@@ -32,21 +32,27 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "3x3_01.json",
       "generation_seed": 20261110,
+      "archetype": "local_counts",
+      "archetype_label": "Đếm lân cận",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Tutorial",
       "difficulty_label": "Tutorial",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 0.93,
+        "score": 8.93,
         "label": "Tutorial",
         "multi_clue_steps": 0,
+        "maximum_reveal_depth": 8,
+        "mean_reveal_depth": 4.5,
+        "intermediate_chain_steps": 7,
         "three_plus_clue_steps": 0,
         "single_clue_steps": 8,
         "multi_clue_ratio": 0.0,
@@ -91,7 +97,8 @@
       },
       "minimum_multi_clue_target": 0,
       "multi_clue_target_met": true,
-      "deduction_steps": 8
+      "deduction_steps": 8,
+      "progression_rank": 1
     },
     {
       "puzzle_id": "3x3_02",
@@ -99,19 +106,16 @@
       "criminal_count": 4,
       "innocent_count": 5,
       "clue_count": 9,
-      "initial_revealed_count": 2,
+      "initial_revealed_count": 3,
       "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
         "DIFFERENT",
         "EXACTLY",
-        "FACT",
-        "SAME"
+        "FACT"
       ],
       "region_types": [
+        "ALL",
         "COLUMN",
         "EXPLICIT",
-        "NEIGHBORS",
         "ROW"
       ],
       "validation_status": "PASSED",
@@ -121,151 +125,77 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "3x3_02.json",
       "generation_seed": 20261110,
+      "archetype": "global_finale",
+      "archetype_label": "Tổng toàn bàn · Chốt hạ",
+      "global_finale": {
+        "step": 6,
+        "character_id": "C3",
+        "global_clue_id": "CLUE_C2",
+        "known_criminals_before": 3,
+        "required_total": 4,
+        "without_global_opposite_satisfiable": true
+      },
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Easy",
       "difficulty_label": "Easy",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 17.45,
+        "score": 20.53,
         "label": "Easy",
         "multi_clue_steps": 1,
+        "maximum_reveal_depth": 3,
+        "mean_reveal_depth": 1.667,
+        "intermediate_chain_steps": 3,
         "three_plus_clue_steps": 0,
-        "single_clue_steps": 6,
-        "multi_clue_ratio": 0.142857,
+        "single_clue_steps": 5,
+        "multi_clue_ratio": 0.166667,
         "maximum_minimum_support": 2,
-        "steps_with_multiple_forced_choices": 4,
-        "unknown_to_forced_transitions": 5,
+        "steps_with_multiple_forced_choices": 3,
+        "unknown_to_forced_transitions": 3,
         "selected_minimum_support_uses": {
-          "CLUE_A1": 1,
           "CLUE_A2": 1,
+          "CLUE_A3": 1,
           "CLUE_B1": 1,
-          "CLUE_B2": 2,
-          "CLUE_C1": 1,
-          "CLUE_C2": 1,
-          "CLUE_C3": 1
+          "CLUE_B3": 1,
+          "CLUE_C1": 2,
+          "CLUE_C2": 1
         },
-        "reference_sat_calls": 152,
-        "classification_sat_calls": 63
+        "reference_sat_calls": 124,
+        "classification_sat_calls": 48
       },
       "structural_features": {
-        "wl_fingerprint": "b3fefea09714c0f5194f219cdc13c81dc63d93ab4a1c5394226d5dc4020d9b3f",
+        "wl_fingerprint": "d42214029f5f80acef92ffd82e6e108fceae970bde7d43c6e2398c0123604516",
         "clue_histogram": {
-          "AT_LEAST": 2,
-          "AT_MOST": 1,
           "DIFFERENT": 2,
-          "EXACTLY": 2,
-          "FACT": 1,
-          "SAME": 1
+          "EXACTLY": 4,
+          "FACT": 3
         },
         "scope_size_histogram": {
-          "1": 1,
-          "2": 4,
-          "3": 3,
-          "5": 1
+          "1": 3,
+          "2": 2,
+          "3": 2,
+          "4": 1,
+          "9": 1
         },
         "support_histogram": {
-          "1": 6,
+          "1": 5,
           "2": 1
         },
-        "mean_region_jaccard": 0.203704,
-        "mean_forced_choices": 1.5714,
+        "mean_region_jaccard": 0.17284,
+        "mean_forced_choices": 1.5,
         "logical_duplicate_clues": 0
       },
       "minimum_multi_clue_target": 0,
       "multi_clue_target_met": true,
-      "deduction_steps": 7
-    },
-    {
-      "puzzle_id": "3x3_03",
-      "size": 3,
-      "criminal_count": 4,
-      "innocent_count": 5,
-      "clue_count": 9,
-      "initial_revealed_count": 2,
-      "clue_types": [
-        "AT_MOST",
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "ROW"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "3x3_03.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Easy-Medium",
-      "difficulty_label": "Medium",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 29.91,
-        "label": "Medium",
-        "multi_clue_steps": 3,
-        "three_plus_clue_steps": 0,
-        "single_clue_steps": 4,
-        "multi_clue_ratio": 0.428571,
-        "maximum_minimum_support": 2,
-        "steps_with_multiple_forced_choices": 2,
-        "unknown_to_forced_transitions": 4,
-        "selected_minimum_support_uses": {
-          "CLUE_A3": 1,
-          "CLUE_B1": 3,
-          "CLUE_B2": 2,
-          "CLUE_B3": 1,
-          "CLUE_C1": 1,
-          "CLUE_C2": 1,
-          "CLUE_C3": 1
-        },
-        "reference_sat_calls": 173,
-        "classification_sat_calls": 63
-      },
-      "structural_features": {
-        "wl_fingerprint": "c776bb19276529e13758d9ac8bdfea76d932fe3ae56bb468ab88375ba3266a93",
-        "clue_histogram": {
-          "AT_MOST": 1,
-          "DIFFERENT": 1,
-          "EXACTLY": 3,
-          "FACT": 2,
-          "SAME": 2
-        },
-        "scope_size_histogram": {
-          "1": 2,
-          "2": 3,
-          "3": 4
-        },
-        "support_histogram": {
-          "1": 4,
-          "2": 3
-        },
-        "mean_region_jaccard": 0.125463,
-        "mean_forced_choices": 1.2857,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 1,
-      "multi_clue_target_met": true,
-      "deduction_steps": 7
+      "deduction_steps": 6,
+      "progression_rank": 2
     },
     {
       "puzzle_id": "3x3_04",
@@ -273,20 +203,14 @@
       "criminal_count": 4,
       "innocent_count": 5,
       "clue_count": 9,
-      "initial_revealed_count": 2,
+      "initial_revealed_count": 3,
       "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
+        "COUNT_COMPARE",
         "DIFFERENT",
-        "EXACTLY",
         "FACT",
-        "SAME"
+        "PARITY"
       ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "ROW"
-      ],
+      "region_types": [],
       "validation_status": "PASSED",
       "checks": {
         "schema": "PASSED",
@@ -294,150 +218,69 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "3x3_04.json",
       "generation_seed": 20261110,
+      "archetype": "compare_parity",
+      "archetype_label": "So sánh & chẵn/lẻ",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Medium",
       "difficulty_label": "Medium",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 29.85,
+        "score": 33.46,
         "label": "Medium",
         "multi_clue_steps": 3,
+        "maximum_reveal_depth": 3,
+        "mean_reveal_depth": 1.667,
+        "intermediate_chain_steps": 3,
         "three_plus_clue_steps": 0,
-        "single_clue_steps": 4,
-        "multi_clue_ratio": 0.428571,
+        "single_clue_steps": 3,
+        "multi_clue_ratio": 0.5,
         "maximum_minimum_support": 2,
-        "steps_with_multiple_forced_choices": 3,
-        "unknown_to_forced_transitions": 4,
+        "steps_with_multiple_forced_choices": 2,
+        "unknown_to_forced_transitions": 3,
         "selected_minimum_support_uses": {
-          "CLUE_A1": 2,
-          "CLUE_A2": 1,
-          "CLUE_A3": 1,
-          "CLUE_B1": 1,
-          "CLUE_C1": 3,
+          "CLUE_A1": 1,
+          "CLUE_A2": 3,
+          "CLUE_B1": 2,
+          "CLUE_B3": 1,
           "CLUE_C2": 1,
           "CLUE_C3": 1
         },
-        "reference_sat_calls": 176,
-        "classification_sat_calls": 63
-      },
-      "structural_features": {
-        "wl_fingerprint": "57d273810f3ee30191c3b02498a6e630a2204c04fc01d3f486914cf5dc78f64b",
-        "clue_histogram": {
-          "AT_LEAST": 1,
-          "AT_MOST": 1,
-          "DIFFERENT": 1,
-          "EXACTLY": 2,
-          "FACT": 2,
-          "SAME": 2
-        },
-        "scope_size_histogram": {
-          "1": 2,
-          "2": 4,
-          "3": 2,
-          "4": 1
-        },
-        "support_histogram": {
-          "1": 4,
-          "2": 3
-        },
-        "mean_region_jaccard": 0.112037,
-        "mean_forced_choices": 1.4286,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 1,
-      "multi_clue_target_met": true,
-      "deduction_steps": 7
-    },
-    {
-      "puzzle_id": "3x3_05",
-      "size": 3,
-      "criminal_count": 6,
-      "innocent_count": 3,
-      "clue_count": 9,
-      "initial_revealed_count": 3,
-      "clue_types": [
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "ROW"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "3x3_05.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Medium+",
-      "difficulty_label": "Hard",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 40.59,
-        "label": "Hard",
-        "multi_clue_steps": 2,
-        "three_plus_clue_steps": 1,
-        "single_clue_steps": 4,
-        "multi_clue_ratio": 0.333333,
-        "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 4,
-        "unknown_to_forced_transitions": 1,
-        "selected_minimum_support_uses": {
-          "CLUE_A1": 1,
-          "CLUE_A3": 1,
-          "CLUE_B1": 3,
-          "CLUE_C1": 1,
-          "CLUE_C2": 2,
-          "CLUE_C3": 1
-        },
-        "reference_sat_calls": 127,
+        "reference_sat_calls": 139,
         "classification_sat_calls": 48
       },
       "structural_features": {
-        "wl_fingerprint": "24582c5eb1994763708d7396c042d4e447889a4a47963fc3f720906fdc35c981",
+        "wl_fingerprint": "c1097e327e0237aca54dbc93c0326fb756e1cfa48af4ef6e0d6138da479f86f1",
         "clue_histogram": {
-          "DIFFERENT": 1,
-          "EXACTLY": 4,
+          "COUNT_COMPARE": 2,
+          "DIFFERENT": 2,
           "FACT": 3,
-          "SAME": 1
+          "PARITY": 2
         },
         "scope_size_histogram": {
           "1": 3,
-          "2": 2,
-          "3": 2,
+          "2": 4,
           "5": 2
         },
         "support_histogram": {
-          "1": 4,
-          "2": 1,
-          "3": 1
+          "1": 3,
+          "2": 3
         },
-        "mean_region_jaccard": 0.11746,
-        "mean_forced_choices": 2.1667,
+        "mean_region_jaccard": 0.09213,
+        "mean_forced_choices": 1.3333,
         "logical_duplicate_clues": 0
       },
       "minimum_multi_clue_target": 1,
       "multi_clue_target_met": true,
-      "deduction_steps": 6
+      "deduction_steps": 6,
+      "progression_rank": 3
     },
     {
       "puzzle_id": "4x4_01",
@@ -467,21 +310,27 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "4x4_01.json",
       "generation_seed": 20261110,
+      "archetype": "local_counts",
+      "archetype_label": "Đếm lân cận",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Medium",
       "difficulty_label": "Medium",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 26.44,
+        "score": 33.66,
         "label": "Medium",
         "multi_clue_steps": 5,
+        "maximum_reveal_depth": 9,
+        "mean_reveal_depth": 4.929,
+        "intermediate_chain_steps": 12,
         "three_plus_clue_steps": 0,
         "single_clue_steps": 9,
         "multi_clue_ratio": 0.357143,
@@ -534,28 +383,26 @@
       },
       "minimum_multi_clue_target": 3,
       "multi_clue_target_met": true,
-      "deduction_steps": 14
+      "deduction_steps": 14,
+      "progression_rank": 4
     },
     {
-      "puzzle_id": "4x4_02",
-      "size": 4,
-      "criminal_count": 9,
-      "innocent_count": 7,
-      "clue_count": 16,
-      "initial_revealed_count": 2,
+      "puzzle_id": "3x3_03",
+      "size": 3,
+      "criminal_count": 5,
+      "innocent_count": 4,
+      "clue_count": 9,
+      "initial_revealed_count": 3,
       "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
         "DIFFERENT",
         "EXACTLY",
         "FACT",
         "SAME"
       ],
       "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
+        "BORDER",
+        "CORNERS",
+        "EXPLICIT"
       ],
       "validation_status": "PASSED",
       "checks": {
@@ -564,351 +411,70 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "4x4_02.json",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "3x3_03.json",
       "generation_seed": 20261110,
+      "archetype": "category_groups",
+      "archetype_label": "Nghề nghiệp & vị trí",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Medium",
+      "generator_version": "3.0",
+      "target_difficulty": "Easy-Medium",
       "difficulty_label": "Medium",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 26.62,
+        "score": 34.58,
         "label": "Medium",
-        "multi_clue_steps": 5,
+        "multi_clue_steps": 3,
+        "maximum_reveal_depth": 4,
+        "mean_reveal_depth": 2.0,
+        "intermediate_chain_steps": 3,
         "three_plus_clue_steps": 0,
-        "single_clue_steps": 9,
-        "multi_clue_ratio": 0.357143,
+        "single_clue_steps": 3,
+        "multi_clue_ratio": 0.5,
         "maximum_minimum_support": 2,
-        "steps_with_multiple_forced_choices": 5,
-        "unknown_to_forced_transitions": 9,
+        "steps_with_multiple_forced_choices": 4,
+        "unknown_to_forced_transitions": 3,
         "selected_minimum_support_uses": {
           "CLUE_A1": 2,
-          "CLUE_A2": 1,
-          "CLUE_A3": 3,
-          "CLUE_A4": 1,
-          "CLUE_B1": 1,
-          "CLUE_B2": 1,
-          "CLUE_B3": 2,
-          "CLUE_B4": 1,
-          "CLUE_C1": 2,
-          "CLUE_C2": 1,
-          "CLUE_C3": 1,
-          "CLUE_C4": 1,
-          "CLUE_D3": 1,
-          "CLUE_D4": 1
-        },
-        "reference_sat_calls": 600,
-        "classification_sat_calls": 224
-      },
-      "structural_features": {
-        "wl_fingerprint": "f75566d4975fe69d4475c3d9de692768be0dcde7f49be0085ec4cf3c4ec6dc54",
-        "clue_histogram": {
-          "AT_LEAST": 2,
-          "AT_MOST": 1,
-          "DIFFERENT": 1,
-          "EXACTLY": 7,
-          "FACT": 2,
-          "SAME": 3
-        },
-        "scope_size_histogram": {
-          "1": 2,
-          "2": 4,
-          "3": 2,
-          "4": 5,
-          "5": 2,
-          "8": 1
-        },
-        "support_histogram": {
-          "1": 9,
-          "2": 5
-        },
-        "mean_region_jaccard": 0.109567,
-        "mean_forced_choices": 1.3571,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 3,
-      "multi_clue_target_met": true,
-      "deduction_steps": 14
-    },
-    {
-      "puzzle_id": "4x4_03",
-      "size": 4,
-      "criminal_count": 8,
-      "innocent_count": 8,
-      "clue_count": 16,
-      "initial_revealed_count": 3,
-      "clue_types": [
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "4x4_03.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Medium-Hard",
-      "difficulty_label": "Hard",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 42.4,
-        "label": "Hard",
-        "multi_clue_steps": 5,
-        "three_plus_clue_steps": 2,
-        "single_clue_steps": 8,
-        "multi_clue_ratio": 0.384615,
-        "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 7,
-        "unknown_to_forced_transitions": 6,
-        "selected_minimum_support_uses": {
-          "CLUE_A1": 2,
-          "CLUE_A2": 1,
-          "CLUE_A4": 2,
-          "CLUE_B1": 2,
-          "CLUE_B2": 1,
-          "CLUE_B3": 2,
-          "CLUE_B4": 1,
-          "CLUE_C2": 3,
-          "CLUE_C3": 1,
-          "CLUE_C4": 1,
-          "CLUE_D1": 1,
-          "CLUE_D2": 2,
-          "CLUE_D3": 1
-        },
-        "reference_sat_calls": 715,
-        "classification_sat_calls": 195
-      },
-      "structural_features": {
-        "wl_fingerprint": "be6ed076b5f0ca09afe4afb714a658d7bdc3d48184aa089eaaeb9ec3ba48090b",
-        "clue_histogram": {
-          "DIFFERENT": 3,
-          "EXACTLY": 8,
-          "FACT": 3,
-          "SAME": 2
-        },
-        "scope_size_histogram": {
-          "1": 3,
-          "2": 5,
-          "3": 3,
-          "4": 3,
-          "5": 1,
-          "8": 1
-        },
-        "support_histogram": {
-          "1": 8,
-          "2": 3,
-          "3": 2
-        },
-        "mean_region_jaccard": 0.094745,
-        "mean_forced_choices": 1.6923,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 3,
-      "multi_clue_target_met": true,
-      "deduction_steps": 13
-    },
-    {
-      "puzzle_id": "4x4_04",
-      "size": 4,
-      "criminal_count": 6,
-      "innocent_count": 10,
-      "clue_count": 16,
-      "initial_revealed_count": 3,
-      "clue_types": [
-        "AT_MOST",
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "4x4_04.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Hard",
-      "difficulty_label": "Very Hard",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 48.11,
-        "label": "Very Hard",
-        "multi_clue_steps": 6,
-        "three_plus_clue_steps": 3,
-        "single_clue_steps": 7,
-        "multi_clue_ratio": 0.461538,
-        "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 6,
-        "unknown_to_forced_transitions": 6,
-        "selected_minimum_support_uses": {
-          "CLUE_A1": 3,
-          "CLUE_A2": 2,
-          "CLUE_A3": 1,
-          "CLUE_A4": 2,
-          "CLUE_B1": 2,
-          "CLUE_B3": 1,
-          "CLUE_B4": 1,
-          "CLUE_C1": 1,
-          "CLUE_C4": 1,
-          "CLUE_D1": 3,
-          "CLUE_D2": 1,
-          "CLUE_D3": 3,
-          "CLUE_D4": 1
-        },
-        "reference_sat_calls": 815,
-        "classification_sat_calls": 195
-      },
-      "structural_features": {
-        "wl_fingerprint": "f82f90fc4cbd528295d84f96f03a6a3d66c02d95adfe7ef8a96c6607974bf7ba",
-        "clue_histogram": {
-          "AT_MOST": 3,
-          "DIFFERENT": 2,
-          "EXACTLY": 5,
-          "FACT": 3,
-          "SAME": 3
-        },
-        "scope_size_histogram": {
-          "1": 3,
-          "2": 6,
-          "4": 6,
-          "8": 1
-        },
-        "support_histogram": {
-          "1": 7,
-          "2": 3,
-          "3": 3
-        },
-        "mean_region_jaccard": 0.082646,
-        "mean_forced_choices": 1.6923,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 3,
-      "multi_clue_target_met": true,
-      "deduction_steps": 13
-    },
-    {
-      "puzzle_id": "4x4_05",
-      "size": 4,
-      "criminal_count": 9,
-      "innocent_count": 7,
-      "clue_count": 16,
-      "initial_revealed_count": 3,
-      "clue_types": [
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "EXPLICIT",
-        "NEIGHBORS"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "4x4_05.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Hard",
-      "difficulty_label": "Very Hard",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 48.16,
-        "label": "Very Hard",
-        "multi_clue_steps": 6,
-        "three_plus_clue_steps": 3,
-        "single_clue_steps": 7,
-        "multi_clue_ratio": 0.461538,
-        "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 9,
-        "unknown_to_forced_transitions": 5,
-        "selected_minimum_support_uses": {
-          "CLUE_A1": 3,
           "CLUE_A2": 3,
           "CLUE_A3": 1,
-          "CLUE_B2": 2,
-          "CLUE_B3": 1,
-          "CLUE_B4": 1,
-          "CLUE_C1": 3,
-          "CLUE_C2": 2,
-          "CLUE_C3": 1,
-          "CLUE_D1": 2,
-          "CLUE_D3": 2,
-          "CLUE_D4": 1
+          "CLUE_B1": 1,
+          "CLUE_B2": 1,
+          "CLUE_C1": 1
         },
-        "reference_sat_calls": 631,
-        "classification_sat_calls": 195
+        "reference_sat_calls": 143,
+        "classification_sat_calls": 48
       },
       "structural_features": {
-        "wl_fingerprint": "2f66d1aceb4bf952befade6d2ab45ba672e74b57e53b9aab7b62c5857eeff020",
+        "wl_fingerprint": "7b984266ea941aeaf427889e77dc3e030c33c6c4ad27d1b59cf86cae551eecfd",
         "clue_histogram": {
-          "DIFFERENT": 1,
-          "EXACTLY": 10,
+          "DIFFERENT": 2,
+          "EXACTLY": 3,
           "FACT": 3,
-          "SAME": 2
+          "SAME": 1
         },
         "scope_size_histogram": {
           "1": 3,
           "2": 3,
-          "3": 4,
-          "5": 6
+          "4": 2,
+          "8": 1
         },
         "support_histogram": {
-          "1": 7,
-          "2": 3,
-          "3": 3
+          "1": 3,
+          "2": 3
         },
-        "mean_region_jaccard": 0.09379,
-        "mean_forced_choices": 2.0769,
+        "mean_region_jaccard": 0.116744,
+        "mean_forced_choices": 1.8333,
         "logical_duplicate_clues": 0
       },
-      "minimum_multi_clue_target": 3,
+      "minimum_multi_clue_target": 1,
       "multi_clue_target_met": true,
-      "deduction_steps": 13
+      "deduction_steps": 6,
+      "progression_rank": 5
     },
     {
       "puzzle_id": "5x5_01",
@@ -938,21 +504,27 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "5x5_01.json",
       "generation_seed": 20261110,
+      "archetype": "local_counts",
+      "archetype_label": "Đếm lân cận",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Medium-Hard",
       "difficulty_label": "Medium",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 29.84,
+        "score": 37.66,
         "label": "Medium",
         "multi_clue_steps": 10,
+        "maximum_reveal_depth": 15,
+        "mean_reveal_depth": 7.87,
+        "intermediate_chain_steps": 21,
         "three_plus_clue_steps": 0,
         "single_clue_steps": 13,
         "multi_clue_ratio": 0.434783,
@@ -1014,28 +586,110 @@
       },
       "minimum_multi_clue_target": 6,
       "multi_clue_target_met": true,
-      "deduction_steps": 23
+      "deduction_steps": 23,
+      "progression_rank": 6
     },
     {
-      "puzzle_id": "5x5_02",
-      "size": 5,
-      "criminal_count": 15,
-      "innocent_count": 10,
-      "clue_count": 25,
-      "initial_revealed_count": 2,
+      "puzzle_id": "3x3_05",
+      "size": 3,
+      "criminal_count": 6,
+      "innocent_count": 3,
+      "clue_count": 9,
+      "initial_revealed_count": 3,
       "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
+        "DIFFERENT",
+        "FACT",
+        "IMPLIES",
+        "PARITY"
+      ],
+      "region_types": [],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "3x3_05.json",
+      "generation_seed": 20261110,
+      "archetype": "conditional_links",
+      "archetype_label": "Điều kiện liên kết chéo",
+      "global_finale": null,
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Medium+",
+      "difficulty_label": "Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 40.13,
+        "label": "Hard",
+        "multi_clue_steps": 4,
+        "maximum_reveal_depth": 3,
+        "mean_reveal_depth": 1.667,
+        "intermediate_chain_steps": 3,
+        "three_plus_clue_steps": 0,
+        "single_clue_steps": 2,
+        "multi_clue_ratio": 0.666667,
+        "maximum_minimum_support": 2,
+        "steps_with_multiple_forced_choices": 2,
+        "unknown_to_forced_transitions": 3,
+        "selected_minimum_support_uses": {
+          "CLUE_A1": 1,
+          "CLUE_A2": 1,
+          "CLUE_B1": 1,
+          "CLUE_B2": 3,
+          "CLUE_B3": 1,
+          "CLUE_C3": 3
+        },
+        "reference_sat_calls": 154,
+        "classification_sat_calls": 48
+      },
+      "structural_features": {
+        "wl_fingerprint": "af19c5052f21a2b7216b52e30a62363391e02096cbd8f110c149773316e5e401",
+        "clue_histogram": {
+          "DIFFERENT": 2,
+          "FACT": 3,
+          "IMPLIES": 2,
+          "PARITY": 2
+        },
+        "scope_size_histogram": {
+          "1": 3,
+          "2": 4,
+          "3": 2
+        },
+        "support_histogram": {
+          "1": 2,
+          "2": 4
+        },
+        "mean_region_jaccard": 0.092593,
+        "mean_forced_choices": 1.3333,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 1,
+      "multi_clue_target_met": true,
+      "deduction_steps": 6,
+      "progression_rank": 7
+    },
+    {
+      "puzzle_id": "4x4_02",
+      "size": 4,
+      "criminal_count": 8,
+      "innocent_count": 8,
+      "clue_count": 16,
+      "initial_revealed_count": 4,
+      "clue_types": [
         "DIFFERENT",
         "EXACTLY",
         "FACT",
         "SAME"
       ],
       "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
+        "ALL",
+        "EXPLICIT"
       ],
       "validation_status": "PASSED",
       "checks": {
@@ -1044,83 +698,604 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "5x5_02.json",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "4x4_02.json",
       "generation_seed": 20261110,
+      "archetype": "global_finale",
+      "archetype_label": "Tổng toàn bàn · Chốt hạ",
+      "global_finale": {
+        "step": 12,
+        "character_id": "D4",
+        "global_clue_id": "CLUE_C2",
+        "known_criminals_before": 7,
+        "required_total": 8,
+        "without_global_opposite_satisfiable": true
+      },
       "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Hard",
-      "difficulty_label": "Medium",
+      "generator_version": "3.0",
+      "target_difficulty": "Medium",
+      "difficulty_label": "Hard",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 29.89,
-        "label": "Medium",
-        "multi_clue_steps": 10,
-        "three_plus_clue_steps": 0,
-        "single_clue_steps": 13,
-        "multi_clue_ratio": 0.434783,
-        "maximum_minimum_support": 2,
-        "steps_with_multiple_forced_choices": 9,
-        "unknown_to_forced_transitions": 13,
+        "score": 47.27,
+        "label": "Hard",
+        "multi_clue_steps": 5,
+        "maximum_reveal_depth": 6,
+        "mean_reveal_depth": 2.833,
+        "intermediate_chain_steps": 8,
+        "three_plus_clue_steps": 2,
+        "single_clue_steps": 7,
+        "multi_clue_ratio": 0.416667,
+        "maximum_minimum_support": 3,
+        "steps_with_multiple_forced_choices": 8,
+        "unknown_to_forced_transitions": 5,
         "selected_minimum_support_uses": {
           "CLUE_A1": 2,
-          "CLUE_A2": 1,
           "CLUE_A3": 3,
           "CLUE_A4": 1,
-          "CLUE_A5": 1,
           "CLUE_B1": 1,
+          "CLUE_B2": 1,
+          "CLUE_B3": 1,
+          "CLUE_C1": 2,
+          "CLUE_C2": 1,
+          "CLUE_C3": 3,
+          "CLUE_C4": 1,
+          "CLUE_D1": 2,
+          "CLUE_D2": 1
+        },
+        "reference_sat_calls": 588,
+        "classification_sat_calls": 168
+      },
+      "structural_features": {
+        "wl_fingerprint": "9c948733bb2e1e388bde6e90466c9e2a815ce608256c1f0b6de3f3fc9f88759c",
+        "clue_histogram": {
+          "DIFFERENT": 3,
+          "EXACTLY": 6,
+          "FACT": 4,
+          "SAME": 3
+        },
+        "scope_size_histogram": {
+          "1": 4,
+          "2": 6,
+          "4": 5,
+          "16": 1
+        },
+        "support_histogram": {
+          "1": 7,
+          "2": 3,
+          "3": 2
+        },
+        "mean_region_jaccard": 0.08744,
+        "mean_forced_choices": 2.1667,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 3,
+      "multi_clue_target_met": true,
+      "deduction_steps": 12,
+      "progression_rank": 8
+    },
+    {
+      "puzzle_id": "4x4_05",
+      "size": 4,
+      "criminal_count": 9,
+      "innocent_count": 7,
+      "clue_count": 16,
+      "initial_revealed_count": 3,
+      "clue_types": [
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "IMPLIES",
+        "PARITY",
+        "SAME"
+      ],
+      "region_types": [
+        "NEIGHBORS"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "4x4_05.json",
+      "generation_seed": 20261110,
+      "archetype": "conditional_links",
+      "archetype_label": "Điều kiện liên kết chéo",
+      "global_finale": null,
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Hard",
+      "difficulty_label": "Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 44.36,
+        "label": "Hard",
+        "multi_clue_steps": 4,
+        "maximum_reveal_depth": 6,
+        "mean_reveal_depth": 3.231,
+        "intermediate_chain_steps": 10,
+        "three_plus_clue_steps": 3,
+        "single_clue_steps": 9,
+        "multi_clue_ratio": 0.307692,
+        "maximum_minimum_support": 3,
+        "steps_with_multiple_forced_choices": 7,
+        "unknown_to_forced_transitions": 6,
+        "selected_minimum_support_uses": {
+          "CLUE_A1": 1,
+          "CLUE_A3": 1,
+          "CLUE_A4": 1,
+          "CLUE_B1": 2,
           "CLUE_B2": 2,
           "CLUE_B3": 1,
           "CLUE_B4": 2,
-          "CLUE_B5": 2,
-          "CLUE_C1": 1,
-          "CLUE_C2": 2,
-          "CLUE_C3": 1,
+          "CLUE_C2": 1,
+          "CLUE_C3": 2,
           "CLUE_C4": 1,
-          "CLUE_C5": 3,
-          "CLUE_D1": 1,
-          "CLUE_D2": 1,
-          "CLUE_D3": 2,
-          "CLUE_D4": 1,
-          "CLUE_D5": 1,
-          "CLUE_E1": 1,
-          "CLUE_E2": 1,
-          "CLUE_E3": 1
+          "CLUE_D1": 3,
+          "CLUE_D2": 2,
+          "CLUE_D4": 1
         },
-        "reference_sat_calls": 1934,
-        "classification_sat_calls": 575
+        "reference_sat_calls": 787,
+        "classification_sat_calls": 195
       },
       "structural_features": {
-        "wl_fingerprint": "cd6daee095960521bc63f0daf28829cf964d3f1bbede348217a5cb099a810240",
+        "wl_fingerprint": "3c17fdebc4e6da0005f9ce116e808d22925ddf6498eb24c6462fa4a4f5bc8f69",
         "clue_histogram": {
-          "AT_LEAST": 3,
-          "AT_MOST": 2,
+          "DIFFERENT": 3,
+          "EXACTLY": 1,
+          "FACT": 3,
+          "IMPLIES": 3,
+          "PARITY": 3,
+          "SAME": 3
+        },
+        "scope_size_histogram": {
+          "1": 3,
+          "2": 9,
+          "3": 4
+        },
+        "support_histogram": {
+          "1": 9,
+          "2": 1,
+          "3": 3
+        },
+        "mean_region_jaccard": 0.0575,
+        "mean_forced_choices": 1.7692,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 3,
+      "multi_clue_target_met": true,
+      "deduction_steps": 13,
+      "progression_rank": 9
+    },
+    {
+      "puzzle_id": "4x4_04",
+      "size": 4,
+      "criminal_count": 7,
+      "innocent_count": 9,
+      "clue_count": 16,
+      "initial_revealed_count": 3,
+      "clue_types": [
+        "COUNT_COMPARE",
+        "DIFFERENT",
+        "FACT",
+        "PARITY",
+        "SAME"
+      ],
+      "region_types": [],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "4x4_04.json",
+      "generation_seed": 20261110,
+      "archetype": "compare_parity",
+      "archetype_label": "So sánh & chẵn/lẻ",
+      "global_finale": null,
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Hard",
+      "difficulty_label": "Very Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 50.61,
+        "label": "Very Hard",
+        "multi_clue_steps": 6,
+        "maximum_reveal_depth": 6,
+        "mean_reveal_depth": 3.231,
+        "intermediate_chain_steps": 10,
+        "three_plus_clue_steps": 3,
+        "single_clue_steps": 7,
+        "multi_clue_ratio": 0.461538,
+        "maximum_minimum_support": 3,
+        "steps_with_multiple_forced_choices": 7,
+        "unknown_to_forced_transitions": 6,
+        "selected_minimum_support_uses": {
+          "CLUE_A2": 3,
+          "CLUE_A3": 2,
+          "CLUE_B1": 3,
+          "CLUE_B2": 1,
+          "CLUE_B3": 2,
+          "CLUE_B4": 1,
+          "CLUE_C1": 1,
+          "CLUE_C2": 1,
+          "CLUE_C3": 1,
+          "CLUE_C4": 1,
+          "CLUE_D1": 3,
+          "CLUE_D2": 2,
+          "CLUE_D4": 1
+        },
+        "reference_sat_calls": 814,
+        "classification_sat_calls": 195
+      },
+      "structural_features": {
+        "wl_fingerprint": "c3aa7bdbeb4e1574715c0f341b3e64c8fe2d85189f74b7ba5da89719815db7c7",
+        "clue_histogram": {
+          "COUNT_COMPARE": 4,
+          "DIFFERENT": 3,
+          "FACT": 3,
+          "PARITY": 3,
+          "SAME": 3
+        },
+        "scope_size_histogram": {
+          "1": 3,
+          "2": 7,
+          "3": 3,
+          "5": 2,
+          "6": 1
+        },
+        "support_histogram": {
+          "1": 7,
+          "2": 3,
+          "3": 3
+        },
+        "mean_region_jaccard": 0.076303,
+        "mean_forced_choices": 1.7692,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 3,
+      "multi_clue_target_met": true,
+      "deduction_steps": 13,
+      "progression_rank": 10
+    },
+    {
+      "puzzle_id": "5x5_02",
+      "size": 5,
+      "criminal_count": 12,
+      "innocent_count": 13,
+      "clue_count": 25,
+      "initial_revealed_count": 4,
+      "clue_types": [
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "ALL",
+        "EXPLICIT",
+        "NEIGHBORS"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "5x5_02.json",
+      "generation_seed": 20261110,
+      "archetype": "global_finale",
+      "archetype_label": "Tổng toàn bàn · Chốt hạ",
+      "global_finale": {
+        "step": 21,
+        "character_id": "E5",
+        "global_clue_id": "CLUE_E4",
+        "known_criminals_before": 11,
+        "required_total": 12,
+        "without_global_opposite_satisfiable": true
+      },
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Hard",
+      "difficulty_label": "Very Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 52.45,
+        "label": "Very Hard",
+        "multi_clue_steps": 9,
+        "maximum_reveal_depth": 9,
+        "mean_reveal_depth": 4.476,
+        "intermediate_chain_steps": 16,
+        "three_plus_clue_steps": 5,
+        "single_clue_steps": 12,
+        "multi_clue_ratio": 0.428571,
+        "maximum_minimum_support": 4,
+        "steps_with_multiple_forced_choices": 13,
+        "unknown_to_forced_transitions": 8,
+        "selected_minimum_support_uses": {
+          "CLUE_A1": 1,
+          "CLUE_A2": 1,
+          "CLUE_A3": 3,
+          "CLUE_A4": 3,
+          "CLUE_B1": 2,
+          "CLUE_B2": 2,
+          "CLUE_B3": 1,
+          "CLUE_B4": 1,
+          "CLUE_B5": 2,
+          "CLUE_C2": 1,
+          "CLUE_C3": 1,
+          "CLUE_D1": 3,
+          "CLUE_D2": 1,
+          "CLUE_D3": 3,
+          "CLUE_D4": 1,
+          "CLUE_D5": 2,
+          "CLUE_E1": 2,
+          "CLUE_E2": 3,
+          "CLUE_E4": 3
+        },
+        "reference_sat_calls": 4310,
+        "classification_sat_calls": 483
+      },
+      "structural_features": {
+        "wl_fingerprint": "30eb7b0f8331d4a08c8c2146d29b74bbd01f52c6d8eefd923c31ad7275dece24",
+        "clue_histogram": {
           "DIFFERENT": 5,
-          "EXACTLY": 8,
-          "FACT": 2,
+          "EXACTLY": 11,
+          "FACT": 4,
           "SAME": 5
         },
         "scope_size_histogram": {
-          "1": 2,
-          "2": 11,
-          "3": 3,
-          "5": 5,
-          "8": 4
+          "1": 4,
+          "2": 10,
+          "4": 9,
+          "5": 1,
+          "25": 1
         },
         "support_histogram": {
-          "1": 13,
-          "2": 10
+          "1": 12,
+          "2": 4,
+          "3": 4,
+          "4": 1
         },
-        "mean_region_jaccard": 0.065732,
-        "mean_forced_choices": 1.3913,
+        "mean_region_jaccard": 0.071218,
+        "mean_forced_choices": 2.381,
         "logical_duplicate_clues": 0
       },
       "minimum_multi_clue_target": 6,
       "multi_clue_target_met": true,
-      "deduction_steps": 23
+      "deduction_steps": 21,
+      "progression_rank": 11
+    },
+    {
+      "puzzle_id": "4x4_03",
+      "size": 4,
+      "criminal_count": 8,
+      "innocent_count": 8,
+      "clue_count": 16,
+      "initial_revealed_count": 3,
+      "clue_types": [
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "SAME"
+      ],
+      "region_types": [
+        "BORDER",
+        "CENTER",
+        "EXPLICIT",
+        "RIGHT_HALF",
+        "TOP_HALF"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "4x4_03.json",
+      "generation_seed": 20261110,
+      "archetype": "category_groups",
+      "archetype_label": "Nghề nghiệp & vị trí",
+      "global_finale": null,
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Medium-Hard",
+      "difficulty_label": "Very Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 52.94,
+        "label": "Very Hard",
+        "multi_clue_steps": 7,
+        "maximum_reveal_depth": 7,
+        "mean_reveal_depth": 3.769,
+        "intermediate_chain_steps": 10,
+        "three_plus_clue_steps": 2,
+        "single_clue_steps": 6,
+        "multi_clue_ratio": 0.538462,
+        "maximum_minimum_support": 3,
+        "steps_with_multiple_forced_choices": 7,
+        "unknown_to_forced_transitions": 6,
+        "selected_minimum_support_uses": {
+          "CLUE_A1": 1,
+          "CLUE_A3": 1,
+          "CLUE_B1": 2,
+          "CLUE_B2": 1,
+          "CLUE_B3": 1,
+          "CLUE_B4": 2,
+          "CLUE_C1": 3,
+          "CLUE_C2": 2,
+          "CLUE_C3": 3,
+          "CLUE_D1": 1,
+          "CLUE_D2": 1,
+          "CLUE_D3": 1,
+          "CLUE_D4": 3
+        },
+        "reference_sat_calls": 805,
+        "classification_sat_calls": 195
+      },
+      "structural_features": {
+        "wl_fingerprint": "a955c5b1b1a109dd2b018060016dc0646b515deaf254541bcdb5871f913e130f",
+        "clue_histogram": {
+          "DIFFERENT": 3,
+          "EXACTLY": 8,
+          "FACT": 3,
+          "SAME": 2
+        },
+        "scope_size_histogram": {
+          "1": 3,
+          "2": 5,
+          "4": 5,
+          "8": 2,
+          "12": 1
+        },
+        "support_histogram": {
+          "1": 6,
+          "2": 5,
+          "3": 2
+        },
+        "mean_region_jaccard": 0.111588,
+        "mean_forced_choices": 1.7692,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 3,
+      "multi_clue_target_met": true,
+      "deduction_steps": 13,
+      "progression_rank": 12
+    },
+    {
+      "puzzle_id": "5x5_05",
+      "size": 5,
+      "criminal_count": 16,
+      "innocent_count": 9,
+      "clue_count": 25,
+      "initial_revealed_count": 3,
+      "clue_types": [
+        "DIFFERENT",
+        "EXACTLY",
+        "FACT",
+        "IMPLIES",
+        "PARITY",
+        "SAME"
+      ],
+      "region_types": [
+        "NEIGHBORS",
+        "PROFESSION"
+      ],
+      "validation_status": "PASSED",
+      "checks": {
+        "schema": "PASSED",
+        "semantic_truth": "PASSED",
+        "reference_sat_uniqueness": "PASSED",
+        "public_no_guess": "PASSED",
+        "exact_minimum_support": "PASSED",
+        "dpll_cnf_integration": "PASSED"
+      },
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "5x5_05.json",
+      "generation_seed": 20261110,
+      "archetype": "conditional_links",
+      "archetype_label": "Điều kiện liên kết chéo",
+      "global_finale": null,
+      "generation_attempt": 0,
+      "generator_version": "3.0",
+      "target_difficulty": "Very Hard",
+      "difficulty_label": "Very Hard",
+      "difficulty_measured": true,
+      "difficulty_is_subjective_heuristic": true,
+      "difficulty": {
+        "score": 54.05,
+        "label": "Very Hard",
+        "multi_clue_steps": 10,
+        "maximum_reveal_depth": 11,
+        "mean_reveal_depth": 5.091,
+        "intermediate_chain_steps": 19,
+        "three_plus_clue_steps": 5,
+        "single_clue_steps": 12,
+        "multi_clue_ratio": 0.454545,
+        "maximum_minimum_support": 3,
+        "steps_with_multiple_forced_choices": 11,
+        "unknown_to_forced_transitions": 11,
+        "selected_minimum_support_uses": {
+          "CLUE_A1": 1,
+          "CLUE_A2": 1,
+          "CLUE_A4": 3,
+          "CLUE_A5": 2,
+          "CLUE_B1": 3,
+          "CLUE_B2": 2,
+          "CLUE_B3": 1,
+          "CLUE_B4": 1,
+          "CLUE_B5": 1,
+          "CLUE_C2": 2,
+          "CLUE_C3": 2,
+          "CLUE_C4": 2,
+          "CLUE_C5": 1,
+          "CLUE_D1": 1,
+          "CLUE_D2": 2,
+          "CLUE_D3": 2,
+          "CLUE_D4": 2,
+          "CLUE_D5": 2,
+          "CLUE_E1": 1,
+          "CLUE_E3": 1,
+          "CLUE_E4": 2,
+          "CLUE_E5": 2
+        },
+        "reference_sat_calls": 3530,
+        "classification_sat_calls": 528
+      },
+      "structural_features": {
+        "wl_fingerprint": "7c5aa8d718b5fb5b196e5f776c37e3a7ddc40775b912b653f9329b8c5feed5c2",
+        "clue_histogram": {
+          "DIFFERENT": 5,
+          "EXACTLY": 2,
+          "FACT": 3,
+          "IMPLIES": 5,
+          "PARITY": 5,
+          "SAME": 5
+        },
+        "scope_size_histogram": {
+          "1": 3,
+          "2": 15,
+          "3": 6,
+          "4": 1
+        },
+        "support_histogram": {
+          "1": 12,
+          "2": 5,
+          "3": 5
+        },
+        "mean_region_jaccard": 0.037667,
+        "mean_forced_choices": 1.7727,
+        "logical_duplicate_clues": 0
+      },
+      "minimum_multi_clue_target": 4,
+      "multi_clue_target_met": true,
+      "deduction_steps": 22,
+      "progression_rank": 13
     },
     {
       "puzzle_id": "5x5_03",
@@ -1130,17 +1305,17 @@
       "clue_count": 25,
       "initial_revealed_count": 3,
       "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
         "DIFFERENT",
         "EXACTLY",
         "FACT",
         "SAME"
       ],
       "region_types": [
+        "BORDER",
+        "CENTER",
+        "COLUMN",
         "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
+        "PROFESSION"
       ],
       "validation_status": "PASSED",
       "checks": {
@@ -1149,208 +1324,105 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
       "file": "5x5_03.json",
       "generation_seed": 20261110,
+      "archetype": "category_groups",
+      "archetype_label": "Nghề nghiệp & vị trí",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Hard",
-      "difficulty_label": "Hard",
+      "difficulty_label": "Very Hard",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 46.18,
-        "label": "Hard",
+        "score": 53.07,
+        "label": "Very Hard",
         "multi_clue_steps": 10,
+        "maximum_reveal_depth": 12,
+        "mean_reveal_depth": 5.909,
+        "intermediate_chain_steps": 19,
         "three_plus_clue_steps": 4,
         "single_clue_steps": 12,
         "multi_clue_ratio": 0.454545,
         "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 12,
+        "steps_with_multiple_forced_choices": 10,
         "unknown_to_forced_transitions": 11,
         "selected_minimum_support_uses": {
           "CLUE_A1": 1,
-          "CLUE_A2": 1,
-          "CLUE_A3": 1,
+          "CLUE_A2": 3,
+          "CLUE_A3": 3,
           "CLUE_A4": 2,
-          "CLUE_B1": 2,
-          "CLUE_B2": 2,
-          "CLUE_B3": 2,
+          "CLUE_A5": 1,
+          "CLUE_B2": 3,
+          "CLUE_B3": 1,
           "CLUE_B4": 1,
-          "CLUE_B5": 2,
           "CLUE_C1": 1,
-          "CLUE_C3": 1,
+          "CLUE_C2": 1,
+          "CLUE_C3": 2,
           "CLUE_C4": 1,
           "CLUE_C5": 2,
-          "CLUE_D1": 3,
+          "CLUE_D1": 2,
           "CLUE_D2": 2,
-          "CLUE_D3": 1,
+          "CLUE_D3": 3,
           "CLUE_D4": 1,
           "CLUE_D5": 1,
           "CLUE_E1": 2,
-          "CLUE_E2": 3,
-          "CLUE_E3": 3,
-          "CLUE_E4": 1
+          "CLUE_E2": 1,
+          "CLUE_E3": 1,
+          "CLUE_E5": 1
         },
-        "reference_sat_calls": 2584,
+        "reference_sat_calls": 3341,
         "classification_sat_calls": 528
       },
       "structural_features": {
-        "wl_fingerprint": "2f26200f7cfdfe5beddebf948fd16deeedae21cd08e772626abc34c0015de1bd",
+        "wl_fingerprint": "46fc5990127e16f2d2ae7c272664e47f1ca465219258abd11e2f658614f69ad3",
         "clue_histogram": {
-          "AT_LEAST": 1,
-          "AT_MOST": 1,
-          "DIFFERENT": 2,
-          "EXACTLY": 12,
+          "DIFFERENT": 5,
+          "EXACTLY": 11,
           "FACT": 3,
           "SAME": 6
         },
         "scope_size_histogram": {
           "1": 3,
-          "2": 8,
-          "3": 9,
-          "4": 2,
-          "5": 3
+          "2": 11,
+          "4": 8,
+          "5": 1,
+          "9": 1,
+          "16": 1
         },
         "support_histogram": {
           "1": 12,
           "2": 6,
           "3": 4
         },
-        "mean_region_jaccard": 0.053433,
-        "mean_forced_choices": 1.7727,
+        "mean_region_jaccard": 0.069206,
+        "mean_forced_choices": 1.6364,
         "logical_duplicate_clues": 0
       },
       "minimum_multi_clue_target": 6,
       "multi_clue_target_met": true,
-      "deduction_steps": 22
+      "deduction_steps": 22,
+      "progression_rank": 14
     },
     {
       "puzzle_id": "5x5_04",
-      "size": 5,
-      "criminal_count": 12,
-      "innocent_count": 13,
-      "clue_count": 25,
-      "initial_revealed_count": 3,
-      "clue_types": [
-        "AT_LEAST",
-        "AT_MOST",
-        "DIFFERENT",
-        "EXACTLY",
-        "FACT",
-        "SAME"
-      ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
-      ],
-      "validation_status": "PASSED",
-      "checks": {
-        "schema": "PASSED",
-        "semantic_truth": "PASSED",
-        "reference_sat_uniqueness": "PASSED",
-        "public_no_guess": "PASSED",
-        "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
-      },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "5x5_04.json",
-      "generation_seed": 20261110,
-      "generation_attempt": 0,
-      "generator_version": "2.0",
-      "target_difficulty": "Very Hard",
-      "difficulty_label": "Very Hard",
-      "difficulty_measured": true,
-      "difficulty_is_subjective_heuristic": true,
-      "difficulty": {
-        "score": 47.57,
-        "label": "Very Hard",
-        "multi_clue_steps": 10,
-        "three_plus_clue_steps": 5,
-        "single_clue_steps": 12,
-        "multi_clue_ratio": 0.454545,
-        "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 12,
-        "unknown_to_forced_transitions": 10,
-        "selected_minimum_support_uses": {
-          "CLUE_A1": 3,
-          "CLUE_A2": 1,
-          "CLUE_A3": 3,
-          "CLUE_A4": 1,
-          "CLUE_A5": 3,
-          "CLUE_B1": 2,
-          "CLUE_B2": 3,
-          "CLUE_B3": 1,
-          "CLUE_B5": 2,
-          "CLUE_C1": 1,
-          "CLUE_C2": 1,
-          "CLUE_C4": 1,
-          "CLUE_C5": 1,
-          "CLUE_D1": 3,
-          "CLUE_D2": 1,
-          "CLUE_D3": 1,
-          "CLUE_D5": 1,
-          "CLUE_E1": 2,
-          "CLUE_E2": 1,
-          "CLUE_E3": 2,
-          "CLUE_E4": 1,
-          "CLUE_E5": 2
-        },
-        "reference_sat_calls": 3520,
-        "classification_sat_calls": 528
-      },
-      "structural_features": {
-        "wl_fingerprint": "117ce0459f9d9ce2d2f92b04450568c3e70619429e8098e3e29e7fc577348aaa",
-        "clue_histogram": {
-          "AT_LEAST": 2,
-          "AT_MOST": 3,
-          "DIFFERENT": 3,
-          "EXACTLY": 9,
-          "FACT": 3,
-          "SAME": 5
-        },
-        "scope_size_histogram": {
-          "1": 3,
-          "2": 9,
-          "4": 10,
-          "5": 3
-        },
-        "support_histogram": {
-          "1": 12,
-          "2": 5,
-          "3": 5
-        },
-        "mean_region_jaccard": 0.05995,
-        "mean_forced_choices": 1.8636,
-        "logical_duplicate_clues": 0
-      },
-      "minimum_multi_clue_target": 6,
-      "multi_clue_target_met": true,
-      "deduction_steps": 22
-    },
-    {
-      "puzzle_id": "5x5_05",
       "size": 5,
       "criminal_count": 13,
       "innocent_count": 12,
       "clue_count": 25,
       "initial_revealed_count": 3,
       "clue_types": [
+        "COUNT_COMPARE",
         "DIFFERENT",
-        "EXACTLY",
         "FACT",
+        "PARITY",
         "SAME"
       ],
-      "region_types": [
-        "COLUMN",
-        "EXPLICIT",
-        "NEIGHBORS",
-        "ROW"
-      ],
+      "region_types": [],
       "validation_status": "PASSED",
       "checks": {
         "schema": "PASSED",
@@ -1358,80 +1430,89 @@
         "reference_sat_uniqueness": "PASSED",
         "public_no_guess": "PASSED",
         "exact_minimum_support": "PASSED",
-        "dpll_cnf_integration": "SKIPPED"
+        "dpll_cnf_integration": "PASSED"
       },
-      "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
-      "file": "5x5_05.json",
+      "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+      "file": "5x5_04.json",
       "generation_seed": 20261110,
+      "archetype": "compare_parity",
+      "archetype_label": "So sánh & chẵn/lẻ",
+      "global_finale": null,
       "generation_attempt": 0,
-      "generator_version": "2.0",
+      "generator_version": "3.0",
       "target_difficulty": "Very Hard",
       "difficulty_label": "Very Hard",
       "difficulty_measured": true,
       "difficulty_is_subjective_heuristic": true,
       "difficulty": {
-        "score": 49.67,
+        "score": 54.17,
         "label": "Very Hard",
-        "multi_clue_steps": 11,
+        "multi_clue_steps": 10,
+        "maximum_reveal_depth": 10,
+        "mean_reveal_depth": 5.227,
+        "intermediate_chain_steps": 19,
         "three_plus_clue_steps": 5,
-        "single_clue_steps": 11,
-        "multi_clue_ratio": 0.5,
+        "single_clue_steps": 12,
+        "multi_clue_ratio": 0.454545,
         "maximum_minimum_support": 3,
-        "steps_with_multiple_forced_choices": 14,
-        "unknown_to_forced_transitions": 9,
+        "steps_with_multiple_forced_choices": 11,
+        "unknown_to_forced_transitions": 11,
         "selected_minimum_support_uses": {
-          "CLUE_A1": 1,
-          "CLUE_A2": 1,
-          "CLUE_A3": 2,
-          "CLUE_A4": 2,
+          "CLUE_A1": 3,
+          "CLUE_A2": 2,
+          "CLUE_A3": 3,
           "CLUE_A5": 1,
-          "CLUE_B1": 2,
-          "CLUE_B2": 2,
-          "CLUE_B3": 2,
-          "CLUE_B4": 1,
+          "CLUE_B2": 3,
+          "CLUE_B3": 1,
+          "CLUE_B4": 2,
+          "CLUE_B5": 1,
           "CLUE_C1": 2,
-          "CLUE_C2": 3,
-          "CLUE_C4": 1,
+          "CLUE_C2": 2,
+          "CLUE_C3": 2,
           "CLUE_C5": 1,
-          "CLUE_D1": 3,
+          "CLUE_D1": 2,
           "CLUE_D2": 1,
-          "CLUE_D5": 2,
-          "CLUE_E1": 3,
-          "CLUE_E2": 3,
+          "CLUE_D3": 2,
+          "CLUE_D4": 1,
+          "CLUE_D5": 1,
+          "CLUE_E1": 2,
+          "CLUE_E2": 2,
           "CLUE_E3": 1,
-          "CLUE_E4": 3,
+          "CLUE_E4": 1,
           "CLUE_E5": 1
         },
-        "reference_sat_calls": 3495,
+        "reference_sat_calls": 3529,
         "classification_sat_calls": 528
       },
       "structural_features": {
-        "wl_fingerprint": "c8f77e41b9e24bd3581a0e251b13fd3f7fd12e53172c3e3c3e7de0b887ac3a10",
+        "wl_fingerprint": "c7fb600b481579f115f4a3fe9a09650c6459612c1b1280b2383d31e1da9b8db5",
         "clue_histogram": {
-          "DIFFERENT": 3,
-          "EXACTLY": 15,
+          "COUNT_COMPARE": 7,
+          "DIFFERENT": 5,
           "FACT": 3,
-          "SAME": 4
+          "PARITY": 5,
+          "SAME": 5
         },
         "scope_size_histogram": {
           "1": 3,
-          "2": 7,
-          "3": 3,
-          "5": 11,
-          "8": 1
+          "2": 11,
+          "3": 6,
+          "5": 3,
+          "6": 2
         },
         "support_histogram": {
-          "1": 11,
-          "2": 6,
+          "1": 12,
+          "2": 5,
           "3": 5
         },
-        "mean_region_jaccard": 0.0698,
-        "mean_forced_choices": 2.0455,
+        "mean_region_jaccard": 0.061876,
+        "mean_forced_choices": 1.7273,
         "logical_duplicate_clues": 0
       },
       "minimum_multi_clue_target": 6,
       "multi_clue_target_met": true,
-      "deduction_steps": 22
+      "deduction_steps": 22,
+      "progression_rank": 15
     }
   ]
 }

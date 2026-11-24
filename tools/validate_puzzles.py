@@ -35,12 +35,23 @@ class PuzzleProofError(ValueError):
 
 
 def clue_scope(clue: Clue, characters: Mapping[str, Character], size: int) -> tuple[str, ...]:
-    """Resolve the official four regions without accessing private Core APIs."""
+    """Resolve a clue's entire public scope, including both comparative sides."""
     p = clue.parameters
     if clue.clue_type == "FACT":
         cells = [p["target"]]
     elif clue.clue_type in {"SAME", "DIFFERENT"}:
         cells = [p["target1"], p["target2"]]
+    elif clue.clue_type == "IMPLIES":
+        cells = [p["antecedent"]["target"], p["consequent"]["target"]]
+    elif clue.clue_type in {"PARITY", "COUNT_COMPARE"}:
+        from src.encoder.semantic_eval import normalize_cells
+        region = p["cells"] if clue.clue_type == "PARITY" else (*p["region_a"], *p["region_b"])
+        by_coord = {(c.row, c.col): c.id for c in characters.values()}
+        cells = [by_coord[coord] for coord in normalize_cells(region)]
+    elif p["region_type"] == "ALL":
+        cells = list(characters)
+    elif p["region_type"] == "PROFESSION":
+        cells = list(p["cells"])
     elif p["region_type"] == "ROW":
         cells = [c.id for c in characters.values() if c.row == p["index"]]
     elif p["region_type"] == "COLUMN":
@@ -52,7 +63,9 @@ def clue_scope(clue: Clue, characters: Mapping[str, Character], size: int) -> tu
     elif p["region_type"] == "EXPLICIT":
         cells = list(p["cells"])
     else:
-        raise PuzzleProofError(f"Unsupported region in {clue.clue_id}")
+        from src.core.regions import in_spatial_region
+        cells = [c.id for c in characters.values()
+                 if in_spatial_region(p["region_type"], c.row, c.col, size)]
     return tuple(sorted(set(cells), key=row_major_key))
 
 
@@ -68,8 +81,6 @@ def forced_from_public(
     evaluator = PuzzleValidator()
     forced: dict[str, tuple[bool, str]] = {}
     for clue in clues:
-        if clue.clue_type not in evaluator.CORE_CLUE_TYPES:
-            raise PuzzleProofError("Only agreed core clues are supported")
         scope = clue_scope(clue, characters, size)
         unknown = [cid for cid in scope if cid not in known]
         if len(unknown) > 8:
@@ -216,7 +227,10 @@ def structural_features(puzzle: Puzzle, steps: list[dict]) -> dict:
         scope = clue_scope(clue, puzzle.characters_by_id, puzzle.grid_size)
         scopes.append(set(scope))
         p = clue.parameters
-        label = (clue.clue_type, p.get("region_type", "BINARY"), len(scope), p.get("k", p.get("status")))
+        detail = p.get("k", p.get("status", p.get("parity", p.get("op"))))
+        if clue.clue_type == "IMPLIES":
+            detail = (p["antecedent"]["status"], p["consequent"]["status"])
+        label = (clue.clue_type, p.get("region_type", "BINARY"), len(scope), detail)
         nodes[node] = repr(label)
         edges[node] = [("owner", "cell:" + clue.owner_id)] + [("scope", "cell:" + cid) for cid in scope]
         edges["cell:" + clue.owner_id].append(("owns", node))
@@ -244,13 +258,22 @@ def difficulty_metrics(steps, features):
     multi = sum(s["minimum_clue_support_size"] >= 2 for s in steps)
     triple = sum(s["minimum_clue_support_size"] >= 3 for s in steps)
     maximum = max(s["minimum_clue_support_size"] for s in steps)
-    # Published subjective heuristic, no board-size/runtime bonus:
-    # 45% multi ratio, 30% triple ratio, 20% peak support, 5% scope overlap.
+    clue_depth, depths = {}, []
+    for step in steps:
+        depth = 1 + max((clue_depth.get(cid, 0) for cid in step["minimal_supporting_clue_ids"]), default=0)
+        clue_depth[step["newly_revealed_clue_id"]] = depth
+        depths.append(depth)
+    # Subjective heuristic using actual proof support and reveal dependency
+    # depth. Neither grid area nor solver runtime inflates the difficulty.
     peak = min(max(maximum-1, 0)/2, 1)
-    score = round(45 * multi/count + 30 * triple/count + 20 * peak + 5 * features["mean_region_jaccard"], 2)
-    label = "Tutorial" if multi == 0 else "Easy" if score < 18 else "Medium" if score < 35 else "Hard" if score < 47 else "Very Hard"
+    score = round(40 * multi/count + 25 * triple/count + 20 * peak
+                  + 10 * min(max(depths, default=0) / 10, 1) + 5 * features["mean_region_jaccard"], 2)
+    label = "Tutorial" if multi == 0 else "Easy" if score < 24 else "Medium" if score < 38 else "Hard" if score < 49 else "Very Hard"
     uses = Counter(cid for step in steps for cid in step["minimal_supporting_clue_ids"])
     return {"score": score, "label": label, "multi_clue_steps": multi,
+            "maximum_reveal_depth": max(depths, default=0),
+            "mean_reveal_depth": round(sum(depths) / max(count, 1), 3),
+            "intermediate_chain_steps": sum(d > 1 for d in depths),
             "three_plus_clue_steps": triple, "single_clue_steps": count-multi,
             "multi_clue_ratio": round(multi/count, 6),
             "maximum_minimum_support": maximum,
@@ -262,7 +285,30 @@ def difficulty_metrics(steps, features):
             "classification_sat_calls": sum(s["classification_sat_calls"] for s in steps)}
 
 
-def validate_puzzle(raw: dict) -> dict:
+def global_finale_witness(puzzle, steps):
+    """Certify a last-criminal deduction which genuinely needs a global clue."""
+    from tools.reference_sat import PublicSAT
+    if not steps:
+        return None
+    last = steps[-1]
+    known = last["known_verdicts"]
+    globals_ = [c for c in puzzle.clues if c.clue_id in last["active_clue_ids"]
+                and c.clue_type == "EXACTLY" and c.parameters.get("region_type") == "ALL"]
+    for clue in globals_:
+        total = clue.parameters["k"]
+        if last["status"] is not True or sum(known.values()) != total - 1:
+            continue
+        other = [c for c in puzzle.clues if c.clue_id in last["active_clue_ids"]
+                 and c not in globals_]
+        with PublicSAT(other, puzzle.characters_by_id, puzzle.grid_size) as sat:
+            if sat.query(known, assumption=-sat.variable_map.get_var(last["character_id"])):
+                return {"step": last["step"], "character_id": last["character_id"],
+                        "global_clue_id": clue.clue_id, "known_criminals_before": total - 1,
+                        "required_total": total, "without_global_opposite_satisfiable": True}
+    return None
+
+
+def validate_puzzle(raw: dict, *, check_runtime: bool = True) -> dict:
     SCHEMA_VALIDATOR.validate(raw)
     puzzle = PuzzleValidator().validate(raw)
     ordered = sorted(puzzle.characters, key=lambda c: (c.row, c.col))
@@ -278,6 +324,10 @@ def validate_puzzle(raw: dict) -> dict:
     reveal_proof = prove_progressive(puzzle)
     features = structural_features(puzzle, reveal_proof)
     difficulty = difficulty_metrics(reveal_proof, features)
+    runtime = None
+    if check_runtime:
+        from tools.certify_runtime import certify_runtime
+        runtime = certify_runtime(puzzle)
     criminal_count = sum(puzzle.hidden_solution.values())
     return {
         "puzzle_id": puzzle.puzzle_id, "size": puzzle.grid_size,
@@ -292,8 +342,10 @@ def validate_puzzle(raw: dict) -> dict:
         "checks": {"schema": "PASSED", "semantic_truth": "PASSED",
                    "reference_sat_uniqueness": "PASSED", "public_no_guess": "PASSED",
                    "exact_minimum_support": "PASSED",
-                   "dpll_cnf_integration": "SKIPPED"},
-        "proof_method": "authoring-only MiniSat22 + reference combinatorial CNF; exact support subsets",
+                   "dpll_cnf_integration": "PASSED" if check_runtime else "SKIPPED"},
+        "proof_method": "independent reference SAT + exact support subsets; production encoder/DPLL replay",
+        "runtime_proof": runtime,
+        "global_finale": global_finale_witness(puzzle, reveal_proof),
         "uniqueness_proof": full_proof,
         "reveal_proof": reveal_proof,
         "structural_features": features,
@@ -329,8 +381,14 @@ def validate_dataset(directory: Path) -> list[dict]:
         reports.append(report)
     if Counter(r["size"] for r in reports) != {3: 5, 4: 5, 5: 5}:
         raise PuzzleProofError("Dataset requires five puzzles of each size")
-    if types != PuzzleValidator.CORE_CLUE_TYPES or regions != PuzzleValidator.SUPPORTED_REGION_TYPES:
-        raise PuzzleProofError("Dataset does not cover all six core clues and four regions")
+    required_types = PuzzleValidator.CORE_CLUE_TYPES
+    required_regions = {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT"}
+    manifest_path = directory / "manifest.json"
+    if manifest_path.exists() and json.loads(manifest_path.read_text(encoding="utf-8")).get("generator_version", "").startswith("3."):
+        required_types = required_types | {"PARITY", "COUNT_COMPARE", "IMPLIES"}
+        required_regions |= {"ALL", "PROFESSION", "CORNERS", "CENTER"}
+    if not required_types <= types or not required_regions <= regions:
+        raise PuzzleProofError("Dataset does not cover the required clue families and regions")
     if len(solutions) != 15:
         raise PuzzleProofError("Repeated hidden board in dataset")
     if len({r["structural_features"]["wl_fingerprint"] for r in reports}) != 15:
@@ -376,7 +434,7 @@ def main() -> int:
         return 1
     for r in reports:
         print(f"{r['puzzle_id']}: PASSED (reference SAT uniqueness + public no-guess, "
-              f"{r['difficulty']['multi_clue_steps']} multi-clue / {len(r['reveal_proof'])} reveals); team DPLL/CNF SKIPPED")
+              f"{r['difficulty']['multi_clue_steps']} multi-clue / {len(r['reveal_proof'])} reveals); production DPLL/CNF PASSED")
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(reports, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

@@ -66,6 +66,8 @@ class CaseTile(QFrame):
         diff_tip = localized_diff or f"Lưới {summary.grid_size}×{summary.grid_size}"
         tip_prefix = f"{case_number} · " if case_number else ""
         self.setToolTip(f"{tip_prefix}{clean_title} ({diff_tip} · Mã {summary.puzzle_id})")
+        if summary.archetype_label:
+            self.setToolTip(self.toolTip() + f"\nChủ đề suy luận: {summary.archetype_label}")
 
         row = QHBoxLayout(self)
         row.setContentsMargins(12, 2, 8, 2)

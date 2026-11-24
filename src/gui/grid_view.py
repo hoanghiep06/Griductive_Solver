@@ -541,7 +541,7 @@ class GameBoard(QGraphicsView):
         prim_seq = [cid for cid in dict.fromkeys(primary_cells) if cid in self._cards_by_id]
         sec_seq = [
             cid for cid in dict.fromkeys(secondary_cells)
-            if cid in self._cards_by_id and cid not in prim_seq
+            if cid in self._cards_by_id and (clue_type == "COUNT_COMPARE" or cid not in prim_seq)
         ]
         owner = owner_id if (owner_id and owner_id in self._cards_by_id) else None
         all_targets = tuple(dict.fromkeys(([owner] if owner else []) + prim_seq + sec_seq))
@@ -552,7 +552,7 @@ class GameBoard(QGraphicsView):
         scope_norm = rule_fx.infer_scope(
             ctype, scope, len(prim_seq), len(sec_seq), len(self._cards_by_id)
         )
-        is_comparative = ctype in {"SAME", "DIFFERENT", "COUNT_COMPARE"} and bool(sec_seq)
+        is_comparative = ctype in {"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"} and bool(sec_seq)
         prim_badge = "CHÍNH" if is_comparative else ("MỤC TIÊU" if ctype == "FACT" else "VÙNG XÉT")
         prim_badge = rule_fx.primary_badge(ctype, scope_norm, relation_label, prim_badge)
         sec_badge = rule_fx.secondary_badge(ctype, "ĐỐI CHIẾU")
@@ -565,7 +565,7 @@ class GameBoard(QGraphicsView):
             elif owner and cid == owner:
                 card.set_focus_context(False, "source", "NGUỒN")
             elif cid in prim_seq:
-                card.set_focus_context(False, "primary", prim_badge)
+                card.set_focus_context(False, "primary", "NHÓM A ∩ B" if cid in sec_seq else prim_badge)
             else:
                 card.set_focus_context(False, "secondary", sec_badge)
 

@@ -20,6 +20,7 @@ PROFESSION (danh sach `cells` da duoc validator doi chieu voi nghe nghiep).
 from __future__ import annotations
 
 import operator
+from src.core.regions import SPATIAL_REGIONS, in_spatial_region
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 Cell = Tuple[int, int]
@@ -303,6 +304,9 @@ def evaluate_clue(clue: Any, board: Board) -> bool:
             cells = p["cells"]
         elif kind == "ALL":
             cells = list(b)
+        elif kind in SPATIAL_REGIONS:
+            size = max(max(r, c) for r, c in b) + 1
+            cells = [cell for cell in b if in_spatial_region(kind, *cell, size)]
         else:
             raise ValueError(f"Unknown region type: {kind}")
         if not cells:
