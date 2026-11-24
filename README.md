@@ -16,6 +16,10 @@ pip install PySide6
 python -m src.gui.app
 ```
 
+Trong menu, chọn **Hướng dẫn chơi · Tân thủ** để chơi bàn tập 4×4 gồm 18 bước,
+bao phủ đủ 8 loại manh mối. Màn chơi cũng có nút **? Tân thủ**; ván chính được
+giữ nguyên khi xem hoặc bỏ qua hướng dẫn. Xem [thiết kế và kịch bản](docs/INTERACTIVE_TUTORIAL.md).
+
 ### Kiểm thử hệ thống (Run Unit Tests)
 Chạy lệnh sau tại thư mục gốc dự án để kiểm tra toàn bộ bộ test tự động (Core + GUI):
 

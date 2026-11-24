@@ -47,6 +47,9 @@ class MainWindow(QMainWindow):
     play_requested = Signal()
     about_requested = Signal()
     how_to_play_requested = Signal()
+    tutorial_requested = Signal()
+    tutorial_started = Signal()
+    tutorial_finished = Signal()
     exit_requested = Signal()
     level_selection_requested = Signal()
     card_selected = Signal(str)
@@ -80,6 +83,7 @@ class MainWindow(QMainWindow):
         self._pixmap_loader = pixmap_loader or default_pixmap_loader()
         self._demo_navigation = bool(demo_navigation)
         self._active_help_dialog: Optional[HowToPlayDialog] = None
+        self._active_tutorial = None
         self._active_notification_dialog: Optional[NotificationDialog] = None
 
         # App emblem icon (prefer non-destructive circular cartoon detective A04 emblem)
@@ -165,6 +169,8 @@ class MainWindow(QMainWindow):
         self._main_menu_screen.play_requested.connect(self.play_requested.emit)
         self._main_menu_screen.about_requested.connect(self.about_requested.emit)
         self._main_menu_screen.how_to_play_requested.connect(self.how_to_play_requested.emit)
+        self._main_menu_screen.tutorial_requested.connect(self.tutorial_requested.emit)
+        self.tutorial_requested.connect(self.show_tutorial)
         self._main_menu_screen.exit_requested.connect(self.exit_requested.emit)
 
         # Presentation-only About screen opens directly from Main Menu and returns cleanly
@@ -184,6 +190,7 @@ class MainWindow(QMainWindow):
         self._gameplay_screen.hint_requested.connect(self.hint_requested.emit)
         self._gameplay_screen.auto_solve_requested.connect(self.auto_solve_requested.emit)
         self._gameplay_screen.back_requested.connect(self.back_requested.emit)
+        self._gameplay_screen.tutorial_requested.connect(self.tutorial_requested.emit)
         self._gameplay_screen.animation_finished.connect(self.animation_finished.emit)
         self._gameplay_screen.animation_cancelled.connect(self.animation_cancelled.emit)
 
@@ -543,6 +550,8 @@ class MainWindow(QMainWindow):
         self._gameplay_screen.set_reduced_motion(flag)
         self._results_screen.set_reduced_motion(flag)
         self._stardust_overlay.set_reduced_motion(flag)
+        if self._active_tutorial is not None:
+            self._active_tutorial.set_reduced_motion(flag)
 
     @property
     def stardust_overlay(self) -> AmbientStardustOverlay:
@@ -609,6 +618,38 @@ class MainWindow(QMainWindow):
         self._active_help_dialog.raise_()
         self._active_help_dialog.activateWindow()
 
+    def show_tutorial(self) -> None:
+        """Open a separate scripted session, retaining the current screen and case."""
+        if self._active_tutorial is None:
+            from src.gui.tutorial_dialog import TutorialDialog
+
+            # Pause workers/auto-play and settle any accepted in-flight reveal
+            # before showing the modal tutorial. The active engine is retained.
+            self.tutorial_started.emit()
+            try:
+                dialog = TutorialDialog(pixmap_loader=self._pixmap_loader,
+                                        reduced_motion=self.reduced_motion, parent=self)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).exception("Cannot open tutorial")
+                self.tutorial_finished.emit()
+                self.show_notification(ActionResult(
+                    code=ActionCode.LOAD_FAILED,
+                    message="Không thể mở hướng dẫn lúc này. Bạn có thể tiếp tục ván hiện tại hoặc thử lại.",
+                ))
+                return
+            self._active_tutorial = dialog
+
+            def finished(_result):
+                self._active_tutorial = None
+                self.tutorial_finished.emit()
+                dialog.deleteLater()
+
+            dialog.finished.connect(finished)
+        self._active_tutorial.show()
+        self._active_tutorial.raise_()
+        self._active_tutorial.activateWindow()
+
     def resizeEvent(self, event) -> None:  # noqa: N802
         super().resizeEvent(event)
         central = self.centralWidget()
@@ -617,6 +658,8 @@ class MainWindow(QMainWindow):
             self._stardust_overlay.raise_()
 
     def closeEvent(self, event: QCloseEvent) -> None:  # noqa: N802
+        if self._active_tutorial is not None:
+            self._active_tutorial.reject()
         self._stardust_overlay.hide()
         self.cancel_animations(revert_to_original=False)
         self._gameplay_screen.game_board.motion_coordinator.reset_visuals(

@@ -78,6 +78,9 @@ class PlayController(QObject):
         window.back_requested.connect(self.back)
         window.exit_requested.connect(window.close)
         window.how_to_play_requested.connect(window.show_how_to_play)
+        self._tutorial_started_at = None
+        window.tutorial_started.connect(self._suspend_for_tutorial)
+        window.tutorial_finished.connect(self._resume_after_tutorial)
         window.animation_finished.connect(self._finish_reveal)
         self.screen.auto_solve_speed_changed.connect(self.set_auto_speed)
         self.screen.demo_results_requested.connect(self.open_results)
@@ -88,6 +91,17 @@ class PlayController(QObject):
     @property
     def state(self):
         return self.screen.ui_state
+
+    def _suspend_for_tutorial(self):
+        self.stop()
+        self._tutorial_started_at = perf_counter()
+        if self.session is None:
+            self.screen.set_game_status(GameState.NO_PUZZLE)
+
+    def _resume_after_tutorial(self):
+        if self._tutorial_started_at is not None:
+            self._session_started += perf_counter() - self._tutorial_started_at
+            self._tutorial_started_at = None
 
     def _catalog(self):
         path = self.puzzle_dir / "manifest.json"

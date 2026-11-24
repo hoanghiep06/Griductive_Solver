@@ -580,6 +580,7 @@ class MainMenuScreen(BackdropScreen):
     play_requested = Signal()
     about_requested = Signal()
     how_to_play_requested = Signal()  # Preserved for backward API compatibility
+    tutorial_requested = Signal()
     exit_requested = Signal()
 
     def __init__(
@@ -720,6 +721,18 @@ class MainMenuScreen(BackdropScreen):
         self._play_button.clicked.connect(self.play_requested.emit)
         btn_col.addWidget(self._play_button)
 
+        self._tutorial_button = _MenuActionButton(
+            "?  Hướng dẫn chơi · Tân thủ",
+            variant="secondary",
+            icon_kind="book",
+            min_height=42,
+            parent=hero_card,
+        )
+        self._tutorial_button.setFixedWidth(366)
+        self._tutorial_button.setToolTip("Tự tay phá án trên bàn tập 4×4, từng bước một")
+        self._tutorial_button.clicked.connect(self.tutorial_requested.emit)
+        btn_col.addWidget(self._tutorial_button)
+
         self._about_button = _MenuActionButton(
             "Giới thiệu",
             variant="secondary",
@@ -782,10 +795,15 @@ class MainMenuScreen(BackdropScreen):
         return self._about_button
 
     @property
+    def tutorial_button(self) -> StyledButton:
+        return self._tutorial_button
+
+    @property
     def exit_button(self) -> StyledButton:
         return self._exit_button
 
     def set_enabled(self, enabled: bool) -> None:
         self._play_button.setEnabled(enabled)
+        self._tutorial_button.setEnabled(enabled)
         self._about_button.setEnabled(enabled)
         self._exit_button.setEnabled(enabled)

@@ -139,6 +139,7 @@ class GameplayScreen(BackdropScreen):
     auto_solve_requested = Signal()
     auto_solve_speed_changed = Signal(int)
     back_requested = Signal()
+    tutorial_requested = Signal()
     animation_finished = Signal(str, object)   # (cell_id, token) — ONLY on completion
     animation_cancelled = Signal(str, object)  # (cell_id, token) — ONLY on cancel
 
@@ -278,6 +279,11 @@ class GameplayScreen(BackdropScreen):
             self._demo_qa_toggle_btn = None
             self._demo_flip_btn = None
             self._demo_reduced_btn = None
+
+        self._tutorial_button = StyledButton("? Tân thủ", variant="ghost", min_height=32, parent=top_bar)
+        self._tutorial_button.setToolTip("Mở bài hướng dẫn riêng; giữ nguyên ván hiện tại")
+        self._tutorial_button.clicked.connect(self.tutorial_requested.emit)
+        top_layout.addWidget(self._tutorial_button)
 
         self._status_pill = StatusLabel(
             "CHƯA NẠP VỤ ÁN",
@@ -742,6 +748,10 @@ class GameplayScreen(BackdropScreen):
         self.ui_state.active_hint = hint
 
     def eventFilter(self, watched, event) -> bool:  # noqa: N802
+        # This filter is installed on QApplication. Modal help/tutorial windows
+        # own their input; Escape there must not alter the board underneath.
+        if isinstance(watched, QWidget) and watched.window() is not self.window():
+            return False
         if self.isVisible():
             if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
                 self.clear_highlights()
@@ -845,6 +855,10 @@ class GameplayScreen(BackdropScreen):
     @property
     def game_board(self) -> GameBoard:
         return self._game_board
+
+    @property
+    def tutorial_button(self) -> StyledButton:
+        return self._tutorial_button
 
     @property
     def board_container(self) -> StyledPanel:
