@@ -67,6 +67,7 @@ VALID_PUBLIC_VERDICTS = frozenset({"CRIMINAL", "INNOCENT"})
 VALID_TRACE_VERDICTS = frozenset({"CRIMINAL", "INNOCENT", "UNKNOWN"})
 VALID_SUPPORT_KINDS = frozenset({"PUBLIC_KB", "VERIFIED_SUBSET"})
 VALID_HINT_OUTCOMES = frozenset({"FORCED", "NO_FORCED"})
+VALID_CLUE_SCOPES = frozenset({"", "ALL", "PROFESSION"})
 SUPPORTED_GRID_SIZES = frozenset({3, 4, 5})
 CORE_CLUE_TYPES = frozenset({"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST"})
 
@@ -278,6 +279,12 @@ class PublicClueView:
 
     Contains ONLY already-revealed public clue information rendered as plain text.
     Never stores raw private JSON ``parameters`` or hidden-character clues.
+
+    ``scope`` / ``scope_label`` are optional presentation hints used by the
+    rule-effects layer:
+        - ``scope="ALL"``        : global rule over the whole board
+        - ``scope="PROFESSION"`` : rule over all characters of one profession
+          (``scope_label`` holds the profession display name, e.g. "Bác sĩ")
     """
 
     clue_id: str
@@ -288,6 +295,8 @@ class PublicClueView:
     primary_cells: tuple[str, ...] = ()
     secondary_cells: tuple[str, ...] = ()
     reference_labels: tuple[str, ...] = ()
+    scope: str = ""
+    scope_label: str = ""
 
     def __post_init__(self) -> None:
         cid = _coerce_non_empty_str(self.clue_id, "clue_id")
@@ -302,6 +311,12 @@ class PublicClueView:
         object.__setattr__(self, "referenced_cells", refs)
         for key in ("primary_cells", "secondary_cells", "reference_labels"):
             object.__setattr__(self, key, _coerce_str_tuple(getattr(self, key), key))
+
+        scope = (self.scope or "").strip().upper()
+        if scope not in VALID_CLUE_SCOPES:
+            raise ValueError(f"Unsupported clue scope {self.scope!r}")
+        object.__setattr__(self, "scope", scope)
+        object.__setattr__(self, "scope_label", (self.scope_label or "").strip())
 
     @property
     def display_text(self) -> str:
@@ -658,6 +673,8 @@ def normalize_clue_view(obj: Any) -> PublicClueView:
         primary_cells=tuple(getattr(obj, "primary_cells", ()) or ()),
         secondary_cells=tuple(getattr(obj, "secondary_cells", ()) or ()),
         reference_labels=tuple(getattr(obj, "reference_labels", ()) or ()),
+        scope=getattr(obj, "scope", "") or "",
+        scope_label=getattr(obj, "scope_label", "") or "",
     )
 
 

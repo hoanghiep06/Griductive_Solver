@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.invalid/griductive/puzzle.schema.json",
   "title": "Griductive Puzzle Schema",
-  "description": "Structural JSON schema for Griductive puzzle files. Cross-reference, grid cardinality, region-size, and semantic-truth checks are enforced by PuzzleValidator.",
+  "description": "Structural JSON schema for Griductive puzzle files. Cross-reference, grid cardinality, region-size, profession-membership and semantic-truth checks are enforced by PuzzleValidator.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,11 +24,7 @@
     },
     "grid_size": {
       "type": "integer",
-      "enum": [
-        3,
-        4,
-        5
-      ]
+      "enum": [3, 4, 5]
     },
     "characters": {
       "type": "array",
@@ -66,58 +62,26 @@
     "character": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "id",
-        "name",
-        "profession",
-        "row",
-        "col"
-      ],
+      "required": ["id", "name", "profession", "row", "col"],
       "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "profession": {
-          "type": "string",
-          "minLength": 1
-        },
-        "row": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "col": {
-          "type": "integer",
-          "minimum": 0
-        }
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "profession": { "type": "string", "minLength": 1 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col": { "type": "integer", "minimum": 0 }
       }
     },
     "clue": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "clue_id",
-        "owner_id",
-        "type",
-        "parameters"
-      ],
+      "required": ["clue_id", "owner_id", "type", "parameters"],
       "properties": {
-        "clue_id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "owner_id": {
-          "type": "string",
-          "minLength": 1
-        },
+        "clue_id": { "type": "string", "minLength": 1 },
+        "owner_id": { "type": "string", "minLength": 1 },
         "type": {
           "type": "string",
           "pattern": "^[A-Z][A-Z0-9_]*$",
-          "description": "Core types are FACT, SAME, DIFFERENT, EXACTLY, AT_LEAST, AT_MOST. Uppercase extension types are permitted and validated by a registered extension evaluator."
+          "description": "Core types: FACT, SAME, DIFFERENT, EXACTLY, AT_LEAST, AT_MOST. Built-in extended types: PARITY, COUNT_COMPARE, IMPLIES. Other uppercase extension types are validated by a registered extension evaluator."
         },
         "parameters": {
           "type": "object"
@@ -125,203 +89,184 @@
       },
       "allOf": [
         {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "FACT"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "parameters": {
-                "$ref": "#/$defs/factParameters"
-              }
-            }
-          }
+          "if": { "properties": { "type": { "const": "FACT" } } },
+          "then": { "properties": { "parameters": { "$ref": "#/$defs/factParameters" } } }
         },
         {
-          "if": {
-            "properties": {
-              "type": {
-                "enum": [
-                  "SAME",
-                  "DIFFERENT"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "parameters": {
-                "$ref": "#/$defs/binaryParameters"
-              }
-            }
-          }
+          "if": { "properties": { "type": { "enum": ["SAME", "DIFFERENT"] } } },
+          "then": { "properties": { "parameters": { "$ref": "#/$defs/binaryParameters" } } }
         },
         {
-          "if": {
-            "properties": {
-              "type": {
-                "enum": [
-                  "EXACTLY",
-                  "AT_LEAST",
-                  "AT_MOST"
-                ]
-              }
-            }
-          },
+          "if": { "properties": { "type": { "enum": ["EXACTLY", "AT_LEAST", "AT_MOST"] } } },
           "then": {
             "properties": {
               "parameters": {
                 "oneOf": [
-                  {
-                    "$ref": "#/$defs/rowCountParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/columnCountParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/neighborsCountParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/explicitCountParameters"
-                  }
+                  { "$ref": "#/$defs/rowCountParameters" },
+                  { "$ref": "#/$defs/columnCountParameters" },
+                  { "$ref": "#/$defs/neighborsCountParameters" },
+                  { "$ref": "#/$defs/explicitCountParameters" },
+                  { "$ref": "#/$defs/allCountParameters" },
+                  { "$ref": "#/$defs/professionCountParameters" }
                 ]
               }
             }
           }
+        },
+        {
+          "if": { "properties": { "type": { "const": "PARITY" } } },
+          "then": { "properties": { "parameters": { "$ref": "#/$defs/parityParameters" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "COUNT_COMPARE" } } },
+          "then": { "properties": { "parameters": { "$ref": "#/$defs/countCompareParameters" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "IMPLIES" } } },
+          "then": { "properties": { "parameters": { "$ref": "#/$defs/impliesParameters" } } }
         }
       ]
     },
     "factParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "target",
-        "status"
-      ],
+      "required": ["target", "status"],
       "properties": {
-        "target": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "enum": [
-            "CRIMINAL",
-            "INNOCENT"
-          ]
-        }
+        "target": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["CRIMINAL", "INNOCENT"] }
       }
     },
     "binaryParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "target1",
-        "target2"
-      ],
+      "required": ["target1", "target2"],
       "properties": {
-        "target1": {
-          "type": "string",
-          "minLength": 1
-        },
-        "target2": {
-          "type": "string",
-          "minLength": 1
-        }
+        "target1": { "type": "string", "minLength": 1 },
+        "target2": { "type": "string", "minLength": 1 }
       }
     },
     "rowCountParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "k",
-        "region_type",
-        "index"
-      ],
+      "required": ["k", "region_type", "index"],
       "properties": {
-        "k": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "region_type": {
-          "const": "ROW"
-        },
-        "index": {
-          "type": "integer",
-          "minimum": 0
-        }
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "ROW" },
+        "index": { "type": "integer", "minimum": 0 }
       }
     },
     "columnCountParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "k",
-        "region_type",
-        "index"
-      ],
+      "required": ["k", "region_type", "index"],
       "properties": {
-        "k": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "region_type": {
-          "const": "COLUMN"
-        },
-        "index": {
-          "type": "integer",
-          "minimum": 0
-        }
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "COLUMN" },
+        "index": { "type": "integer", "minimum": 0 }
       }
     },
     "neighborsCountParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "k",
-        "region_type",
-        "center"
-      ],
+      "required": ["k", "region_type", "center"],
       "properties": {
-        "k": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "region_type": {
-          "const": "NEIGHBORS"
-        },
-        "center": {
-          "type": "string",
-          "minLength": 1
-        }
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "NEIGHBORS" },
+        "center": { "type": "string", "minLength": 1 }
       }
     },
     "explicitCountParameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "k",
-        "region_type",
-        "cells"
-      ],
+      "required": ["k", "region_type", "cells"],
       "properties": {
-        "k": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "region_type": {
-          "const": "EXPLICIT"
-        },
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "EXPLICIT" },
         "cells": {
           "type": "array",
           "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "type": "string", "minLength": 1 }
         }
+      }
+    },
+    "allCountParameters": {
+      "type": "object",
+      "description": "Global rule: the count applies to every cell on the board.",
+      "additionalProperties": false,
+      "required": ["k", "region_type"],
+      "properties": {
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "ALL" }
+      }
+    },
+    "professionCountParameters": {
+      "type": "object",
+      "description": "Group rule by profession. `cells` must be exactly the characters with that profession (checked by PuzzleValidator).",
+      "additionalProperties": false,
+      "required": ["k", "region_type", "profession", "cells"],
+      "properties": {
+        "k": { "type": "integer", "minimum": 0 },
+        "region_type": { "const": "PROFESSION" },
+        "profession": { "type": "string", "minLength": 1 },
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "parityParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cells", "parity"],
+      "properties": {
+        "cells": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "parity": { "enum": ["even", "odd"] }
+      }
+    },
+    "countCompareParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["region_a", "region_b", "op"],
+      "properties": {
+        "region_a": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "region_b": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "op": { "enum": ["<", "<=", "==", "!=", ">=", ">"] }
+      }
+    },
+    "literalSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "status"],
+      "properties": {
+        "target": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["CRIMINAL", "INNOCENT"] }
+      }
+    },
+    "impliesParameters": {
+      "type": "object",
+      "description": "IF antecedent THEN consequent (two distinct cells).",
+      "additionalProperties": false,
+      "required": ["antecedent", "consequent"],
+      "properties": {
+        "antecedent": { "$ref": "#/$defs/literalSpec" },
+        "consequent": { "$ref": "#/$defs/literalSpec" }
       }
     }
   }

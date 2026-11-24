@@ -13,6 +13,9 @@ Quy uoc giao dien (GIA DINH, xem ASSUMPTIONS.md):
   * Clue  : doi tuong co .type (Enum hoac str) va .params (dict),
             hoac mot dict {"type": ..., "params": {...}} / {"type": ..., **params}
   * Cell  : tuple (row, col), chi so tu 0.
+
+Ho tro region_type: ROW, COLUMN, NEIGHBORS, EXPLICIT, ALL (toan ban),
+PROFESSION (danh sach `cells` da duoc validator doi chieu voi nghe nghiep).
 """
 from __future__ import annotations
 
@@ -23,9 +26,10 @@ Cell = Tuple[int, int]
 Board = Any  # Sequence[Sequence[bool|int]] | Mapping[Cell, bool|int]
 
 __all__ = [
-    "COMPARE_OPS", "normalize_op", "normalize_cells", "to_board", "count_guilty",
+    "COMPARE_OPS", "normalize_op", "normalize_cells", "normalize_status", "to_board",
+    "count_guilty",
     "check_fact", "check_same", "check_different", "check_exactly",
-    "check_parity", "check_count_compare",
+    "check_parity", "check_count_compare", "check_implies",
     "clue_type_name", "clue_params",
     "register_evaluator", "evaluate_clue", "evaluate_all", "violated_clues",
 ]
@@ -80,6 +84,19 @@ def normalize_parity(parity: Any) -> bool:
     elif parity in (0, 1) and not isinstance(parity, bool):
         return bool(parity)
     raise ValueError(f"parity khong hop le: {parity!r} (dung 'even' hoac 'odd')")
+
+
+def normalize_status(status: Any) -> bool:
+    """Tra ve True neu Guilty/CRIMINAL, False neu Innocent/INNOCENT."""
+    if isinstance(status, bool):
+        return status
+    if isinstance(status, str):
+        s = status.strip().upper()
+        if s in ("CRIMINAL", "GUILTY", "TRUE"):
+            return True
+        if s in ("INNOCENT", "NOT_GUILTY", "FALSE"):
+            return False
+    raise ValueError(f"status khong hop le: {status!r} (dung 'CRIMINAL' hoac 'INNOCENT')")
 
 
 def _as_bool(v: Any, cell: Cell) -> bool:
@@ -162,6 +179,27 @@ def check_count_compare(board: Board, region_a: Iterable[Cell],
     return COMPARE_OPS[normalize_op(op)](ca, cb)
 
 
+def _literal_spec(spec: Any) -> Tuple[Cell, bool]:
+    """{'target': <o>, 'status': ...} -> ((r, c), gia_tri_mong_doi)."""
+    if not isinstance(spec, Mapping):
+        raise ValueError(f"IMPLIES can doi tuong {{target, status}}, nhan {spec!r}")
+    target = spec.get("target", spec.get("cell"))
+    status = spec.get("status", spec.get("value"))
+    if target is None or status is None:
+        raise ValueError(f"IMPLIES thieu 'target' hoac 'status': {spec!r}")
+    return normalize_cells([target])[0], normalize_status(status)
+
+
+def check_implies(board: Board, antecedent: Mapping[str, Any],
+                  consequent: Mapping[str, Any]) -> bool:
+    """IMPLIES: neu ve trai dung thi ve phai phai dung (ve trai sai => thoa man)."""
+    b = to_board(board)
+    (ca, va), (cc, vc) = _literal_spec(antecedent), _literal_spec(consequent)
+    if ca == cc:
+        raise ValueError("IMPLIES can hai o khac nhau")
+    return (_get(b, ca) != va) or (_get(b, cc) == vc)
+
+
 # --------------------------------------------------------------------------- #
 # Doc Clue + dispatch theo loai
 # --------------------------------------------------------------------------- #
@@ -232,6 +270,11 @@ def _ev_count_compare(board, p):
     return check_count_compare(board, p["region_a"], p["region_b"], p["op"])
 
 
+@register_evaluator("IMPLIES")
+def _ev_implies(board, p):
+    return check_implies(board, p["antecedent"], p["consequent"])
+
+
 def evaluate_clue(clue: Any, board: Board) -> bool:
     """True neu `board` (day du) thoa man `clue`."""
     name = clue_type_name(clue)
@@ -256,8 +299,10 @@ def evaluate_clue(clue: Any, board: Board) -> bool:
             r, c = normalize_cells([p["center"]])[0]
             cells = [cell for cell in b if cell != (r, c)
                      and abs(cell[0]-r) <= 1 and abs(cell[1]-c) <= 1]
-        elif kind == "EXPLICIT":
+        elif kind in {"EXPLICIT", "PROFESSION"}:
             cells = p["cells"]
+        elif kind == "ALL":
+            cells = list(b)
         else:
             raise ValueError(f"Unknown region type: {kind}")
         if not cells:

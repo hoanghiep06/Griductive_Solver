@@ -88,6 +88,8 @@ from src.gui.view_models import (
     normalize_board_snapshot,
     normalize_character_view,
 )
+from src.gui.animations import rule_effects as rule_fx
+from src.gui.animations.rule_effects import RuleEffectsLayer
 
 logger = logging.getLogger(__name__)
 
@@ -208,6 +210,7 @@ class GameBoard(QGraphicsView):
         self._hint_flow = None
         self._hint_particles: list[QGraphicsItem] = []
         self._evidence_threads: list[QGraphicsItem] = []
+        self._rule_fx = RuleEffectsLayer(self._scene, lambda: self._cards_by_id)
 
         # Living 3D Detective Office & Archival Tabletop Ambient Engine
         self._ambient_phase: float = 0.0
@@ -524,15 +527,17 @@ class GameBoard(QGraphicsView):
         return valid
 
     def focus_clue_relation(
-        self,
-        *,
-        owner_id: Optional[str],
-        primary_cells: Iterable[str],
-        secondary_cells: Iterable[str] = (),
-        clue_type: str = "",
-        relation_label: str = "",
+            self,
+            *,
+            owner_id: Optional[str],
+            primary_cells: Iterable[str],
+            secondary_cells: Iterable[str] = (),
+            clue_type: str = "",
+            relation_label: str = "",
+            scope: str = "",
+            scope_label: str = "",
     ) -> tuple[str, ...]:
-        """Highlight a selected public clue with clear Source / Primary / Secondary role tags & 3D connectors."""
+        """Highlight a selected public clue with Source / Primary / Secondary role tags & rule effects."""
         prim_seq = [cid for cid in dict.fromkeys(primary_cells) if cid in self._cards_by_id]
         sec_seq = [
             cid for cid in dict.fromkeys(secondary_cells)
@@ -544,8 +549,13 @@ class GameBoard(QGraphicsView):
         active = set(valid)
 
         ctype = clue_type.strip().upper()
+        scope_norm = rule_fx.infer_scope(
+            ctype, scope, len(prim_seq), len(sec_seq), len(self._cards_by_id)
+        )
         is_comparative = ctype in {"SAME", "DIFFERENT", "COUNT_COMPARE"} and bool(sec_seq)
         prim_badge = "CHÍNH" if is_comparative else ("MỤC TIÊU" if ctype == "FACT" else "VÙNG XÉT")
+        prim_badge = rule_fx.primary_badge(ctype, scope_norm, relation_label, prim_badge)
+        sec_badge = rule_fx.secondary_badge(ctype, "ĐỐI CHIẾU")
 
         for cid, card in self._cards_by_id.items():
             if cid not in active:
@@ -557,7 +567,7 @@ class GameBoard(QGraphicsView):
             elif cid in prim_seq:
                 card.set_focus_context(False, "primary", prim_badge)
             else:
-                card.set_focus_context(False, "secondary", "ĐỐI CHIẾU")
+                card.set_focus_context(False, "secondary", sec_badge)
 
         self._draw_semantic_clue_connectors(
             owner_id=owner,
@@ -565,6 +575,8 @@ class GameBoard(QGraphicsView):
             secondary_ids=sec_seq,
             clue_type=ctype,
             relation_label=relation_label,
+            scope=scope_norm,
+            scope_label=scope_label,
         )
         if not self.reduced_motion:
             self._ripple_progress = 0.0
@@ -586,6 +598,7 @@ class GameBoard(QGraphicsView):
             if item.scene() is self._scene:
                 self._scene.removeItem(item)
         self._evidence_threads.clear()
+        self._rule_fx.clear()
 
     def _card_pin_point(self, cell_id: str) -> Optional[QPointF]:
         card = self._cards_by_id.get(cell_id)
@@ -691,14 +704,26 @@ class GameBoard(QGraphicsView):
         secondary_ids: list[str],
         clue_type: str,
         relation_label: str,
+        scope: str = "",
+        scope_label: str = "",
     ) -> None:
         """Render clear semantic detective connectors tailored to the clue type."""
         self._clear_evidence_threads()
+        if self._rule_fx.show(
+            clue_type,
+            scope=scope,
+            scope_label=scope_label,
+            owner_id=owner_id,
+            primary_ids=primary_ids,
+            secondary_ids=secondary_ids,
+            label=relation_label,
+            animate=not self.reduced_motion,
+        ):
+            return
         if self.reduced_motion:
             return
 
         owner_pt = self._card_pin_point(owner_id) if owner_id else None
-
         # CASE A — Comparative pair/groups (SAME / DIFFERENT / COUNT_COMPARE)
         if clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"} and primary_ids and secondary_ids:
             p0 = self._card_pin_point(primary_ids[0])
@@ -1262,6 +1287,7 @@ class GameBoard(QGraphicsView):
                 self._cursor_norm.x() * 0.90,
                 self._cursor_norm.y() * 0.90,
             )
+        self._rule_fx.tick(self._ambient_phase)
         self.viewport().update()
 
     def drawBackground(self, painter: QPainter, rect: QRectF) -> None:  # noqa: N802, ARG002

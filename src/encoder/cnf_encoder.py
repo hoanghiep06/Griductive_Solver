@@ -4,12 +4,19 @@ Converts the 6 core structured clue templates (FACT, SAME, DIFFERENT,
 EXACTLY, AT_LEAST, AT_MOST) and proved verdicts into standard DIMACS-style
 CNF clauses (list[list[int]]), using VariableMap for deterministic primary
 variables C_i and separate auxiliary variables.
+
+Region types for counting clues: ROW, COLUMN, NEIGHBORS, EXPLICIT, plus
+ALL (whole board / global rule) and PROFESSION (explicit cell list that the
+validator guarantees equals "every character with this profession").
+Extended clue types (PARITY, COUNT_COMPARE, IMPLIES) are delegated to
+``extended_clues``.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import itertools
+import math
 from typing import Any, Mapping
 
 from src.core.clue import _thaw
@@ -165,6 +172,14 @@ class CNFEncoder:
         self.cardinality_encoding = encoding_norm
         self._clue_seq = 0
 
+    def _all_cell_keys(self) -> list[str]:
+        """Canonical keys of every cell on the board (row-major) for global rules."""
+        n = math.isqrt(self.var_map.num_primary)
+        keys: list[str] = []
+        for row in range(1, n + 1):
+            keys.extend(self.var_map.cells_in_row(row))
+        return keys
+
     def resolve_region(self, region: Any) -> list[str]:
         """Validate and resolve a clue region into canonical character keys."""
         if isinstance(region, (list, tuple)):
@@ -204,6 +219,8 @@ class CNFEncoder:
             if kind in {"explicit", "cells", "list"}:
                 items = region.get("cells", region.get("targets", region.get("characters", region.get("value"))))
                 return self._resolve_explicit_list(items)
+            if kind in {"all", "global"}:
+                return self._all_cell_keys()
             raise ValueError(f"Unsupported region kind: {raw_kind!r}")
 
         raise ValueError(f"Invalid region specification: {region!r}")
@@ -216,7 +233,9 @@ class CNFEncoder:
             raise ValueError(str(exc)) from exc
 
     def _resolve_region_string(self, spec: str) -> list[str]:
-        """Parse string region shorthands such as 'row:2', 'col:B', or 'neighbors:B2'."""
+        """Parse string region shorthands such as 'row:2', 'col:B', 'neighbors:B2' or 'all'."""
+        if spec.strip().lower() in {"all", "global"}:
+            return self._all_cell_keys()
         if ":" not in spec:
             raise ValueError(f"Invalid region string {spec!r}; expected 'kind:value'")
         prefix, raw_val = spec.split(":", 1)
@@ -297,7 +316,7 @@ class CNFEncoder:
         return k, var_ids
 
     def encode_clue(self, clue: dict[str, Any] | Any) -> list[list[int]]:
-        """Validate and convert one core clue into CNF clauses."""
+        """Validate and convert one clue into CNF clauses."""
         clue_type, params = _extract_clue_payload(clue)
         params = _thaw(params)
         if clue_type in EXTENDED_TYPES:
@@ -310,13 +329,16 @@ class CNFEncoder:
                 params["region"] = {"kind": "column", "column": chr(ord("A") + params["index"])}
             elif kind == "NEIGHBORS":
                 params["region"] = {"kind": "neighbors", "cell": params["center"]}
-            elif kind == "EXPLICIT":
-                if not params["cells"]:
-                    k = params["k"]
+            elif kind in {"EXPLICIT", "PROFESSION"}:
+                # PROFESSION carries a pre-resolved cell list (checked by PuzzleValidator).
+                if not params.get("cells"):
+                    k = params.get("k", 0)
                     if type(k) is not int or k != 0:
                         raise ValueError("Empty regions require k=0")
                     return []
                 params["region"] = params["cells"]
+            elif kind == "ALL":
+                params["region"] = self._all_cell_keys()
         self._clue_seq += 1
         tag_prefix = f"c{self._clue_seq}_{clue_type.lower()}"
 
