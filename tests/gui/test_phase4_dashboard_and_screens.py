@@ -357,7 +357,7 @@ def test_action_bar_signals_enablement_matrix_and_zero_auto_flip(qtbot):
         assert bar.restart_button.isEnabled()
         assert bar.load_button.isEnabled()
         assert bar.back_button.isEnabled()
-        assert window.gameplay_screen.clue_panel.is_interactive is False
+        assert window.gameplay_screen.game_board.is_interactive is False
 
     # SOLVED disables verdict/hint/auto_solve
     window.set_busy(GameState.SOLVED)
@@ -544,11 +544,11 @@ def test_phase4_responsive_dashboard_and_gd3_board_regression(qtbot, grid_size, 
 
     gs = window.gameplay_screen
     # Board remains dominant and spacious; ActionBar stays fully visible inside window
-    assert gs.board_container.width() > gs.clue_panel.width()
+    assert gs.board_container.width() > gs.deduction_panel.width()
     assert gs.game_board.card_count == grid_size * grid_size
     assert gs.action_bar.isVisible()
     assert gs.action_bar.height() >= 44
-    assert gs.clue_panel.isVisible()
+    assert gs.scratchpad_panel.isVisible()
     assert gs.deduction_panel.isVisible()
     assert gs.progress_panel.isVisible()
 

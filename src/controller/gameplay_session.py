@@ -6,6 +6,17 @@ background request cannot mutate the engine's primary/auxiliary mapping.
 The reasoning itself (finding the first forced cell and its minimal evidence)
 lives in ``src.agent.forced_move.analyze_public_kb``, the same function the
 LogicAgent uses, so GUI and CLI can never disagree.
+
+Clue projection (``_project_clue``) turns a private domain ``Clue`` into the
+public ``PublicClueView`` (Vietnamese text + which cells it mentions). Besides
+the 6 core types it handles:
+    * PARITY / COUNT_COMPARE
+    * IMPLIES                 -> primary = "nếu" cell, secondary = "thì" cell
+    * region_type ALL         -> scope="ALL"        (global rule)
+    * region_type PROFESSION  -> scope="PROFESSION" (rule over one job)
+    * spatial regions (CORNERS, BORDER, CENTER, halves...) -> labelled via
+      ``scope_label`` / badges; ``scope`` stays "" (the view model only accepts
+      "", "ALL" or "PROFESSION").
 """
 
 from dataclasses import dataclass
@@ -28,6 +39,14 @@ REGION_LABELS = {
     "ALL": "Toàn bộ bàn cờ", "CORNERS": "Bốn góc", "BORDER": "Viền ngoài", "CENTER": "Vùng trung tâm",
     "TOP_HALF": "Nửa trên", "BOTTOM_HALF": "Nửa dưới", "LEFT_HALF": "Nửa trái", "RIGHT_HALF": "Nửa phải",
 }
+
+# Scopes understood by PublicClueView / the rule-effects layer.
+_EFFECT_SCOPES = frozenset({"ALL", "PROFESSION"})
+_CRIMINAL_TOKENS = {"CRIMINAL", "TRUE", "1", "GUILTY", "C"}
+
+
+def _is_criminal(raw) -> bool:
+    return raw is True or str(raw).upper() in _CRIMINAL_TOKENS
 
 
 @dataclass(frozen=True)
@@ -91,6 +110,11 @@ class GameplaySession:
         return PublicBoardSnapshot(self.session_id, self.engine.puzzle_id,
                                    self.engine.grid_size, snapshot.version, characters, clues)
 
+    def _all_cell_ids(self) -> list[str]:
+        """Every character id of the board in row-major order (global rules)."""
+        ordered = sorted(self.engine.characters, key=lambda c: (c.row, c.col))
+        return [c.id for c in ordered]
+
     def _project_clue(self, clue, encoder) -> PublicClueView:
         p = clue.to_dict()["parameters"]
         kind = clue.clue_type
@@ -104,7 +128,7 @@ class GameplaySession:
             target = next(p[k] for k in ("target", "character", "person", "cell", "subject") if k in p)
             refs = [canonical(target)]
             raw = p.get("status", p.get("verdict", p.get("is_criminal")))
-            status = "tội phạm" if raw is True or str(raw).upper() in {"CRIMINAL", "TRUE", "1", "GUILTY", "C"} else "vô tội"
+            status = "tội phạm" if _is_criminal(raw) else "vô tội"
             text = f"{label(refs[0])} là {status}."
         elif kind in {"SAME", "DIFFERENT"}:
             # Ask the existing encoder to resolve all accepted target aliases.
@@ -128,10 +152,14 @@ class GameplaySession:
             text = f"{group[0].upper() + group[1:]} có số tội phạm {parity}."
         elif kind == "IMPLIES":
             a, b = p["antecedent"], p["consequent"]
-            primary, secondary = [canonical(a["target"])], [canonical(b["target"])]
+            primary = [canonical(a.get("target", a.get("cell")))]
+            secondary = [canonical(b.get("target", b.get("cell")))]
             refs = primary + secondary
-            status = lambda value: "tội phạm" if value == "CRIMINAL" else "vô tội"
-            text = f"Nếu {label(primary[0])} là {status(a['status'])} thì {label(secondary[0])} là {status(b['status'])}."
+            status = lambda value: "tội phạm" if _is_criminal(value) else "vô tội"
+            text = (
+                f"Nếu {label(primary[0])} là {status(a.get('status', a.get('value')))} "
+                f"thì {label(secondary[0])} là {status(b.get('status', b.get('value')))}."
+            )
         else:
             region = p.get("region")
             region_type = p.get("region_type")
@@ -143,7 +171,10 @@ class GameplaySession:
                 region = f"neighbors:{p['center']}"
             elif region_type in {"EXPLICIT", "PROFESSION"}:
                 region = p["cells"]
-            elif region_type == "ALL" or region_type in SPATIAL_REGIONS:
+            elif region_type == "ALL":
+                # Explicit list: works whether or not the encoder understands "ALL".
+                region = self._all_cell_ids()
+            elif region_type in SPATIAL_REGIONS:
                 region = region_type
             refs = encoder.resolve_region(region) if region else []
             quantifier = {"EXACTLY": "đúng", "AT_LEAST": "ít nhất", "AT_MOST": "nhiều nhất", "NO": "đúng"}[kind]
@@ -151,15 +182,16 @@ class GameplaySession:
             if region_type == "PROFESSION":
                 scope_label = localize_profession(p["profession"])
                 region_label = f"Nhóm nghề {scope_label}"
-                scope = region_type
             elif region_type in REGION_LABELS:
-                scope, scope_label = region_type, REGION_LABELS[region_type]
+                scope_label = REGION_LABELS[region_type]
                 region_label = scope_label
             else:
                 group = self._group_label(refs)
                 region_label = group[0].upper() + group[1:]
                 if region_type == "NEIGHBORS":
                     region_label = f"Các ô xung quanh {p['center']} (kể cả đường chéo)"
+            if region_type in _EFFECT_SCOPES:
+                scope = region_type
             text = f"{region_label} có {quantifier} {k} tội phạm."
             if scope_label:
                 badges.append(scope_label)

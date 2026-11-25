@@ -19,11 +19,18 @@ Strict presentation rules:
           selection frame and Crimson/Teal verdict badges.
         * Smooth 150ms hover elevation & 210ms selection transitions respecting
           ``reduced_motion`` without ever altering grid ``pos()``.
+    - Clue note strip (replaces the old CluePanel): a revealed card carries its
+      own public clue in a strip painted BELOW the card face / name frame. The
+      strip can be collapsed ("spent") to a tiny chip. Hovering the strip emits
+      ``clue_hovered`` / ``clue_hover_left`` so the screen can preview the clue.
+    - Draft marks (Nháp): private ``?`` / suspect / innocent badges on HIDDEN
+      cards. Purely personal memory aids — never reach GameEngine or SAT.
 """
 
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
@@ -86,11 +93,62 @@ CARD_DIMENSIONS_BY_MODE: dict[CardDisplayMode, tuple[int, int]] = {
     CardDisplayMode.COMPACT: (114, 152),   # exact 3:4
 }
 
+# Clue strip under the card: (strip height px, max text lines, font px).
+# max_lines == 0 -> only a type chip is shown (5x5 COMPACT).
+NOTE_SPEC_BY_MODE: dict[CardDisplayMode, tuple[int, int, int]] = {
+    CardDisplayMode.EXPANDED: (48, 3, 10),
+    CardDisplayMode.STANDARD: (36, 2, 10),
+    CardDisplayMode.COMPACT: (18, 0, 8),
+}
+NOTE_HEIGHT_BY_MODE: dict[CardDisplayMode, int] = {
+    mode: spec[0] for mode, spec in NOTE_SPEC_BY_MODE.items()
+}
+
+CLUE_TYPE_SHORT_LABELS_VI: dict[str, str] = {
+    "FACT": "SỰ THẬT",
+    "SAME": "CÙNG PHE",
+    "DIFFERENT": "KHÁC PHE",
+    "EXACTLY": "CHÍNH XÁC",
+    "AT_LEAST": "ÍT NHẤT",
+    "AT_MOST": "TỐI ĐA",
+    "PARITY": "CHẴN/LẺ",
+    "COUNT_COMPARE": "SO SÁNH",
+    "IMPLIES": "NẾU–THÌ",
+}
+
+DRAFT_MARK_ORDER: tuple[Optional[str], ...] = (None, "?", "SUSPECT", "INNOCENT")
+_DRAFT_MARK_LABELS_VI: dict[str, str] = {
+    "?": "nghi vấn",
+    "SUSPECT": "nghi phạm",
+    "INNOCENT": "vô tội",
+}
+_DRAFT_MARK_COLORS: dict[str, str] = {
+    "?": "#C88B3A",
+    "SUSPECT": "#B55252",
+    "INNOCENT": "#4C8C78",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ClueNote:
+    """Public clue shown in the strip under a revealed card (presentation only)."""
+
+    clue_id: str
+    clue_type: str
+    text: str
+    state: str = "normal"     # "normal" | "spent" (collapsed to a small chip)
+    selected: bool = False
+
 
 class CharacterCard(QGraphicsObject):
     """Reusable interactive suspect card rendered inside ``GameBoard``."""
 
     card_selected = Signal(str)  # Emits cell_id on user click or keyboard Enter/Space
+    clue_clicked = Signal(str)           # clue_id — user clicked the clue strip
+    clue_used_toggled = Signal(str)      # clue_id — user double-clicked the clue strip
+    clue_hovered = Signal(str)           # clue_id — pointer entered the clue strip
+    clue_hover_left = Signal(str)        # clue_id — pointer left the clue strip
+    draft_mark_changed = Signal(str, object)  # (cell_id, mark | None) — user-driven only
 
     def __init__(
         self,
@@ -108,12 +166,18 @@ class CharacterCard(QGraphicsObject):
         self._data: PublicCharacterView = data
         self._mode: CardDisplayMode = display_mode
         self._width, self._height = CARD_DIMENSIONS_BY_MODE[display_mode]
+        self._note_h: int = NOTE_HEIGHT_BY_MODE[display_mode]
         self._card_back_pixmap: Optional[QPixmap] = card_back_pixmap
         self._card_front_pixmap: Optional[QPixmap] = card_front_pixmap
         self._portrait_pixmap: Optional[QPixmap] = (
             portrait_pixmap if (portrait_pixmap is not None and not portrait_pixmap.isNull()) else None
         )
         self._portrait_path: Optional[str] = portrait_path
+
+        # Clue strip & private draft mark (never domain data)
+        self._clue_note: Optional[ClueNote] = None
+        self._draft_mark: Optional[str] = None
+        self._hover_clue_id: Optional[str] = None
 
         # Independent visual presentation flags
         self._selected: bool = False
@@ -260,6 +324,18 @@ class CharacterCard(QGraphicsObject):
     def portrait_path(self) -> Optional[str]:
         return self._portrait_path
 
+    @property
+    def clue_note(self) -> Optional[ClueNote]:
+        return self._clue_note
+
+    @property
+    def draft_mark(self) -> Optional[str]:
+        return self._draft_mark
+
+    @property
+    def note_height(self) -> int:
+        return self._note_h
+
     def set_portrait_pixmap(
         self,
         pixmap: Optional[QPixmap],
@@ -272,6 +348,58 @@ class CharacterCard(QGraphicsObject):
         )
         self._portrait_path = portrait_path if self._portrait_pixmap is not None else None
         self.update()
+
+    # ---- Clue strip (under the name frame) ----------------------------
+
+    def note_rect(self) -> QRectF:
+        """Hit/paint rect of the clue strip, directly below the card face."""
+        return QRectF(0.0, float(self._height) + 3.0, float(self._width), float(self._note_h) - 3.0)
+
+    def set_clue_note(self, note: Optional[ClueNote]) -> None:
+        """Show (or clear with ``None``) the public clue strip. Emits no signal."""
+        if note == self._clue_note:
+            return
+        self._clue_note = note
+        if note is None and self._hover_clue_id is not None:
+            old_id, self._hover_clue_id = self._hover_clue_id, None
+            self.clue_hover_left.emit(old_id)
+        self._refresh_tooltip()
+        self.update()
+
+    def clear_clue_note(self) -> None:
+        self.set_clue_note(None)
+
+    def _note_hit(self, pos: QPointF) -> bool:
+        return (
+            self._clue_note is not None
+            and self._data.is_revealed
+            and self.note_rect().contains(pos)
+        )
+
+    # ---- Draft marks (Nháp) -------------------------------------------
+
+    def set_draft_mark(self, mark: Optional[str], *, emit: bool = False) -> None:
+        if mark not in DRAFT_MARK_ORDER:
+            raise ValueError(f"Unsupported draft mark {mark!r}")
+        if mark == self._draft_mark:
+            return
+        self._draft_mark = mark
+        self._refresh_tooltip()
+        self.update()
+        if emit:
+            self.draft_mark_changed.emit(self._data.cell_id, mark)
+
+    def clear_draft_mark(self) -> None:
+        self.set_draft_mark(None)
+
+    def cycle_draft_mark(self) -> None:
+        """None -> '?' -> 'SUSPECT' -> 'INNOCENT' -> None (HIDDEN cards only)."""
+        if self._data.is_revealed:
+            return
+        idx = DRAFT_MARK_ORDER.index(self._draft_mark)
+        self.set_draft_mark(DRAFT_MARK_ORDER[(idx + 1) % len(DRAFT_MARK_ORDER)], emit=True)
+
+    # ---- Animated properties ------------------------------------------
 
     def _get_flip_progress(self) -> float:
         return self._flip_progress
@@ -373,6 +501,8 @@ class CharacterCard(QGraphicsObject):
                 f"Cannot reassign CharacterCard {self._data.cell_id!r} to {data.cell_id!r}"
             )
         self._data = data
+        if data.is_revealed:
+            self._draft_mark = None  # a proven card no longer needs a private guess
         self._refresh_tooltip()
         self.update()
 
@@ -501,6 +631,9 @@ class CharacterCard(QGraphicsObject):
                 self._hovered = False
                 self._animate_hover(0.0)
                 self._sync_z_order()
+            if not flag and self._hover_clue_id is not None:
+                old_id, self._hover_clue_id = self._hover_clue_id, None
+                self.clue_hover_left.emit(old_id)
             self.update()
 
     # ------------------------------------------------------------------
@@ -530,6 +663,8 @@ class CharacterCard(QGraphicsObject):
         self._flip_target_data = None
         self._flip_progress = 1.0
         self._data = committed_data
+        if committed_data.is_revealed:
+            self._draft_mark = None
         self._sync_z_order()
         self._refresh_tooltip()
         if not self._reduced_motion and committed_data.is_revealed:
@@ -655,6 +790,9 @@ class CharacterCard(QGraphicsObject):
                 f"Nghề nghiệp: {prof_vi}\n"
                 f"Trạng thái: Chưa chứng minh"
             )
+            if self._draft_mark is not None:
+                tip += f"\nNháp của bạn: {_DRAFT_MARK_LABELS_VI[self._draft_mark]} (chỉ để ghi nhớ)"
+            tip += "\nChuột phải / phím D: đánh dấu nháp"
         else:
             verdict_vi = "Tội phạm" if d.verdict == "CRIMINAL" else "Vô tội"
             clue_line = "\nManh mối: Đã công khai" if d.has_public_clue else ""
@@ -663,6 +801,8 @@ class CharacterCard(QGraphicsObject):
                 f"Nghề nghiệp: {prof_vi}\n"
                 f"Kết luận: {verdict_vi}{clue_line}"
             )
+            if self._clue_note is not None:
+                tip += f"\n\n{self._clue_note.text}\n(Nhấp đúp vào dải manh mối để thu gọn / mở lại)"
         self.setToolTip(tip)
 
     # ------------------------------------------------------------------
@@ -670,8 +810,17 @@ class CharacterCard(QGraphicsObject):
     # ------------------------------------------------------------------
 
     def boundingRect(self) -> QRectF:  # noqa: N802
-        # Generous padding for 3D perspective lift, offset drop shadow & luminous cyan glow
-        return QRectF(-22.0, -26.0, self._width + 44.0, self._height + 52.0)
+        # Generous padding for 3D perspective lift, offset drop shadow & luminous cyan glow,
+        # plus the clue strip hanging under the card.
+        bottom = max(26.0, self._note_h + 8.0)
+        return QRectF(-22.0, -26.0, self._width + 44.0, self._height + 26.0 + bottom)
+
+    def shape(self) -> QPainterPath:  # noqa: N802
+        """Hit area = card face + clue strip (glow padding must not steal neighbours' clicks)."""
+        path = QPainterPath()
+        path.addRect(self.card_rect())
+        path.addRect(QRectF(0.0, float(self._height), float(self._width), float(self._note_h)))
+        return path
 
     def card_rect(self) -> QRectF:
         return QRectF(0.0, 0.0, float(self._width), float(self._height))
@@ -685,13 +834,34 @@ class CharacterCard(QGraphicsObject):
             self.update()
         super().hoverEnterEvent(event)
 
+    def _update_clue_hover(self, pos: QPointF) -> None:
+        over = (
+            self._interactive
+            and self._clue_note is not None
+            and self._data.is_revealed
+            and self.note_rect().contains(pos)
+        )
+        new_id = self._clue_note.clue_id if over and self._clue_note is not None else None
+        if new_id == self._hover_clue_id:
+            return
+        old_id = self._hover_clue_id
+        self._hover_clue_id = new_id
+        if old_id is not None:
+            self.clue_hover_left.emit(old_id)
+        if new_id is not None:
+            self.clue_hovered.emit(new_id)
+
     def hoverMoveEvent(self, event) -> None:  # noqa: N802
+        self._update_clue_hover(event.pos())
         if self._interactive and not self._reduced_motion and self._flip_frame is None:
             self._update_cursor_tilt(event.pos())
             self.update()
         super().hoverMoveEvent(event)
 
     def hoverLeaveEvent(self, event) -> None:  # noqa: N802
+        if self._hover_clue_id is not None:
+            old_id, self._hover_clue_id = self._hover_clue_id, None
+            self.clue_hover_left.emit(old_id)
         if self._hovered:
             self._hovered = False
             self._sync_z_order()
@@ -714,13 +884,40 @@ class CharacterCard(QGraphicsObject):
         self._tilt_x = -ny * max_pitch
 
     def mousePressEvent(self, event) -> None:  # noqa: N802
+        # Right click on a HIDDEN card cycles the private draft mark (Nháp)
+        if (
+            self._interactive
+            and event.button() == Qt.MouseButton.RightButton
+            and not self._data.is_revealed
+        ):
+            self.cycle_draft_mark()
+            event.accept()
+            return
         if self._interactive and event.button() == Qt.MouseButton.LeftButton:
+            # Click on the clue strip focuses that clue (does not select the card)
+            if self._note_hit(event.pos()) and self._clue_note is not None:
+                self.setFocus()
+                self.clue_clicked.emit(self._clue_note.clue_id)
+                event.accept()
+                return
             self.setFocus()
             self._animate_press(1.0)
             self.card_selected.emit(self._data.cell_id)
             event.accept()
             return
         super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event) -> None:  # noqa: N802
+        if (
+            self._interactive
+            and event.button() == Qt.MouseButton.LeftButton
+            and self._note_hit(event.pos())
+            and self._clue_note is not None
+        ):
+            self.clue_used_toggled.emit(self._clue_note.clue_id)
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
 
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802
         if self._press_level > 0.01 or self._press_anim.state() == QAbstractAnimation.State.Running:
@@ -735,6 +932,10 @@ class CharacterCard(QGraphicsObject):
         ):
             self._trigger_press_pulse()
             self.card_selected.emit(self._data.cell_id)
+            event.accept()
+            return
+        if self._interactive and event.key() == Qt.Key.Key_D and not self._data.is_revealed:
+            self.cycle_draft_mark()
             event.accept()
             return
         super().keyPressEvent(event)
@@ -761,6 +962,9 @@ class CharacterCard(QGraphicsObject):
             self._paint_with_3d_flip(painter, rect, radius, self._flip_frame)
             painter.restore()
             return
+
+        # Clue strip hangs under the card in untransformed coordinates (stays readable on hover)
+        self._paint_clue_note(painter)
 
         # Subtle physical hover lift & 3D magnetic cursor tilt (never mutates pos())
         hover_lift_px = (
@@ -814,6 +1018,7 @@ class CharacterCard(QGraphicsObject):
                 painter.translate(-cx, -cy)
 
         self._paint_card_surface(painter, rect, radius, self._data)
+        self._paint_draft_mark(painter, rect)
 
         # Dynamic 3D Specular Foil Glare tracking cursor tilt angle
         if has_3d_tilt:
@@ -973,6 +1178,121 @@ class CharacterCard(QGraphicsObject):
         painter.setPen(QPen(border_color, border_w))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(rect, radius, radius)
+
+    # ------------------------------------------------------------------
+    # Clue strip & draft mark painting
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _wrap_lines(text: str, font: QFont, width: float, max_lines: int) -> list[str]:
+        """Greedy word-wrap; the last allowed line is elided if text overflows."""
+        fm = QFontMetricsF(font)
+        words = text.split()
+        lines: list[str] = []
+        cur = ""
+        for word in words:
+            trial = f"{cur} {word}".strip()
+            if not cur or fm.horizontalAdvance(trial) <= width:
+                cur = trial
+            else:
+                lines.append(cur)
+                cur = word
+        if cur:
+            lines.append(cur)
+        if len(lines) > max_lines:
+            tail = " ".join(lines[max_lines - 1:])
+            lines = lines[: max_lines - 1] + [tail]
+        return [fm.elidedText(line, Qt.TextElideMode.ElideRight, width) for line in lines]
+
+    def _paint_clue_note(self, painter: QPainter) -> None:
+        note = self._clue_note
+        if note is None or not self._data.is_revealed:
+            return
+        _note_h, max_lines, font_px = NOTE_SPEC_BY_MODE[self._mode]
+        area = self.note_rect()
+        w = area.width()
+        label = CLUE_TYPE_SHORT_LABELS_VI.get(note.clue_type, note.clue_type)
+        collapsed = note.state == "spent" and not note.selected
+        accent = QColor("#2B6BA0") if note.selected else QColor(COLORS.brass_accent)
+
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        if collapsed or max_lines == 0:
+            # Tiny chip: dim "✓ TYPE" when spent, bright TYPE chip on 5x5
+            chip_font = self._ui_font(8, bold=True)
+            fm = QFontMetricsF(chip_font)
+            text = f"✓ {label}" if collapsed else label
+            chip_w = min(w - 4.0, fm.horizontalAdvance(text) + 14.0)
+            chip_h = 13.0
+            chip = QRectF(area.left() + (w - chip_w) * 0.5, area.top(), chip_w, chip_h)
+            alpha = 105 if collapsed else 240
+            bg = QColor(COLORS.paper_linen)
+            bg.setAlpha(alpha)
+            border = QColor(COLORS.brass_ink if not note.selected else "#2B6BA0")
+            border.setAlpha(alpha)
+            painter.setPen(QPen(border, 1.0 if not note.selected else 1.6))
+            painter.setBrush(bg)
+            painter.drawRoundedRect(chip, chip_h * 0.5, chip_h * 0.5)
+            painter.setFont(chip_font)
+            fg = QColor(COLORS.brass_ink if not note.selected else "#185D85")
+            fg.setAlpha(alpha)
+            painter.setPen(fg)
+            painter.drawText(chip, Qt.AlignmentFlag.AlignCenter, text)
+            painter.restore()
+            return
+
+        bg = QColor("#EAF1F7" if note.selected else COLORS.paper_sheet)
+        bg.setAlpha(240)
+        painter.setPen(QPen(accent, 1.8 if note.selected else 1.1))
+        painter.setBrush(bg)
+        painter.drawRoundedRect(area, 5.0, 5.0)
+
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(accent)
+        painter.drawRoundedRect(QRectF(area.left() + 3.0, area.top() + 4.0, 2.4, area.height() - 8.0), 1.2, 1.2)
+
+        font = self._ui_font(font_px, bold=False)
+        fm = QFontMetricsF(font)
+        text_rect = QRectF(area.left() + 9.0, area.top() + 1.0, area.width() - 14.0, area.height() - 2.0)
+        lines = self._wrap_lines(note.text, font, text_rect.width(), max_lines)
+        line_h = fm.lineSpacing()
+        y = text_rect.top() + max(0.0, (text_rect.height() - line_h * len(lines)) * 0.5)
+        painter.setFont(font)
+        painter.setPen(QColor(COLORS.cream_text_primary))
+        for line in lines:
+            painter.drawText(
+                QRectF(text_rect.left(), y, text_rect.width(), line_h),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                line,
+            )
+            y += line_h
+        painter.restore()
+
+    def _paint_draft_mark(self, painter: QPainter, rect: QRectF) -> None:
+        mark = self._draft_mark
+        if mark is None or self._data.is_revealed:
+            return
+        compact = self._mode is CardDisplayMode.COMPACT
+        d = 17.0 if compact else 21.0
+        circle = QRectF(rect.right() - d - 5.0, rect.top() + 5.0, d, d)
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        painter.setPen(QPen(QColor(252, 248, 240, 235), 1.6, Qt.PenStyle.DashLine))
+        painter.setBrush(QColor(_DRAFT_MARK_COLORS[mark]))
+        painter.drawEllipse(circle)
+        glyph_pen = QPen(
+            QColor(255, 252, 246), 1.9, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin
+        )
+        painter.setPen(glyph_pen)
+        if mark == "INNOCENT":
+            c = circle.center()
+            painter.drawLine(QPointF(c.x() - d * 0.24, c.y()), QPointF(c.x() - d * 0.06, c.y() + d * 0.2))
+            painter.drawLine(QPointF(c.x() - d * 0.06, c.y() + d * 0.2), QPointF(c.x() + d * 0.26, c.y() - d * 0.2))
+        else:
+            painter.setFont(self._ui_font(int(d * 0.64), bold=True))
+            painter.drawText(circle, Qt.AlignmentFlag.AlignCenter, "?" if mark == "?" else "!")
+        painter.restore()
 
     def _paint_state_overlays(
         self,

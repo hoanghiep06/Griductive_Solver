@@ -336,7 +336,8 @@ class PlayController(QObject):
     def _show_hint(self, analysis: Analysis):
         """Gợi ý lập luận: KHÔNG nêu kết luận, KHÔNG lật thẻ, KHÔNG submit_verdict."""
         self.state.hint_count += 1
-        clues = {c.clue_id: c for c in self.screen.clue_panel.clues}
+        # Public clues now live on the screen (shown under each revealed card)
+        clues = {c.clue_id: c for c in self.screen.clues}
         statements = [clues[cid].text for cid in analysis.evidence.clue_ids if cid in clues]
         parts = [f"Hãy tập trung vào ô {analysis.cell_id}."]
         if statements:
@@ -391,7 +392,7 @@ class PlayController(QObject):
         self._stats()
 
     def _explanation(self, analysis):
-        clues = {c.clue_id: c for c in self.screen.clue_panel.clues}
+        clues = {c.clue_id: c for c in self.screen.clues}
         statements = [clues[cid].text for cid in analysis.evidence.clue_ids if cid in clues]
         cells = analysis.evidence.cell_ids
         source = " ".join(statements)

@@ -9,6 +9,10 @@ Phase 5 adds ``MotionCoordinator`` integration for:
     - Physical 3D projective card reveal flips (``reveal_card`` / ``cancel_animations``)
     - Luminous cyan clue highlight with pulse & smooth fade-out
     - Reduced-motion support with queued completion handshake
+
+Rule effects (GLOBAL / PROFESSION / PARITY / COUNT_COMPARE / IMPLIES) are drawn by
+``RuleEffectsLayer`` (``animations/rule_effects.py``). Clue strips under revealed
+cards and private Nháp draft marks are forwarded from ``CharacterCard``.
 """
 
 from __future__ import annotations
@@ -61,6 +65,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.gui.animations import rule_effects as rule_fx
+from src.gui.animations.rule_effects import RuleEffectsLayer
 from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
 from src.gui.animations.motion_coordinator import MotionCoordinator
 from src.gui.animations.motion_tokens import (
@@ -77,6 +83,7 @@ from src.gui.assets.portrait_registry import PortraitRegistry, default_portrait_
 from src.gui.clue_highlighter import ClueHighlighter
 from src.gui.components.character_card import (
     CARD_DIMENSIONS_BY_MODE,
+    NOTE_HEIGHT_BY_MODE,
     CardDisplayMode,
     CharacterCard,
 )
@@ -88,8 +95,6 @@ from src.gui.view_models import (
     normalize_board_snapshot,
     normalize_character_view,
 )
-from src.gui.animations import rule_effects as rule_fx
-from src.gui.animations.rule_effects import RuleEffectsLayer
 
 logger = logging.getLogger(__name__)
 
@@ -117,10 +122,11 @@ _GAP_Y_BY_MODE: dict[CardDisplayMode, int] = {
     CardDisplayMode.COMPACT: 6,
 }
 
+# The board is taller now (each row also hosts a clue strip), so allow cards to shrink more.
 _MIN_SCALE_BY_MODE: dict[CardDisplayMode, float] = {
-    CardDisplayMode.EXPANDED: 0.72,
-    CardDisplayMode.STANDARD: 0.66,
-    CardDisplayMode.COMPACT: 0.66,
+    CardDisplayMode.EXPANDED: 0.62,
+    CardDisplayMode.STANDARD: 0.56,
+    CardDisplayMode.COMPACT: 0.56,
 }
 
 
@@ -170,6 +176,11 @@ class GameBoard(QGraphicsView):
     background_clicked = Signal()
     animation_finished = Signal(str, object)  # (cell_id, token) — ONLY on successful flip finish
     animation_cancelled = Signal(str, object) # (cell_id, token) — ONLY on explicit cancel
+    clue_clicked = Signal(str)        # clue_id — user clicked a clue strip under a card
+    clue_used_toggled = Signal(str)   # clue_id — user double-clicked a clue strip
+    clue_hovered = Signal(str)        # clue_id — pointer rests on a clue strip
+    clue_hover_left = Signal(str)     # clue_id — pointer left that strip
+    draft_marks_changed = Signal()    # a Nháp mark was cycled on some card
 
     def __init__(
         self,
@@ -527,21 +538,21 @@ class GameBoard(QGraphicsView):
         return valid
 
     def focus_clue_relation(
-            self,
-            *,
-            owner_id: Optional[str],
-            primary_cells: Iterable[str],
-            secondary_cells: Iterable[str] = (),
-            clue_type: str = "",
-            relation_label: str = "",
-            scope: str = "",
-            scope_label: str = "",
+        self,
+        *,
+        owner_id: Optional[str],
+        primary_cells: Iterable[str],
+        secondary_cells: Iterable[str] = (),
+        clue_type: str = "",
+        relation_label: str = "",
+        scope: str = "",
+        scope_label: str = "",
     ) -> tuple[str, ...]:
         """Highlight a selected public clue with Source / Primary / Secondary role tags & rule effects."""
         prim_seq = [cid for cid in dict.fromkeys(primary_cells) if cid in self._cards_by_id]
         sec_seq = [
             cid for cid in dict.fromkeys(secondary_cells)
-            if cid in self._cards_by_id and (clue_type == "COUNT_COMPARE" or cid not in prim_seq)
+            if cid in self._cards_by_id and cid not in prim_seq
         ]
         owner = owner_id if (owner_id and owner_id in self._cards_by_id) else None
         all_targets = tuple(dict.fromkeys(([owner] if owner else []) + prim_seq + sec_seq))
@@ -552,7 +563,7 @@ class GameBoard(QGraphicsView):
         scope_norm = rule_fx.infer_scope(
             ctype, scope, len(prim_seq), len(sec_seq), len(self._cards_by_id)
         )
-        is_comparative = ctype in {"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"} and bool(sec_seq)
+        is_comparative = ctype in {"SAME", "DIFFERENT", "COUNT_COMPARE"} and bool(sec_seq)
         prim_badge = "CHÍNH" if is_comparative else ("MỤC TIÊU" if ctype == "FACT" else "VÙNG XÉT")
         prim_badge = rule_fx.primary_badge(ctype, scope_norm, relation_label, prim_badge)
         sec_badge = rule_fx.secondary_badge(ctype, "ĐỐI CHIẾU")
@@ -565,7 +576,7 @@ class GameBoard(QGraphicsView):
             elif owner and cid == owner:
                 card.set_focus_context(False, "source", "NGUỒN")
             elif cid in prim_seq:
-                card.set_focus_context(False, "primary", "NHÓM A ∩ B" if cid in sec_seq else prim_badge)
+                card.set_focus_context(False, "primary", prim_badge)
             else:
                 card.set_focus_context(False, "secondary", sec_badge)
 
@@ -724,6 +735,7 @@ class GameBoard(QGraphicsView):
             return
 
         owner_pt = self._card_pin_point(owner_id) if owner_id else None
+
         # CASE A — Comparative pair/groups (SAME / DIFFERENT / COUNT_COMPARE)
         if clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE"} and primary_ids and secondary_ids:
             p0 = self._card_pin_point(primary_ids[0])
@@ -1158,7 +1170,9 @@ class GameBoard(QGraphicsView):
         n = snapshot.grid_size
         card_w, card_h = CARD_DIMENSIONS_BY_MODE[mode]
         gap_x = _GAP_X_BY_MODE[mode]
-        gap_y = _GAP_Y_BY_MODE[mode]
+        note_h = float(NOTE_HEIGHT_BY_MODE[mode])
+        # Each row also hosts the clue strip (+8px clearance for the next row's role pill)
+        gap_y = _GAP_Y_BY_MODE[mode] + 8.0 + note_h
         axis_pad = 20.0
         # Horizontal margin 14px keeps corner 3D flip/glow safely unclipped; vertical 10px maximizes card scale
         margin_x = 14.0
@@ -1215,14 +1229,68 @@ class GameBoard(QGraphicsView):
             y = margin_y + axis_pad + ch.row * (card_h + gap_y)
             card.setPos(x, y)
             card.card_selected.connect(self._handle_user_card_selected)
+            card.clue_clicked.connect(self._on_card_clue_clicked)
+            card.clue_used_toggled.connect(self._on_card_clue_used_toggled)
+            card.clue_hovered.connect(self._on_card_clue_hovered)
+            card.clue_hover_left.connect(self._on_card_clue_hover_left)
+            card.draft_mark_changed.connect(self._on_card_draft_mark_changed)
             self._scene.addItem(card)
             self._cards_by_id[ch.cell_id] = card
             self._cards_by_coord[(ch.row, ch.col)] = card
 
         total_w = margin_x * 2.0 + axis_pad + n * card_w + (n - 1) * gap_x
-        total_h = margin_y * 2.0 + axis_pad + n * card_h + (n - 1) * gap_y
+        total_h = margin_y * 2.0 + axis_pad + n * card_h + (n - 1) * gap_y + note_h
         self._scene.setSceneRect(QRectF(0.0, 0.0, total_w, total_h))
         self.fit_board_to_viewport()
+
+    # ------------------------------------------------------------------
+    # Clue strips (under revealed cards) & Nháp draft marks
+    # ------------------------------------------------------------------
+
+    def set_clue_notes(self, notes: Mapping[str, Any]) -> None:
+        """Show one public clue strip per owner cell id (``None``/missing clears it)."""
+        for cid, card in self._cards_by_id.items():
+            card.set_clue_note(notes.get(cid))
+
+    @property
+    def draft_marks(self) -> dict[str, str]:
+        """Private Nháp marks on still-hidden cards: {cell_id: '?' | 'SUSPECT' | 'INNOCENT'}."""
+        return {
+            cid: card.draft_mark
+            for cid, card in self._cards_by_id.items()
+            if card.draft_mark is not None and not card.is_revealed
+        }
+
+    def clear_draft_marks(self) -> None:
+        changed = False
+        for card in self._cards_by_id.values():
+            if card.draft_mark is not None:
+                card.clear_draft_mark()
+                changed = True
+        if changed:
+            self.draft_marks_changed.emit()
+
+    def _on_card_clue_clicked(self, clue_id: str) -> None:
+        if not self._interactive or self.is_animating:
+            return
+        self.clue_clicked.emit(clue_id)
+
+    def _on_card_clue_used_toggled(self, clue_id: str) -> None:
+        if not self._interactive or self.is_animating:
+            return
+        self.clue_used_toggled.emit(clue_id)
+
+    def _on_card_clue_hovered(self, clue_id: str) -> None:
+        if self._interactive and not self.is_animating:
+            self.clue_hovered.emit(clue_id)
+
+    def _on_card_clue_hover_left(self, clue_id: str) -> None:
+        # Always forwarded: the screen must be able to release a preview even if
+        # the board was just locked.
+        self.clue_hover_left.emit(clue_id)
+
+    def _on_card_draft_mark_changed(self, _cell_id: str, _mark: object) -> None:
+        self.draft_marks_changed.emit()
 
     def _handle_user_card_selected(self, cell_id: str) -> None:
         if not self._interactive or self.is_animating or cell_id not in self._cards_by_id:
@@ -1244,7 +1312,7 @@ class GameBoard(QGraphicsView):
         avail_w = max(1.0, vp.width() - 6.0)
         avail_h = max(1.0, vp.height() - 6.0)
         fit = min(avail_w / sr.width(), avail_h / sr.height())
-        min_scale = _MIN_SCALE_BY_MODE.get(self._display_mode, 0.72)
+        min_scale = _MIN_SCALE_BY_MODE.get(self._display_mode, 0.62)
         scale = max(min_scale, min(GEOMETRY.board_max_scale, fit))
 
         self.setTransform(QTransform.fromScale(scale, scale))

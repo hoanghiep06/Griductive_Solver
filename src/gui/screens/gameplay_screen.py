@@ -1,12 +1,22 @@
-"""GameplayScreen integrating GĐ3 GameBoard with full GĐ4 Dashboard panels.
+"""GameplayScreen integrating GĐ3 GameBoard with GĐ4 Dashboard panels.
 
-Layout (aligned with Phase 4 §14):
+Layout:
     - Top Bar: GRIDUCTIVE logo | Case ID & grid size | Demo switcher (dev-only) | GameState pill
     - Non-blocking NotificationBanner (auto-hides when dismissed; never covers GameBoard)
-    - Main Workspace (QSplitter ~65% Board / ~35% Sidebar):
-        * Left: Preserved GĐ3 ``GameBoard`` (3×3, 4×4, 5×5)
-        * Right: ``CluePanel`` (scrollable) + ``DeductionPanel`` (scrollable + HintBox) + ``ProgressPanel``
-    - Bottom: ``ActionBar`` (Verdict Strip + Game Action Controls)
+    - Main Workspace (QSplitter ~58% Board / ~42% Sidebar):
+        * Left: ``GameBoard``. Each revealed card carries its own public clue in a
+          strip right under the name frame (the old CluePanel is gone).
+        * Right: clue-visibility toggle + public counts + ``ScratchpadPanel`` (Nháp)
+          + ``DeductionPanel``
+    - Bottom: ``ActionBar`` (Verdict Strip + Game Action Controls) | ``ProgressPanel``
+
+Clue visibility ("ẩn manh mối không quan trọng"):
+    A clue is *spent* when every cell it mentions is already revealed, or the player
+    double-clicked it. Spent clues collapse to a tiny chip. Fresh clues (owner just
+    flipped), the selected clue, and everything while "Hiện tất cả" is on stay open.
+
+Clue preview: hovering a clue strip previews its board effect (highlight + connectors);
+leaving restores the selected clue (or the previous highlight).
 
 Strictly presentation & signal forwarding ONLY — contains ZERO SAT, DPLL,
 Hint, Auto-Solve, or GameEngine logic.
@@ -34,11 +44,12 @@ from src.gui.case_catalog import format_gameplay_case_header
 from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
 from src.gui.components.action_bar import ActionBar
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
-from src.gui.components.clue_panel import CluePanel
+from src.gui.components.character_card import ClueNote
 from src.gui.components.deduction_panel import DeductionPanel
 from src.gui.components.interaction_dialog import InteractionDialog
 from src.gui.components.notification_dialog import NotificationBanner
 from src.gui.components.progress_panel import ProgressPanel
+from src.gui.components.scratchpad_panel import ScratchpadPanel
 from src.gui.components.status_label import StatusLabel
 from src.gui.components.styled_button import StyledButton
 from src.gui.components.styled_panel import StyledPanel
@@ -53,8 +64,10 @@ from src.gui.view_models import (
     GameState,
     PublicBoardSnapshot,
     PublicCharacterView,
+    PublicClueView,
     coerce_game_state,
     normalize_board_snapshot,
+    normalize_clue_view,
 )
 
 _HEADER_STATE_STYLE: dict[GameState, tuple[str, str]] = {
@@ -66,6 +79,42 @@ _HEADER_STATE_STYLE: dict[GameState, tuple[str, str]] = {
     GameState.STUCK: ("BẾ TẮC", "warning"),
     GameState.ERROR: ("LỖI HỆ THỐNG", "danger"),
 }
+
+_COMPARATIVE_TYPES = frozenset({"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"})
+
+_RELATION_LABELS: dict[str, str] = {
+    "FACT": "SỰ THẬT",
+    "SAME": "= CÙNG PHE",
+    "DIFFERENT": "≠ KHÁC PHE",
+    "EXACTLY": "CHÍNH XÁC",
+    "AT_LEAST": "ÍT NHẤT",
+    "AT_MOST": "NHIỀU NHẤT",
+    "PARITY": "CHẴN / LẺ",
+    "COUNT_COMPARE": "SO SÁNH",
+    "IMPLIES": "NẾU → THÌ",
+}
+
+
+def _relation_label(clue: PublicClueView) -> str:
+    """Badge text for the board effects.
+
+    PARITY: prefer ``scope_label`` ("Số chẵn" / "Số lẻ"), else read the clue text so
+    even/odd stays unambiguous. COUNT_COMPARE: append the operator symbol held in
+    ``scope_label`` (=, ≠, ≤, ≥, <, >).
+    """
+    ctype = clue.clue_type
+    if ctype == "PARITY":
+        if clue.scope_label:
+            return clue.scope_label.upper()
+        low = clue.text.lower()
+        has_odd, has_even = "lẻ" in low, "chẵn" in low
+        if has_odd and not has_even:
+            return "SỐ LẺ"
+        if has_even and not has_odd:
+            return "SỐ CHẴN"
+    if ctype == "COUNT_COMPARE" and clue.scope_label:
+        return f"SO SÁNH {clue.scope_label}"
+    return _RELATION_LABELS.get(ctype, "")
 
 
 class _TopBrandPlaque(QWidget):
@@ -127,7 +176,7 @@ class _TopBrandPlaque(QWidget):
 
 
 class GameplayScreen(BackdropScreen):
-    """Completed Phase 4 Gameplay Screen hosting GĐ3 ``GameBoard`` + GĐ4 Dashboard."""
+    """Completed Phase 4 Gameplay Screen hosting GĐ3 ``GameBoard`` + dashboard."""
 
     # Canonical GUI -> Controller intent signals (STAGE2_API_CONTRACT §C)
     card_selected = Signal(str)
@@ -169,6 +218,17 @@ class GameplayScreen(BackdropScreen):
         self._game_state: GameState = GameState.NO_PUZZLE
         self._current_kb_version: Optional[int] = None
         self.ui_state = InteractionState()
+
+        # Public clues now live here (displayed under each revealed card)
+        self._clues: tuple[PublicClueView, ...] = ()
+        self._focused_clue_ids: frozenset[str] = frozenset()
+        self._show_all_clues: bool = False
+        self._fresh_owner_ids: frozenset[str] = frozenset()
+        self._prev_revealed: Optional[frozenset[str]] = None
+
+        # Hover preview of a clue (does not change the selected clue / strip states)
+        self._preview_clue_id: Optional[str] = None
+        self._preview_saved_targets: tuple[str, ...] = ()
 
         # ------------------------------------------------------------------
         # 1. VINTAGE BRASS TOP BAR: Logo + Case | Center Brand Plaque | Nav + Status
@@ -304,8 +364,8 @@ class GameplayScreen(BackdropScreen):
 
         # ------------------------------------------------------------------
         # 3. MAIN WORKSPACE: Full-Height QSplitter over Cozy Dark Study Desk
-        #    Left (~58%): Hero GameBoard (with Dark Leather & Brass Filigree Frame)
-        #    Right (~42%): Full-Height CluePanel + DeductionPanel (extra ~80px height!)
+        #    Left (~58%): Hero GameBoard (clues hang under each revealed card)
+        #    Right (~42%): clue toggle + counts + Nháp + DeductionPanel
         # ------------------------------------------------------------------
         workspace_wrap = QHBoxLayout()
         workspace_wrap.setContentsMargins(SPACING.space_3, 6, SPACING.space_3, 6)
@@ -341,12 +401,17 @@ class GameplayScreen(BackdropScreen):
         self._game_board.background_clicked.connect(self.clear_highlights)
         self._game_board.animation_finished.connect(self._on_board_animation_finished)
         self._game_board.animation_cancelled.connect(self.animation_cancelled.emit)
+        self._game_board.clue_clicked.connect(self._on_clue_selected)
+        self._game_board.clue_hovered.connect(self._on_clue_hovered)
+        self._game_board.clue_hover_left.connect(self._on_clue_hover_left)
+        self._game_board.clue_used_toggled.connect(self._on_clue_used_toggled)
+        self._game_board.draft_marks_changed.connect(self._refresh_draft_summary)
         self._board_panel.content_layout.addWidget(self._game_board, 1)
         left_layout.addWidget(self._board_panel, 1)
 
         self._splitter.addWidget(self._left_column)
 
-        # Right column: Full-height Investigation Dossier (CluePanel + DeductionPanel)
+        # Right column: clue visibility toggle + public counts + Nháp + Deduction trace
         self._sidebar_widget = QWidget(self._splitter)
         self._sidebar_widget.setObjectName("GameplaySidebar")
         self._sidebar_widget.setMinimumWidth(340)
@@ -355,19 +420,41 @@ class GameplayScreen(BackdropScreen):
         sidebar_layout.setContentsMargins(SPACING.space_2, 0, 0, 0)
         sidebar_layout.setSpacing(8)
 
-        self._clue_panel = CluePanel(pixmap_loader=pixmap_loader, parent=self._sidebar_widget)
-        self._clue_panel.clue_selected.connect(self._on_clue_selected)
-        self._clue_panel.clue_hovered.connect(self._on_clue_hovered)
-        self._clue_panel.clue_hover_left.connect(self._on_clue_hover_left)
-        self._preview_clue_id = None
-        self._preview_saved_targets = ()
-        self._clue_panel.focus_cleared.connect(self.clear_highlights)
-        self._clue_panel.clue_usage_changed.connect(self._on_clue_usage_changed)
-        sidebar_layout.addWidget(self._clue_panel, 5)
+        clue_tools = QHBoxLayout()
+        clue_tools.setContentsMargins(0, 0, 0, 0)
+        clue_tools.setSpacing(6)
+        self._clue_hint_label = QLabel("Manh mối nằm dưới mỗi thẻ đã lật", self._sidebar_widget)
+        self._clue_hint_label.setTextFormat(Qt.TextFormat.PlainText)
+        self._clue_hint_label.setStyleSheet(
+            "color: #EBDDBE; font-size: 12px; font-weight: 600; background: transparent;"
+        )
+        clue_tools.addWidget(self._clue_hint_label, 1)
+        self._show_all_btn = StyledButton(
+            "Hiện tất cả manh mối", variant="ghost", min_height=30, parent=self._sidebar_widget
+        )
+        self._show_all_btn.setProperty("compact", "true")
+        self._show_all_btn.setToolTip(
+            "Mặc định manh mối đã dùng hết (mọi ô liên quan đã lật) được thu gọn. "
+            "Bấm để hiện lại tất cả."
+        )
+        self._show_all_btn.clicked.connect(self._on_show_all_clicked)
+        clue_tools.addWidget(self._show_all_btn)
+        sidebar_layout.addLayout(clue_tools)
+
+        # Public counts (replaces CluePanel.global_card): only already-proved verdicts
+        self._public_counts_label = QLabel("Công khai: chưa có ô nào được chứng minh", self._sidebar_widget)
+        self._public_counts_label.setTextFormat(Qt.TextFormat.PlainText)
+        self._public_counts_label.setStyleSheet(
+            "color: #F2D492; font-size: 12px; font-weight: 700; background: transparent;"
+        )
+        sidebar_layout.addWidget(self._public_counts_label)
+
+        self._scratchpad = ScratchpadPanel(parent=self._sidebar_widget)
+        sidebar_layout.addWidget(self._scratchpad, 4)
 
         self._deduction_panel = DeductionPanel(parent=self._sidebar_widget)
         self._deduction_panel.hint_changed.connect(self._on_hint_changed)
-        sidebar_layout.addWidget(self._deduction_panel, 5)
+        sidebar_layout.addWidget(self._deduction_panel, 6)
 
         self._splitter.addWidget(self._sidebar_widget)
         self._splitter.setStretchFactor(0, 58)
@@ -446,15 +533,29 @@ class GameplayScreen(BackdropScreen):
 
         n = self._game_board.grid_size
         pid = self._game_board.puzzle_id
-        revealed_count = sum(1 for c in norm.characters if c.visibility is CardVisibility.REVEALED)
+        revealed_ids = frozenset(
+            c.cell_id for c in norm.characters if c.visibility is CardVisibility.REVEALED
+        )
+        revealed_count = len(revealed_ids)
         self._case_label.setText(format_gameplay_case_header(pid, n))
 
-        # Sync public clues & public progress counts from snapshot
-        self._clue_panel.set_clues(norm.clues)
+        # Clue strips: remember which owners were just flipped so their clue stays open
+        self._clues = tuple(norm.clues)
+        if self._prev_revealed is None:
+            self._fresh_owner_ids = frozenset()
+        elif revealed_ids != self._prev_revealed:
+            self._fresh_owner_ids = revealed_ids - self._prev_revealed
+        self._prev_revealed = revealed_ids
+        self._preview_clue_id = None
+        self._preview_saved_targets = ()
+        self._refresh_clue_notes()
+        self._refresh_draft_summary()
+
+        # Public verdict counts (only proved verdicts)
         criminals = sum(c.verdict == "CRIMINAL" for c in norm.characters)
         innocent = sum(c.verdict == "INNOCENT" for c in norm.characters)
-        self._clue_panel.global_card.set_public_counts(criminals, innocent, len(norm.characters) - revealed_count)
-        self._preview_clue_id = None
+        self._set_public_counts(criminals, innocent, len(norm.characters) - revealed_count)
+
         self._progress_panel.set_case_info(pid, n)
         self._progress_panel.set_progress(revealed_count, len(norm.characters))
         self._action_bar.set_session_stats(revealed_count, len(norm.characters),
@@ -470,7 +571,7 @@ class GameplayScreen(BackdropScreen):
             btn.set_variant("primary" if sz == n else "ghost")
 
     def reset_for_new_case(self, snapshot: Any) -> None:
-        """Prepare screen for a fresh Load/Restart (cancel flips, clear trace/hint/banner/highlights)."""
+        """Prepare screen for a fresh Load/Restart (cancel flips, clear trace/hint/banner/highlights/Nháp)."""
         self._game_board.cancel_animations(revert_to_original=False)
         self._notification_banner.dismiss(animated=False)
         self._restart_dialog.force_close()
@@ -482,7 +583,7 @@ class GameplayScreen(BackdropScreen):
         for card in self._game_board.cards_by_id.values():
             card.reset_interaction_visuals()
         self.ui_state = InteractionState()
-        self._clue_panel.clear()
+        self._reset_clue_and_draft_state()
         self._action_bar.set_auto_solving(False)
         self._current_kb_version = None
         self.set_board(snapshot)
@@ -516,7 +617,6 @@ class GameplayScreen(BackdropScreen):
         self._notification_banner.set_reduced_motion(flag)
         self._restart_dialog.set_reduced_motion(flag)
         self._feedback_dialog.set_reduced_motion(flag)
-        self._clue_panel.set_reduced_motion(flag)
         self._deduction_panel.set_reduced_motion(flag)
         self._progress_panel.set_reduced_motion(flag)
         if self._demo_reduced_btn is not None:
@@ -537,11 +637,21 @@ class GameplayScreen(BackdropScreen):
         updated = self._game_board.update_character(public_character)
         if updated:
             self._sync_selected_character()
+            self._refresh_clue_notes()
         return updated
 
     def set_clues(self, clues: Iterable[Any]) -> None:
-        """Replace CluePanel contents with validated public clues."""
-        self._clue_panel.set_clues(clues)
+        """Replace the public clues shown under the revealed cards (deduplicated by clue_id)."""
+        seen: set[str] = set()
+        normalized: list[PublicClueView] = []
+        for raw in clues:
+            clue = normalize_clue_view(raw)
+            if clue.clue_id in seen:
+                continue
+            seen.add(clue.clue_id)
+            normalized.append(clue)
+        self._clues = tuple(normalized)
+        self._refresh_clue_notes()
 
     def append_deduction_step(self, step: Any) -> bool:
         """Append one accepted deduction step (idempotent)."""
@@ -568,7 +678,7 @@ class GameplayScreen(BackdropScreen):
     ) -> bool:
         clue_set = set(clue_ids)
         source_cells = list(supporting_cells)
-        for clue in self._clue_panel.clues:
+        for clue in self._clues:
             if clue.clue_id in clue_set:
                 source_cells.append(clue.owner_id)
                 source_cells.extend(clue.referenced_cells)
@@ -600,14 +710,13 @@ class GameplayScreen(BackdropScreen):
         self._progress_panel.set_game_status(resolved)
         self._action_bar.set_game_state(resolved)
 
-        # Per STAGE2_API_CONTRACT §C: lock board & clue selection during PROCESSING/ANIMATING/auto-solve
+        # Per STAGE2_API_CONTRACT §C: lock the board (cards AND their clue strips)
+        # during PROCESSING/ANIMATING/auto-solve. The Nháp stays editable at all times.
         interactive = (
             resolved in (GameState.READY, GameState.STUCK, GameState.SOLVED)
             and not auto_active
         )
         self._game_board.set_interactive(interactive)
-        self._clue_panel.set_auto_solving(auto_active)
-        self._clue_panel.set_interactive(interactive)
 
     def set_busy(self, state: GameState | str) -> None:
         """Canonical ``ViewPort.set_busy(state)`` alias of ``set_game_status``."""
@@ -690,13 +799,14 @@ class GameplayScreen(BackdropScreen):
         self._preview_clue_id = None
         self._preview_saved_targets = ()
         self._game_board.clear_highlights()
-        self._clue_panel.set_selected_clue(None)
+        self._focused_clue_ids = frozenset()
         self.ui_state.selected_clue_id = None
         self.ui_state.highlighted_targets = ()
+        self._refresh_clue_notes()
 
     def focus_evidence(self, clue_ids: Iterable[str], cells: Iterable[str] = ()) -> None:
         ids = tuple(clue_ids)
-        clues = [c for c in self._clue_panel.clues if c.clue_id in ids]
+        clues = [c for c in self._clues if c.clue_id in ids]
         cell_seq = list(dict.fromkeys(cells))
         target_cell = cell_seq[-1] if cell_seq else None
         owners = [c.owner_id for c in clues]
@@ -705,7 +815,8 @@ class GameplayScreen(BackdropScreen):
         for clue in clues:
             primary.append(clue.owner_id)
             references.extend(clue.referenced_cells)
-        self._clue_panel.set_evidence_clues(c.clue_id for c in clues)
+        self._preview_clue_id = None
+        self._focused_clue_ids = frozenset(c.clue_id for c in clues)
         self.ui_state.selected_clue_id = clues[0].clue_id if clues else None
         self.ui_state.highlighted_targets = self._game_board.focus_evidence(
             primary,
@@ -713,39 +824,72 @@ class GameplayScreen(BackdropScreen):
             source_owners=owners,
             target_cell_id=target_cell,
         )
+        self._refresh_clue_notes()
 
-    def _on_clue_selected(self, clue_id: str) -> None:
-        targets = self._render_clue_focus(clue_id)
-        if targets is None:
-            return
-        self.ui_state.selected_clue_id = clue_id
-        self.ui_state.highlighted_targets = targets
-        self.clue_selected.emit(clue_id)
+    # ------------------------------------------------------------------
+    # Clue strips (under each revealed card) & clue visibility
+    # ------------------------------------------------------------------
 
-    def _on_clue_hovered(self, clue_id):
-        if not self._clue_panel.is_interactive:
-            return
-        if self._preview_clue_id is None:
-            self._preview_saved_targets = self.ui_state.highlighted_targets
-        self._preview_clue_id = clue_id
-        self._render_clue_focus(clue_id)
-
-    def _on_clue_hover_left(self, clue_id):
-        if self._preview_clue_id != clue_id:
-            return
-        self._preview_clue_id = None
-        selected = self.ui_state.selected_clue_id
-        if selected:
-            self._render_clue_focus(selected)
+    def set_show_all_clues(self, show_all: bool) -> None:
+        """Toggle between 'only important clues' and 'every clue expanded'."""
+        self._show_all_clues = bool(show_all)
+        if self._show_all_clues:
+            self._show_all_btn.setText("Chỉ hiện manh mối quan trọng")
+            self._show_all_btn.set_variant("primary")
         else:
-            self._game_board.highlight_cells(self._preview_saved_targets)
-        self._preview_saved_targets = ()
+            self._show_all_btn.setText("Hiện tất cả manh mối")
+            self._show_all_btn.set_variant("ghost")
+        self._refresh_clue_notes()
 
-    def _render_clue_focus(self, clue_id):
-        clue = next((c for c in self._clue_panel.clues if c.clue_id == clue_id), None)
+    def _on_show_all_clicked(self) -> None:
+        self.set_show_all_clues(not self._show_all_clues)
+
+    def _build_clue_notes(self) -> dict[str, ClueNote]:
+        cards = self._game_board.cards_by_id
+        revealed = {cid for cid, card in cards.items() if card.is_revealed}
+        notes: dict[str, ClueNote] = {}
+        for clue in self._clues:
+            if clue.owner_id not in cards:
+                continue
+            refs = set(clue.referenced_cells) | set(clue.primary_cells) | set(clue.secondary_cells)
+            selected = clue.clue_id in self._focused_clue_ids
+            manual_used = clue.clue_id in self.ui_state.solved_clues
+            exhausted = (
+                bool(refs)
+                and refs <= revealed
+                and clue.owner_id not in self._fresh_owner_ids
+            )
+            spent = (
+                not self._show_all_clues
+                and not selected
+                and (manual_used or exhausted)
+            )
+            notes[clue.owner_id] = ClueNote(
+                clue_id=clue.clue_id,
+                clue_type=clue.clue_type,
+                text=clue.text,
+                state="spent" if spent else "normal",
+                selected=selected,
+            )
+        return notes
+
+    def _refresh_clue_notes(self) -> None:
+        self._game_board.set_clue_notes(self._build_clue_notes())
+
+    def _on_clue_used_toggled(self, clue_id: str) -> None:
+        solved = self.ui_state.solved_clues
+        if clue_id in solved:
+            solved.discard(clue_id)
+        else:
+            solved.add(clue_id)
+        self._refresh_clue_notes()
+
+    def _render_clue_focus(self, clue_id: str) -> Optional[tuple[str, ...]]:
+        """Draw the board focus (highlight + connectors) for one clue. Returns target ids."""
+        clue = next((c for c in self._clues if c.clue_id == clue_id), None)
         if clue is None:
             return None
-        comparative = clue.clue_type in {"SAME", "DIFFERENT", "COUNT_COMPARE", "IMPLIES"}
+        comparative = clue.clue_type in _COMPARATIVE_TYPES
         primary = list(
             clue.primary_cells
             or (clue.referenced_cells[:1] if comparative else clue.referenced_cells)
@@ -754,32 +898,87 @@ class GameplayScreen(BackdropScreen):
             clue.secondary_cells
             or (clue.referenced_cells[1:] if comparative else ())
         )
-        relation_labels = {
-            "FACT": "SỰ THẬT",
-            "SAME": "= CÙNG PHE",
-            "DIFFERENT": "≠ KHÁC PHE",
-            "EXACTLY": "CHÍNH XÁC",
-            "AT_LEAST": "ÍT NHẤT",
-            "AT_MOST": "NHIỀU NHẤT",
-            "PARITY": clue.scope_label.upper() or "CHẴN / LẺ",
-            "COUNT_COMPARE": f"SO SÁNH {clue.scope_label}",
-            "IMPLIES": "NẾU → THÌ",
-        }
         return self._game_board.focus_clue_relation(
             owner_id=clue.owner_id,
             primary_cells=primary,
             secondary_cells=secondary,
             clue_type=clue.clue_type,
-            relation_label=relation_labels.get(clue.clue_type, ""),
+            relation_label=_relation_label(clue),
             scope=clue.scope,
             scope_label=clue.scope_label,
         )
 
-    def _on_clue_usage_changed(self, clue_id: str, used: bool) -> None:
-        if used:
-            self.ui_state.solved_clues.add(clue_id)
+    def _on_clue_selected(self, clue_id: str) -> None:
+        # A click ends any hover preview and makes the clue the real focus
+        self._preview_clue_id = None
+        self._preview_saved_targets = ()
+        # Clicking the already-focused clue again releases the focus
+        if self.ui_state.selected_clue_id == clue_id and clue_id in self._focused_clue_ids:
+            self.clear_highlights()
+            return
+        targets = self._render_clue_focus(clue_id)
+        if targets is None:
+            return
+        self._focused_clue_ids = frozenset({clue_id})
+        self.ui_state.selected_clue_id = clue_id
+        self.ui_state.highlighted_targets = targets
+        self._refresh_clue_notes()
+        self.clue_selected.emit(clue_id)
+
+    def _on_clue_hovered(self, clue_id: str) -> None:
+        """Preview a clue's board effect while the pointer rests on its strip."""
+        if not self._game_board.is_interactive:
+            return
+        if self._preview_clue_id is None:
+            self._preview_saved_targets = tuple(self.ui_state.highlighted_targets)
+        self._preview_clue_id = clue_id
+        self._render_clue_focus(clue_id)
+
+    def _on_clue_hover_left(self, clue_id: str) -> None:
+        if self._preview_clue_id != clue_id:
+            return
+        self._preview_clue_id = None
+        selected = self.ui_state.selected_clue_id
+        if selected and self._render_clue_focus(selected) is not None:
+            pass
+        elif self._preview_saved_targets:
+            self._game_board.highlight_cells(self._preview_saved_targets)
         else:
-            self.ui_state.solved_clues.discard(clue_id)
+            self._game_board.clear_highlights()
+        self._preview_saved_targets = ()
+
+    # ------------------------------------------------------------------
+    # Public counts & Nháp (scratchpad & draft marks)
+    # ------------------------------------------------------------------
+
+    def _set_public_counts(self, criminals: int, innocent: int, hidden: int) -> None:
+        if criminals + innocent == 0:
+            self._public_counts_label.setText("Công khai: chưa có ô nào được chứng minh")
+        else:
+            self._public_counts_label.setText(
+                f"Công khai: {criminals} tội phạm · {innocent} vô tội · {hidden} chưa chứng minh"
+            )
+
+    def _refresh_draft_summary(self) -> None:
+        marks = self._game_board.draft_marks
+        values = list(marks.values())
+        self._scratchpad.set_mark_summary(
+            values.count("?"), values.count("SUSPECT"), values.count("INNOCENT")
+        )
+
+    def _reset_clue_and_draft_state(self) -> None:
+        """Forget clues, clue focus/usage, fresh-owner tracking, notes text and draft marks."""
+        self._clues = ()
+        self._focused_clue_ids = frozenset()
+        self._fresh_owner_ids = frozenset()
+        self._prev_revealed = None
+        self._preview_clue_id = None
+        self._preview_saved_targets = ()
+        self.ui_state.solved_clues.clear()
+        self._game_board.set_clue_notes({})
+        self._game_board.clear_draft_marks()
+        self._scratchpad.clear()
+        self._set_public_counts(0, 0, 0)
 
     def _on_feedback_dismissed(self) -> None:
         self.ui_state.error_feedback = None
@@ -800,8 +999,7 @@ class GameplayScreen(BackdropScreen):
                 self._feedback_dialog.close_animated()
                 return True
             if event.type() == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
-                blank = (self, self._board_panel, self._sidebar_widget,
-                         self._clue_panel.scroll_area.viewport(), self._clue_panel.scroll_area.widget())
+                blank = (self, self._board_panel, self._sidebar_widget)
                 if watched in blank:
                     self.clear_highlights()
         return False
@@ -824,9 +1022,9 @@ class GameplayScreen(BackdropScreen):
         self._notification_banner.dismiss(animated=False)
         self._deduction_panel.clear()
         self._deduction_panel.clear_hint()
-        self._clue_panel.clear()
         self._game_board.clear_selection()
         self.ui_state = InteractionState()
+        self._reset_clue_and_draft_state()
         self._action_bar.set_auto_solving(False)
         self._current_kb_version = None
 
@@ -846,7 +1044,7 @@ class GameplayScreen(BackdropScreen):
             kicker="TÁI DỰNG HỒ SƠ",
             title="Xóa tiến độ và dựng lại bàn điều tra?",
             message=(
-                "Các thẻ đã mở, nhật ký suy luận, highlight và ghi chú manh mối "
+                "Các thẻ đã mở, nhật ký suy luận, highlight, bản nháp và dấu nháp "
                 "của lượt chơi hiện tại sẽ được làm mới."
             ),
             detail=f"Tiến độ hiện tại: {revealed}/{total} thẻ đã mở. Dữ liệu puzzle gốc và solver không bị thay đổi.",
@@ -905,8 +1103,21 @@ class GameplayScreen(BackdropScreen):
         return self._board_panel
 
     @property
-    def clue_panel(self) -> CluePanel:
-        return self._clue_panel
+    def clues(self) -> tuple[PublicClueView, ...]:
+        """Public clues currently shown under the revealed cards."""
+        return self._clues
+
+    @property
+    def show_all_clues(self) -> bool:
+        return self._show_all_clues
+
+    @property
+    def public_counts_text(self) -> str:
+        return self._public_counts_label.text()
+
+    @property
+    def scratchpad_panel(self) -> ScratchpadPanel:
+        return self._scratchpad
 
     @property
     def deduction_panel(self) -> DeductionPanel:
@@ -933,10 +1144,6 @@ class GameplayScreen(BackdropScreen):
         return self._game_state
 
     # Preserved GĐ2/GĐ3 property names for backward compatibility
-    @property
-    def clue_container(self) -> CluePanel:
-        return self._clue_panel
-
     @property
     def deduction_container(self) -> DeductionPanel:
         return self._deduction_panel
