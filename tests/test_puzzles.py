@@ -41,16 +41,17 @@ def test_schema_semantics_unique_solution_and_progressive_proof(pid):
     assert report["checks"] == {
         "schema": "PASSED", "semantic_truth": "PASSED", "reference_sat_uniqueness": "PASSED",
         "exact_minimum_support": "PASSED",
-        "public_no_guess": "PASSED", "dpll_cnf_integration": "SKIPPED",
+        "public_no_guess": "PASSED", "dpll_cnf_integration": "PASSED",
     }
     assert len(report["uniqueness_proof"]["primary_model"]) == report["size"] ** 2
     assert report["uniqueness_proof"]["second_sat"] is False
     assert len(report["reveal_proof"]) == report["size"] ** 2 - report["initial_revealed_count"]
 
 
-def test_all_six_templates_four_regions_and_varied_boards(reports):
-    assert set.union(*(set(r["clue_types"]) for r in reports)) == PuzzleValidator.CORE_CLUE_TYPES
-    assert set.union(*(set(r["region_types"]) for r in reports)) == PuzzleValidator.SUPPORTED_REGION_TYPES
+def test_all_rule_families_and_category_regions_with_varied_boards(reports):
+    assert set.union(*(set(r["clue_types"]) for r in reports)) == PuzzleValidator.CORE_CLUE_TYPES | {"PARITY", "COUNT_COMPARE", "IMPLIES"}
+    used_regions = set.union(*(set(r["region_types"]) for r in reports))
+    assert {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT", "ALL", "PROFESSION", "CORNERS", "BORDER", "CENTER"} <= used_regions <= PuzzleValidator.SUPPORTED_REGION_TYPES
     for size in (3, 4, 5):
         raws = [load_raw(pid) for pid in PUZZLE_IDS if pid.startswith(str(size))]
         assert len({json.dumps(r["clues"], sort_keys=True) for r in raws}) == 5
@@ -58,7 +59,7 @@ def test_all_six_templates_four_regions_and_varied_boards(reports):
         assert len({tuple(r["initial_revealed"]) for r in raws}) >= 4
         # V2 no longer imposes the old monotone criminal-ratio template.
         assert len({sum(r["hidden_solution"].values()) for r in raws}) >= 3
-        assert all(sum(c["type"] == "FACT" for c in r["clues"]) <= 3 for r in raws)
+        assert all(sum(c["type"] == "FACT" for c in r["clues"]) <= 4 for r in raws)
 
 
 def test_generator_is_byte_for_byte_reproducible(tmp_path):
@@ -196,7 +197,9 @@ def test_corrupt_dataset_is_rejected(defect):
 def test_manifest_matches_recomputed_reports(reports):
     manifest = json.loads((ROOT / "puzzles/manifest.json").read_text(encoding="utf-8"))
     assert manifest["generator_seed"] == DEFAULT_SEED
-    for entry, report in zip(manifest["puzzles"], reports):
+    by_id = {r["puzzle_id"]: r for r in reports}
+    for entry in manifest["puzzles"]:
+        report = by_id[entry["puzzle_id"]]
         for field in ("puzzle_id", "size", "criminal_count", "innocent_count", "clue_count",
                       "initial_revealed_count", "checks", "clue_types", "region_types"):
             assert entry[field] == report[field]

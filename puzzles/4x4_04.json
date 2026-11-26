@@ -117,36 +117,36 @@
     }
   ],
   "hidden_solution": {
-    "A1": false,
-    "B1": true,
+    "A1": true,
+    "B1": false,
     "C1": false,
     "D1": false,
-    "A2": false,
-    "B2": false,
+    "A2": true,
+    "B2": true,
     "C2": true,
-    "D2": true,
+    "D2": false,
     "A3": false,
     "B3": true,
     "C3": false,
     "D3": false,
     "A4": false,
     "B4": true,
-    "C4": true,
-    "D4": false
+    "C4": false,
+    "D4": true
   },
   "initial_revealed": [
-    "A1",
-    "B1",
+    "A2",
+    "B3",
     "C1"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "SAME",
+      "type": "FACT",
       "parameters": {
-        "target1": "D1",
-        "target2": "A2"
+        "target": "A2",
+        "status": "CRIMINAL"
       }
     },
     {
@@ -154,23 +154,21 @@
       "owner_id": "B1",
       "type": "DIFFERENT",
       "parameters": {
-        "target1": "A2",
-        "target2": "D2"
+        "target1": "D2",
+        "target2": "D4"
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "EXACTLY",
+      "type": "PARITY",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
         "cells": [
-          "C1",
-          "D1",
-          "D2",
-          "A3"
-        ]
+          "A3",
+          "B4",
+          "C4"
+        ],
+        "parity": "odd"
       }
     },
     {
@@ -178,84 +176,98 @@
       "owner_id": "D1",
       "type": "SAME",
       "parameters": {
-        "target1": "D3",
-        "target2": "A4"
+        "target1": "C2",
+        "target2": "A1"
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "EXACTLY",
+      "type": "SAME",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A4",
-          "B4"
-        ]
+        "target1": "A3",
+        "target2": "B1"
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "FACT",
+      "type": "COUNT_COMPARE",
       "parameters": {
-        "target": "A1",
-        "status": "INNOCENT"
+        "region_a": [
+          "C2",
+          "A1",
+          "A4"
+        ],
+        "region_b": [
+          "A2",
+          "B2",
+          "B1"
+        ],
+        "op": "=="
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "FACT",
+      "type": "COUNT_COMPARE",
       "parameters": {
-        "target": "B1",
-        "status": "CRIMINAL"
+        "region_a": [
+          "D3"
+        ],
+        "region_b": [
+          "B1"
+        ],
+        "op": "=="
       }
     },
     {
       "clue_id": "CLUE_D2",
       "owner_id": "D2",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 3,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "D2",
-          "D3",
-          "B4",
-          "C4"
-        ]
+        "target1": "A1",
+        "target2": "A4"
       }
     },
     {
       "clue_id": "CLUE_A3",
       "owner_id": "A3",
-      "type": "AT_MOST",
+      "type": "SAME",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A1",
-          "D1",
-          "A2",
-          "D2"
-        ]
+        "target1": "D1",
+        "target2": "D2"
       }
     },
     {
       "clue_id": "CLUE_B3",
       "owner_id": "B3",
-      "type": "AT_MOST",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 5,
-        "region_type": "NEIGHBORS",
-        "center": "C3"
+        "target1": "B1",
+        "target2": "B4"
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
+      "type": "COUNT_COMPARE",
+      "parameters": {
+        "region_a": [
+          "D1",
+          "D2",
+          "D4"
+        ],
+        "region_b": [
+          "A2",
+          "B1"
+        ],
+        "op": "=="
+      }
+    },
+    {
+      "clue_id": "CLUE_D3",
+      "owner_id": "D3",
       "type": "FACT",
       "parameters": {
         "target": "C1",
@@ -263,61 +275,55 @@
       }
     },
     {
-      "clue_id": "CLUE_D3",
-      "owner_id": "D3",
-      "type": "SAME",
-      "parameters": {
-        "target1": "D4",
-        "target2": "B2"
-      }
-    },
-    {
       "clue_id": "CLUE_A4",
       "owner_id": "A4",
-      "type": "DIFFERENT",
+      "type": "FACT",
       "parameters": {
-        "target1": "B2",
-        "target2": "C2"
+        "target": "B3",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_B4",
       "owner_id": "B4",
-      "type": "EXACTLY",
+      "type": "PARITY",
       "parameters": {
-        "k": 3,
-        "region_type": "EXPLICIT",
         "cells": [
-          "C2",
-          "B3",
-          "B4",
-          "D4"
-        ]
+          "D1",
+          "D4",
+          "C3"
+        ],
+        "parity": "odd"
       }
     },
     {
       "clue_id": "CLUE_C4",
       "owner_id": "C4",
-      "type": "AT_MOST",
+      "type": "COUNT_COMPARE",
       "parameters": {
-        "k": 1,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "C1",
-          "D3",
-          "A4",
+        "region_a": [
+          "A3",
+          "B1",
           "B4"
-        ]
+        ],
+        "region_b": [
+          "A2",
+          "C1"
+        ],
+        "op": "=="
       }
     },
     {
       "clue_id": "CLUE_D4",
       "owner_id": "D4",
-      "type": "EXACTLY",
+      "type": "PARITY",
       "parameters": {
-        "k": 1,
-        "region_type": "ROW",
-        "index": 2
+        "cells": [
+          "C2",
+          "A4",
+          "B2"
+        ],
+        "parity": "even"
       }
     }
   ]

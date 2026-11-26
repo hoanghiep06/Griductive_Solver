@@ -1,0 +1,665 @@
+{
+  "schema_version": "1.2",
+  "project": "GRIDUCTIVE — Detective Case Files",
+  "package_source": "GRIDUCTIVE_Detective_Assets_V1_2_UNDER_20MB_(1).zip (V1.2 Zoomed Case Covers)",
+  "integrated_date": "2026-11-19",
+  "owner": "Phuoc (Member 2 - GUI Engineer)",
+  "package_approval_status": "PENDING_FINAL_APPROVAL",
+  "primary_asset_groups": 12,
+  "original_png_count": 18,
+  "derived_png_count": 3,
+  "palette_reference": {
+    "MIDNIGHT_NAVY": "#101B30",
+    "DETECTIVE_BLUE": "#253F68",
+    "CRIMSON_RED": "#C83D50",
+    "EVIDENCE_GOLD": "#E4B96D",
+    "CLUE_CYAN": "#65B9E9",
+    "INNOCENT_TEAL": "#41B99A",
+    "STEEL_GRAY": "#76869C",
+    "PAPER_WHITE": "#F2F5FA"
+  },
+  "compression_provenance": {
+    "method": "256-color indexed PNG (mode P) with dithering in source V1.2 under-20MB package",
+    "affected_assets": [
+      "backgrounds/A03_main_menu_background.png",
+      "backgrounds/A05_gameplay_background.png",
+      "textures/A08_evidence_texture.png"
+    ],
+    "untouched_originals": "All 18 source PNG files are preserved byte-for-byte from the V1.2 ZIP."
+  },
+  "assets": [
+    {
+      "asset_id": "A01_CARD_BACK",
+      "group_id": "A01",
+      "relative_path": "cards/A01_card_back.png",
+      "type": "card_artwork",
+      "intended_screen": [
+        "GAMEPLAY"
+      ],
+      "dimensions": {
+        "width": 1086,
+        "height": 1448,
+        "aspect_ratio": 0.75
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 2657972,
+      "sha256": "5a60b2a89e01948ac3e236549bdcab1e51e55d8c47c46e5b03ec84e12f494777",
+      "source_version": "1.0",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Detailed raster artwork (3:4); requires dark semi-transparent scrim behind dynamic public name/profession text on HIDDEN cards; use compact simplified framing on 5x5 boards."
+      ]
+    },
+    {
+      "asset_id": "A02_CARD_FRONT_TEMPLATE",
+      "group_id": "A02",
+      "relative_path": "cards/A02_card_front_template.png",
+      "type": "card_artwork",
+      "intended_screen": [
+        "GAMEPLAY"
+      ],
+      "dimensions": {
+        "width": 1086,
+        "height": 1448,
+        "aspect_ratio": 0.75
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 2258827,
+      "sha256": "eba161a213b31f67049d0c6af3b0324af517f81c79dc669e5142436823614839",
+      "source_version": "1.0",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "CRITICAL: Bottom-left verdict plaque is pre-painted crimson red. PySide6 MUST paint an opaque INNOCENT_TEAL (#41B99A) pill/badge completely over this plaque whenever verdict is INNOCENT so players never misread INNOCENT as CRIMINAL. Also use compact framing on 5x5 boards."
+      ]
+    },
+    {
+      "asset_id": "A03_MAIN_MENU_BACKGROUND",
+      "group_id": "A03",
+      "relative_path": "backgrounds/A03_main_menu_background.png",
+      "type": "background",
+      "intended_screen": [
+        "MAIN_MENU"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 1080,
+        "aspect_ratio": 1.7768
+      },
+      "color_mode": "P",
+      "transparency": false,
+      "file_size_bytes": 697149,
+      "sha256": "6a89469a2937c7fa55b675c2b92c66b14573e02e697c4b6ea1ec5220f3a4fa0f",
+      "source_version": "1.2-under-20mb",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "256-color indexed PNG (mode P) with subtle dithering for under-20MB packaging; apply dark navy scrim behind menu buttons to preserve >=4.5:1 contrast."
+      ]
+    },
+    {
+      "asset_id": "A04_LOGO_WIDE",
+      "group_id": "A04",
+      "relative_path": "branding/A04_logo_wide.png",
+      "type": "branding",
+      "intended_screen": [
+        "MAIN_MENU",
+        "GAMEPLAY"
+      ],
+      "dimensions": {
+        "width": 1920,
+        "height": 819,
+        "aspect_ratio": 2.3443
+      },
+      "color_mode": "RGBA",
+      "transparency": true,
+      "file_size_bytes": 2304095,
+      "sha256": "771c968b65dd793c94cde5c993b564e3763b4db9f1e62e99e40cd9c91aefed79",
+      "source_version": "1.0",
+      "validation_status": "NEEDS_FIX",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Derived RGBA alpha contains 11.7% low-alpha (1..39) bright exterior noise/checkerboard haze visible on Midnight Navy (#101B30). Use non-destructive derived cleanup assets/derived/A04_logo_wide_clean.png for rendering."
+      ]
+    },
+    {
+      "asset_id": "A04_APP_EMBLEM",
+      "group_id": "A04",
+      "relative_path": "branding/A04_app_emblem.png",
+      "type": "branding",
+      "intended_screen": [
+        "MAIN_WINDOW",
+        "MAIN_MENU"
+      ],
+      "dimensions": {
+        "width": 1024,
+        "height": 1024,
+        "aspect_ratio": 1.0
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 1427436,
+      "sha256": "c078c63323a76c1c78e244f4d75585359f2785156f25a8474fd2890effe1a6f0",
+      "source_version": "1.3-cartoon-emblem",
+      "validation_status": "VALIDATED",
+      "approval_status": "APPROVED_BY_USER_INPUT",
+      "known_limitations": [
+        "User-supplied cartoon detective medallion (1024x1024 RGB PNG, non-anime). Converted from user JPEG upload; previous V1.2 emblem backed up at assets/backup/v1_2_original/A04_app_emblem_v1_2.png.",
+        "App icon only (never use as CharacterCard portrait for board cells). Circular RGBA icon derivative stored at assets/derived/A04_app_emblem_clean.png."
+      ]
+    },
+    {
+      "asset_id": "A05_GAMEPLAY_BACKGROUND",
+      "group_id": "A05",
+      "relative_path": "backgrounds/A05_gameplay_background.png",
+      "type": "background",
+      "intended_screen": [
+        "GAMEPLAY",
+        "LEVEL_SELECTION",
+        "RESULTS"
+      ],
+      "dimensions": {
+        "width": 1672,
+        "height": 941,
+        "aspect_ratio": 1.7768
+      },
+      "color_mode": "P",
+      "transparency": false,
+      "file_size_bytes": 631544,
+      "sha256": "2dc4b17c049a9f546ecd1d878e51f6d8ccce1356343a416afcf72acd17564e9f",
+      "source_version": "1.2-under-20mb",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "256-color indexed PNG (mode P) with subtle dithering in dark wall gradient; keep dimmed/subtle so GameBoard cards remain dominant."
+      ]
+    },
+    {
+      "asset_id": "A06_CASE_COVER_3X3",
+      "group_id": "A06",
+      "relative_path": "case_covers/A06_case_cover_3x3.png",
+      "type": "case_cover",
+      "intended_screen": [
+        "LEVEL_SELECTION"
+      ],
+      "dimensions": {
+        "width": 1440,
+        "height": 1080,
+        "aspect_ratio": 1.3333
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 2164571,
+      "sha256": "8a93ad522289f0ce7c95dcc612d5a099390e769be9baebcd9f7c7c398711df14",
+      "source_version": "1.2-zoomed-case-covers",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Decorative illustration only (exact 3x3 = 9 cells, 1440x1080 4:3). Never use pixel hotspots as interactive board. Slight visual style divergence vs 4x4/5x5 (straight-on rounded glowing cards with ? vs tilted kraft-folder square grid)."
+      ]
+    },
+    {
+      "asset_id": "A06_CASE_COVER_4X4",
+      "group_id": "A06",
+      "relative_path": "case_covers/A06_case_cover_4x4.png",
+      "type": "case_cover",
+      "intended_screen": [
+        "LEVEL_SELECTION"
+      ],
+      "dimensions": {
+        "width": 1440,
+        "height": 1080,
+        "aspect_ratio": 1.3333
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 1891417,
+      "sha256": "8d7c365213f91d0fa0278ec82118d2164ed1ae088621b116e68abdaf0729ef96",
+      "source_version": "1.2-zoomed-case-covers",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Decorative illustration only (exact 4x4 = 16 cells, 1440x1080 4:3). Non-blocking cosmetic note: bottom-left magnifying glass overlaps ~40% of cell (4,1); slight style divergence vs 3x3 cover."
+      ]
+    },
+    {
+      "asset_id": "A06_CASE_COVER_5X5",
+      "group_id": "A06",
+      "relative_path": "case_covers/A06_case_cover_5x5.png",
+      "type": "case_cover",
+      "intended_screen": [
+        "LEVEL_SELECTION"
+      ],
+      "dimensions": {
+        "width": 1440,
+        "height": 1080,
+        "aspect_ratio": 1.3333
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 1818759,
+      "sha256": "05523ba07909de7b8619cc76a14c50b1fa233fffe9cd82f3eb69eccd6a3d58ad",
+      "source_version": "1.2-zoomed-case-covers",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Decorative illustration only (exact 5x5 = 25 cells, 1440x1080 4:3). Non-blocking cosmetic note: bottom-left magnifying glass obscures most of cell (5,1) and clips (4,1); top-right corner of cell (1,5) touches upper crop edge."
+      ]
+    },
+    {
+      "asset_id": "A07_CASE_CLOSED_EMBLEM",
+      "group_id": "A07",
+      "relative_path": "results/A07_case_closed_emblem.png",
+      "type": "results_emblem",
+      "intended_screen": [
+        "RESULTS"
+      ],
+      "dimensions": {
+        "width": 716,
+        "height": 535,
+        "aspect_ratio": 1.3383
+      },
+      "color_mode": "RGBA",
+      "transparency": true,
+      "file_size_bytes": 699366,
+      "sha256": "d3485a81b7b836e0df0e4594da5cb537c3861329572b0e0ed518c8e5f4f92e86",
+      "source_version": "1.0",
+      "validation_status": "NEEDS_FIX",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Derived RGBA alpha contains 19.6% low-alpha bright speckled noise in exterior plus thin ~1px white edge fringe on #101B30. Use non-destructive derived cleanup assets/derived/A07_case_closed_emblem_clean.png; overlay CASE CLOSED dynamically via Qt on the blank central navy ribbon."
+      ]
+    },
+    {
+      "asset_id": "A08_EVIDENCE_TEXTURE",
+      "group_id": "A08",
+      "relative_path": "textures/A08_evidence_texture.png",
+      "type": "decorative_texture",
+      "intended_screen": [
+        "GAMEPLAY",
+        "MAIN_MENU"
+      ],
+      "dimensions": {
+        "width": 858,
+        "height": 876,
+        "aspect_ratio": 0.9795
+      },
+      "color_mode": "P",
+      "transparency": false,
+      "file_size_bytes": 512765,
+      "sha256": "a4b6893509d2cd383bea511cead333faf722e41a3dadfc3a976a59761b1ff85b",
+      "source_version": "1.2-under-20mb",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "NOT a seamless tile (never repeat/tile). 256-color indexed PNG (mode P). Light beige paper background conflicts with PAPER_WHITE text unless overlaid with >=85% dark navy scrim or used at <=15% opacity. Top-right circular red stamp contains garbled AI pseudo-text (crop or dim)."
+      ]
+    },
+    {
+      "asset_id": "A10_CLUE_ICON_ATLAS",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_clue_icon_atlas.png",
+      "type": "clue_icon_atlas",
+      "intended_screen": [
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 839,
+        "height": 876,
+        "aspect_ratio": 0.9578
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 766819,
+      "sha256": "e4d77a77b823b34c84383cb9a0e92794c155b6b7f871ec1e8e6d5334e921436e",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB reference sheet (839x876) containing all 6 clue icons with baked header logo and labels; use only for reference/How to Play overview, not as transparent sprite sheet."
+      ]
+    },
+    {
+      "asset_id": "A10_FACT",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_fact.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 232,
+        "height": 221,
+        "aspect_ratio": 1.0498
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 49466,
+      "sha256": "111bd707740b00ef1233d34f97c7b94e3ba20c1838ce9acda8b8380e3dea46f0",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (232x221) with baked dark frame and English FACT label. Legible at >=48px (legend/header); do NOT shrink to 16-32px inline indicators (use Qt-native vector glyph instead)."
+      ]
+    },
+    {
+      "asset_id": "A10_SAME",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_same.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 228,
+        "height": 221,
+        "aspect_ratio": 1.0317
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 54919,
+      "sha256": "9549642e7730897c04edc7b7140e34f0784e02dd084b3a581c1b994a21e8b93d",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (228x221) with baked dark frame and English SAME label. Legible at >=48px; use Qt-native vector glyph for <=32px inline indicators."
+      ]
+    },
+    {
+      "asset_id": "A10_DIFFERENT",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_different.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 228,
+        "height": 221,
+        "aspect_ratio": 1.0317
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 59094,
+      "sha256": "20a77b04e36c9da4680e2149a4bef5655db3d1cfa3c592e07527fc2f9f1eaa9c",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (228x221) with baked dark frame and English DIFFERENT label. Legible at >=48px; use Qt-native vector glyph for <=32px inline indicators."
+      ]
+    },
+    {
+      "asset_id": "A10_EXACTLY",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_exactly.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 234,
+        "height": 215,
+        "aspect_ratio": 1.0884
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 58383,
+      "sha256": "48fcd9b07a4d3741c75535fb2dec3f962980af6ba6a35133d01ee4e78d338773",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (234x215) with baked dark frame and English EXACTLY label. Legible at >=48px; use Qt-native vector glyph for <=32px inline indicators."
+      ]
+    },
+    {
+      "asset_id": "A10_AT_LEAST",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_at_least.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 233,
+        "height": 217,
+        "aspect_ratio": 1.0737
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 59331,
+      "sha256": "67378d4183893c9f91a66804d725f143c66beeb74d5bf537ffc05ad79bac0c8c",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (233x217) with baked dark frame and English AT_LEAST label. Legible at >=48px; use Qt-native vector glyph for <=32px inline indicators."
+      ]
+    },
+    {
+      "asset_id": "A10_AT_MOST",
+      "group_id": "A10",
+      "relative_path": "clue_icons/A10_at_most.png",
+      "type": "clue_icon",
+      "intended_screen": [
+        "GAMEPLAY",
+        "HOW_TO_PLAY"
+      ],
+      "dimensions": {
+        "width": 233,
+        "height": 219,
+        "aspect_ratio": 1.0639
+      },
+      "color_mode": "RGB",
+      "transparency": false,
+      "file_size_bytes": 59740,
+      "sha256": "7d88183692970f4419930d3d4423a099cba5e6c8e836dd528ccc1f3c5870ed57",
+      "source_version": "1.1",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL",
+      "known_limitations": [
+        "Opaque RGB raster (233x219) with baked dark frame and English AT_MOST label. Legible at >=48px; use Qt-native vector glyph for <=32px inline indicators."
+      ]
+    }
+  ],
+  "derived_assets": [
+    {
+      "derived_id": "A04_LOGO_WIDE_CLEAN",
+      "source_asset_id": "A04_LOGO_WIDE",
+      "relative_path": "derived/A04_logo_wide_clean.png",
+      "dimensions": {
+        "width": 1920,
+        "height": 819,
+        "aspect_ratio": 2.3443
+      },
+      "color_mode": "RGBA",
+      "transparency": true,
+      "file_size_bytes": 1776617,
+      "sha256": "32b3a8e30ecdaf2526560c167e4c884f3dccb9a960edbe3c44f7a65ff9729f9b",
+      "method": "Non-destructive border flood-fill (alpha < 140) + 1px bright neutral exterior defringe. Zeroed 184,586 noise pixels, defringed 1,499 edge pixels. Interior artwork untouched.",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL"
+    },
+    {
+      "derived_id": "A04_APP_EMBLEM_CLEAN",
+      "source_asset_id": "A04_APP_EMBLEM",
+      "relative_path": "derived/A04_app_emblem_clean.png",
+      "dimensions": {
+        "width": 1024,
+        "height": 1024,
+        "aspect_ratio": 1.0
+      },
+      "color_mode": "RGBA",
+      "transparency": true,
+      "file_size_bytes": 1605193,
+      "sha256": "a2fdf265685e31704ac3a9be3dd4e03d4afbca059efe8c7d15f9b9d4aff2b151",
+      "method": "Non-destructive 4x supersampled circular RGBA medallion mask (inset 4px) applied to user-supplied 1024x1024 cartoon detective A04_app_emblem.png for crisp circular desktop app icon; original RGB PNG with navy background preserved intact.",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL"
+    },
+    {
+      "derived_id": "A07_CASE_CLOSED_EMBLEM_CLEAN",
+      "source_asset_id": "A07_CASE_CLOSED_EMBLEM",
+      "relative_path": "derived/A07_case_closed_emblem_clean.png",
+      "dimensions": {
+        "width": 716,
+        "height": 535,
+        "aspect_ratio": 1.3383
+      },
+      "color_mode": "RGBA",
+      "transparency": true,
+      "file_size_bytes": 460057,
+      "sha256": "e1a36c44a7dcb90141e6b7f1887ebd0f48c7cb9b37e41dd268eda1ee199d4f62",
+      "method": "Non-destructive border flood-fill (alpha < 140) + 1px bright neutral exterior defringe. Zeroed 76,022 dust pixels, defringed 631 edge pixels. Minor ~1px light anti-aliased bevel trace remains to avoid eroding gold border.",
+      "validation_status": "VALIDATED",
+      "approval_status": "PENDING_FINAL_APPROVAL"
+    }
+  ],
+  "rules": [
+    "All 18 original PNG files are preserved byte-for-byte; derived alpha-cleaned files live under assets/derived/.",
+    "A06 case covers (1440x1080, 4:3) are decorative Level Selection illustrations only, never interactive gameplay grids.",
+    "A02 card front has a crimson bottom-left plaque; PySide6 must paint an opaque INNOCENT_TEAL badge over it for INNOCENT reveals.",
+    "A08 evidence texture is NOT seamless; never tile across panels and never put PAPER_WHITE text directly on it without a dark scrim.",
+    "A10 clue icons are opaque RGB with baked labels; use Qt-native/vector symbols for <=32px inline indicators.",
+    "All runtime character names, professions, verdicts, clue texts, and CASE CLOSED text are rendered dynamically by PySide6 from public DTOs only."
+  ],
+  "a04_replacement_note": {
+    "date": "2026-11-19",
+    "replaced_asset": "branding/A04_app_emblem.png",
+    "unchanged_logo": "branding/A04_logo_wide.png",
+    "backup_path": "backup/v1_2_original/A04_app_emblem_v1_2.png",
+    "style": "Cartoon detective medallion (non-anime), 1024x1024"
+  },
+  "vietnamese_clue_icons": {
+    "source_zip": "GRIDUCTIVE_8_Clue_Icons_Vietnamese.zip",
+    "manifest_file": "clue_icons/manifest_vi.json",
+    "format": "512x512 PNG RGBA transparent",
+    "count": 8,
+    "production_default": true,
+    "icons": [
+      {
+        "clue_type": "FACT",
+        "vi_label": "SỰ THẬT",
+        "relative_path": "clue_icons/A10_fact_vi.png",
+        "description": "Manh mối khẳng định trực tiếp một sự kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 335911,
+        "sha256": "c5fd208a50b0ca2a29f6a8feb42ab69c24562fe55e0766194835a1cdd6162928"
+      },
+      {
+        "clue_type": "SAME",
+        "vi_label": "CÙNG PHE",
+        "relative_path": "clue_icons/A10_same_vi.png",
+        "description": "Hai nghi phạm có cùng trạng thái.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 300365,
+        "sha256": "db0a856a93fda143c6922cbce903090c554db423c31868e66679f3cf73918477"
+      },
+      {
+        "clue_type": "DIFFERENT",
+        "vi_label": "KHÁC PHE",
+        "relative_path": "clue_icons/A10_different_vi.png",
+        "description": "Hai nghi phạm có trạng thái khác nhau.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 295753,
+        "sha256": "d1a19c09e8c61c7da6be21e83068569da3d6f1efe590ac413f17508e473be3a0"
+      },
+      {
+        "clue_type": "EXACTLY",
+        "vi_label": "CHÍNH XÁC",
+        "relative_path": "clue_icons/A10_exactly_vi.png",
+        "description": "Chính xác k người thỏa điều kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 297798,
+        "sha256": "f46f4f6ff1f523168ec48727d645f260f81e84841e204d8370cedbfc96c65bc6"
+      },
+      {
+        "clue_type": "AT_LEAST",
+        "vi_label": "ÍT NHẤT",
+        "relative_path": "clue_icons/A10_at_least_vi.png",
+        "description": "Ít nhất k người thỏa điều kiện.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 289785,
+        "sha256": "1faae94c7d05448f73a3cce9c01e5093922f7712a177c9fe813c4d22009f6cb8"
+      },
+      {
+        "clue_type": "AT_MOST",
+        "vi_label": "NHIỀU NHẤT",
+        "relative_path": "clue_icons/A10_at_most_vi.png",
+        "description": "Nhiều nhất k người thỏa điều kiện (không quá k).",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 296593,
+        "sha256": "594963e778810b77e5770482535b29eb959497aabd6001ae8a3d866b42019c0d"
+      },
+      {
+        "clue_type": "PARITY",
+        "vi_label": "CHẴN / LẺ",
+        "relative_path": "clue_icons/A10_parity_vi.png",
+        "description": "Ràng buộc chẵn hoặc lẻ.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 293489,
+        "sha256": "5aa39a8307378249b9f309267efafe697d020ecea6f9bde7f53fe36c497dabc3"
+      },
+      {
+        "clue_type": "COUNT_COMPARE",
+        "vi_label": "SO SÁNH SỐ LƯỢNG",
+        "relative_path": "clue_icons/A10_count_compare_vi.png",
+        "description": "So sánh số lượng giữa hai nhóm.",
+        "dimensions": {
+          "width": 512,
+          "height": 512
+        },
+        "color_mode": "RGBA",
+        "transparency": true,
+        "file_size_bytes": 298938,
+        "sha256": "9e0bcfbc0b0217b0d7e20182bf72d1a1def0c58701a55b7c9fdec995d3fab2b5"
+      }
+    ]
+  }
+}

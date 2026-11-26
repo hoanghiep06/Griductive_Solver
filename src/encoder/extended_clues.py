@@ -1,8 +1,9 @@
 """
-extended_clues.py - Ma hoa 2 loai manh moi mo rong sang CNF.
+extended_clues.py - Ma hoa cac loai manh moi mo rong sang CNF.
 
   * PARITY        : so o Guilty trong mot tap o la chan / le.
   * COUNT_COMPARE : so sanh so o Guilty cua hai vung (<, <=, ==, !=, >=, >).
+  * IMPLIES       : dieu kien keo theo  (o A co trang thai X)  =>  (o B co trang thai Y).
 
 Giao dien (GIA DINH, xem ASSUMPTIONS.md):
   vm.cell_var(r, c) -> int   # bien DIMACS (>0) cua IsGuilty(r, c)
@@ -12,22 +13,24 @@ Ket qua: list[list[int]] - cac clause theo quy uoc DIMACS.
 Dac diem ma hoa: moi bien phu duoc dinh nghia DAY DU (<=>) theo cac bien o,
 nen voi mot ban co day du, gia tri bien phu bi xac dinh duy nhat. Dieu nay
 giu nguyen so nghiem khi UniquenessChecker chi can chan cac bien o.
+IMPLIES khong dung bien phu: chi la mot clause [-A, B].
 """
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Union
+from typing import Any, List, Mapping, Sequence, Union
 
 from .semantic_eval import (
     clue_params, clue_type_name, normalize_cells, normalize_op, normalize_parity,
+    normalize_status,
 )
 
 Clause = List[int]
 __all__ = [
     "EXTENDED_TYPES", "is_extended", "encode_extended",
-    "encode_parity", "encode_count_compare", "build_counter",
+    "encode_parity", "encode_count_compare", "encode_implies", "build_counter",
 ]
 
-EXTENDED_TYPES = frozenset({"PARITY", "COUNT_COMPARE"})
+EXTENDED_TYPES = frozenset({"PARITY", "COUNT_COMPARE", "IMPLIES"})
 
 
 class _Const:
@@ -62,7 +65,6 @@ def _emit(clauses: List[Clause], lits: Sequence[Lit]) -> None:
 
 
 def _cell_lits(vm, cells) -> List[int]:
-    cells = list(cells)
     cells = list(cells)
     if not cells:
         raise ValueError("Extended clue regions must not be empty")
@@ -172,6 +174,32 @@ def encode_count_compare(vm, region_a, region_b, op: str) -> List[Clause]:
 
 
 # --------------------------------------------------------------------------- #
+# IMPLIES: (A co trang thai sa) => (B co trang thai sb)   ==   clause [-LA, LB]
+# --------------------------------------------------------------------------- #
+def _literal_from_spec(vm, spec: Any) -> int:
+    """{'target': <o>, 'status': 'CRIMINAL'|'INNOCENT'} -> literal DIMACS."""
+    if not isinstance(spec, Mapping):
+        raise ValueError(f"IMPLIES operand must be an object with target/status, got {spec!r}")
+    target = spec.get("target", spec.get("cell"))
+    status = spec.get("status", spec.get("value"))
+    if target is None or status is None:
+        raise ValueError(f"IMPLIES operand requires 'target' and 'status': {spec!r}")
+    var = _cell_lits(vm, [target])[0]
+    return var if normalize_status(status) else -var
+
+
+def encode_implies(vm, antecedent, consequent) -> List[Clause]:
+    """NEU antecedent THI consequent. Hai ve phai la hai o khac nhau."""
+    a = _literal_from_spec(vm, antecedent)
+    b = _literal_from_spec(vm, consequent)
+    if abs(a) == abs(b):
+        raise ValueError("IMPLIES requires two distinct cells")
+    clauses: List[Clause] = []
+    _emit(clauses, [-a, b])
+    return clauses
+
+
+# --------------------------------------------------------------------------- #
 # Dispatch
 # --------------------------------------------------------------------------- #
 def is_extended(clue: Any) -> bool:
@@ -179,10 +207,12 @@ def is_extended(clue: Any) -> bool:
 
 
 def encode_extended(clue: Any, vm) -> List[Clause]:
-    """Ma hoa mot manh moi mo rong (PARITY / COUNT_COMPARE) sang CNF."""
+    """Ma hoa mot manh moi mo rong (PARITY / COUNT_COMPARE / IMPLIES) sang CNF."""
     name, p = clue_type_name(clue), clue_params(clue)
     if name == "PARITY":
         return encode_parity(vm, p["cells"], p["parity"])
     if name == "COUNT_COMPARE":
         return encode_count_compare(vm, p["region_a"], p["region_b"], p["op"])
+    if name == "IMPLIES":
+        return encode_implies(vm, p["antecedent"], p["consequent"])
     raise ValueError(f"{name!r} khong phai manh moi mo rong")

@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "puzzle_id": "tutorial_4x4",
+  "grid_size": 4,
+  "characters": [
+    {"id":"A1","name":"An","profession":"analyst","row":0,"col":0},
+    {"id":"B1","name":"Bình","profession":"baker","row":0,"col":1},
+    {"id":"C1","name":"Chi","profession":"doctor","row":0,"col":2},
+    {"id":"D1","name":"Dũng","profession":"engineer","row":0,"col":3},
+    {"id":"A2","name":"Giang","profession":"florist","row":1,"col":0},
+    {"id":"B2","name":"Hà","profession":"guard","row":1,"col":1},
+    {"id":"C2","name":"Huy","profession":"historian","row":1,"col":2},
+    {"id":"D2","name":"Khánh","profession":"illustrator","row":1,"col":3},
+    {"id":"A3","name":"Lan","profession":"journalist","row":2,"col":0},
+    {"id":"B3","name":"Linh","profession":"librarian","row":2,"col":1},
+    {"id":"C3","name":"Minh","profession":"musician","row":2,"col":2},
+    {"id":"D3","name":"Nam","profession":"carpenter","row":2,"col":3},
+    {"id":"A4","name":"Nga","profession":"analyst","row":3,"col":0},
+    {"id":"B4","name":"Phúc","profession":"baker","row":3,"col":1},
+    {"id":"C4","name":"Quân","profession":"doctor","row":3,"col":2},
+    {"id":"D4","name":"Trang","profession":"engineer","row":3,"col":3}
+  ],
+  "hidden_solution": {
+    "A1":true,"B1":true,"C1":true,"D1":false,
+    "A2":true,"B2":false,"C2":true,"D2":true,
+    "A3":true,"B3":true,"C3":true,"D3":false,
+    "A4":true,"B4":false,"C4":false,"D4":false
+  },
+  "initial_revealed": ["A1"],
+  "clues": [
+    {"clue_id":"t_A1","owner_id":"A1","type":"FACT","parameters":{"target":"B1","status":"CRIMINAL"}},
+    {"clue_id":"t_B1","owner_id":"B1","type":"SAME","parameters":{"target1":"B1","target2":"C1"}},
+    {"clue_id":"t_C1","owner_id":"C1","type":"EXACTLY","parameters":{"region_type":"ROW","index":0,"k":3}},
+    {"clue_id":"t_D1","owner_id":"D1","type":"DIFFERENT","parameters":{"target1":"D1","target2":"A2"}},
+    {"clue_id":"t_A2","owner_id":"A2","type":"AT_MOST","parameters":{"region_type":"EXPLICIT","cells":["B1","B2"],"k":1}},
+    {"clue_id":"t_B2","owner_id":"B2","type":"AT_LEAST","parameters":{"region_type":"EXPLICIT","cells":["B2","C2"],"k":1}},
+    {"clue_id":"t_C2","owner_id":"C2","type":"PARITY","parameters":{"cells":["D1","B2","D2"],"parity":"odd"}},
+    {"clue_id":"t_D2","owner_id":"D2","type":"COUNT_COMPARE","parameters":{"region_a":["A3","D1"],"region_b":["B1","B2"],"op":"=="}},
+    {"clue_id":"t_A3","owner_id":"A3","type":"EXACTLY","parameters":{"region_type":"COLUMN","index":0,"k":4}},
+    {"clue_id":"t_B3","owner_id":"B3","type":"FACT","parameters":{"target":"A1","status":"CRIMINAL"}},
+    {"clue_id":"t_C3","owner_id":"C3","type":"COUNT_COMPARE","parameters":{"region_a":["D3"],"region_b":["D1"],"op":"=="}},
+    {"clue_id":"t_D3","owner_id":"D3","type":"AT_MOST","parameters":{"region_type":"ROW","index":3,"k":1}},
+    {"clue_id":"t_A4","owner_id":"A4","type":"EXACTLY","parameters":{"region_type":"NEIGHBORS","center":"B2","k":8}},
+    {"clue_id":"t_B4","owner_id":"B4","type":"EXACTLY","parameters":{"region_type":"EXPLICIT","cells":["C4","D4"],"k":0}},
+    {"clue_id":"t_C4","owner_id":"C4","type":"SAME","parameters":{"target1":"C4","target2":"D4"}},
+    {"clue_id":"t_D4","owner_id":"D4","type":"FACT","parameters":{"target":"A1","status":"CRIMINAL"}}
+  ]
+}

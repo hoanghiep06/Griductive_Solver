@@ -7,9 +7,37 @@ this analysis harness and are excluded from puzzle-variable statistics.
 from itertools import combinations
 
 from pysat.solvers import Solver
+from pysat.card import CardEnc, EncType
 
 from src.core.clue import Clue
 from src.core.variable_map import VariableMap
+
+
+def _count(literals, k, kind, vm):
+    """Independent cardinality encoding, bounded in size even for 25 cells.
+
+    Keep the original auxiliary-free combinatorial oracle for small regions;
+    use python-sat's counter for large ones. Reserve all auxiliary IDs in the
+    caller's variable map so later clue fragments and selectors cannot collide.
+    """
+    n = len(literals)
+    if (kind == "AT_MOST" and k >= n) or (kind == "AT_LEAST" and k <= 0):
+        return []
+    if k < 0 or k > n:
+        return [[]]
+    if n <= 8:
+        clauses = []
+        if kind in {"EXACTLY", "AT_MOST"}:
+            clauses += [[-v for v in group] for group in combinations(literals, k + 1)]
+        if kind in {"EXACTLY", "AT_LEAST"}:
+            clauses += [list(group) for group in combinations(literals, n - k + 1)]
+        return clauses
+    method = {"EXACTLY": CardEnc.equals, "AT_MOST": CardEnc.atmost, "AT_LEAST": CardEnc.atleast}[kind]
+    old_top = vm.total_vars
+    cnf = method(lits=literals, bound=k, top_id=old_top, encoding=EncType.seqcounter)
+    for _ in range(old_top, cnf.nv):
+        vm.new_aux()
+    return cnf.clauses
 
 
 def encode_reference(clue, characters, size, variable_map):
@@ -20,14 +48,44 @@ def encode_reference(clue, characters, size, variable_map):
     if clue.clue_type in {"SAME", "DIFFERENT"}:
         a, b = (variable_map.get_var(p[key]) for key in ("target1", "target2"))
         return [[-a, b], [a, -b]] if clue.clue_type == "SAME" else [[a, b], [-a, -b]]
+    if clue.clue_type == "IMPLIES":
+        a, b = (variable_map.to_literal(p[key]["target"], p[key]["status"] == "CRIMINAL")
+                for key in ("antecedent", "consequent"))
+        return [[-a, b]]
+    if clue.clue_type == "PARITY":
+        variables = [variable_map.get_var(cid) for cid in clue_scope(clue, characters, size)]
+        odd = str(p["parity"]).lower() in {"odd", "1"}
+        if len(variables) <= 8:
+            from itertools import product
+            return [[-v if flag else v for v, flag in zip(variables, flags)]
+                    for flags in product((False, True), repeat=len(variables)) if bool(sum(flags) % 2) != odd]
+        result, previous = [], variables[0]
+        for current in variables[1:]:
+            aux = variable_map.new_aux()
+            result += [[previous, current, -aux], [-previous, -current, -aux],
+                       [previous, -current, aux], [-previous, current, aux]]
+            previous = aux
+        return result + [[previous if odd else -previous]]
+    if clue.clue_type == "COUNT_COMPARE":
+        from src.encoder.semantic_eval import normalize_cells
+        coords = {(c.row, c.col): c.id for c in characters.values()}
+        a, b = ({variable_map.get_var(coords[rc]) for rc in normalize_cells(p[key])}
+                for key in ("region_a", "region_b"))
+        # Cancel overlap. #A op #B iff sum(A\B, negated B\A) op |B\A|.
+        literals = sorted(a - b) + [-v for v in sorted(b - a)]
+        k, op = len(b - a), p["op"]
+        if op == "!=":
+            selector = variable_map.new_aux()
+            low = _count(literals, k - 1, "AT_MOST", variable_map)
+            high = _count(literals, k + 1, "AT_LEAST", variable_map)
+            return [[selector, *clause] for clause in low] + [[-selector, *clause] for clause in high]
+        kind, threshold = {
+            "==": ("EXACTLY", k), "<": ("AT_MOST", k - 1), "<=": ("AT_MOST", k),
+            ">": ("AT_LEAST", k + 1), ">=": ("AT_LEAST", k),
+        }[op]
+        return _count(literals, threshold, kind, variable_map)
     variables = [variable_map.get_var(cid) for cid in clue_scope(clue, characters, size)]
-    k = p["k"]
-    result = []
-    if clue.clue_type in {"EXACTLY", "AT_MOST"}:
-        result.extend([-v for v in group] for group in combinations(variables, k + 1))
-    if clue.clue_type in {"EXACTLY", "AT_LEAST"}:
-        result.extend(list(group) for group in combinations(variables, len(variables) - k + 1))
-    return result
+    return _count(variables, p["k"], clue.clue_type, variable_map)
 
 
 class PublicSAT:
@@ -42,7 +100,8 @@ class PublicSAT:
         self.fragments = {
             c.clue_id: encode_reference(c, characters, size, self.variable_map) for c in clues
         }
-        self.selectors = {cid: self.variable_map.primary_count + i + 1 for i, cid in enumerate(self.ids)}
+        self.encoding_auxiliary_count = self.variable_map.num_auxiliary
+        self.selectors = {cid: self.variable_map.new_aux() for cid in self.ids}
         guarded = [[-self.selectors[cid], *clause] for cid in self.ids for clause in self.fragments[cid]]
         self.solver = Solver(name="m22", bootstrap_with=guarded)
         self.calls = 0
@@ -133,6 +192,6 @@ def unique_reference(puzzle):
         return {"status": "PASSED", "first_sat": True, "second_sat": False,
                 "primary_model": assignment, "blocking_clause": block,
                 "primary_variables": sat.variable_map.primary_count,
-                "auxiliary_variables": 0,
+                "auxiliary_variables": sat.encoding_auxiliary_count,
                 "full_cnf_clauses": sum(len(fragment) for fragment in sat.fragments.values()),
                 "selector_variables_in_analysis_only": len(sat.selectors), "sat_calls": sat.calls}

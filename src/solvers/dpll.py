@@ -107,106 +107,49 @@ class DPLLSolver:
         Hàm đệ quy lõi DPLL với Unit Propagation và Backtracking.
         """
         current_assignment = dict(assignment)
-
-        # 1. UNIT PROPAGATION
+        active = clauses
+        # Simplify once per propagation wave and carry the reduced formula
+        # into recursive branches. Already satisfied counter clauses no longer
+        # participate in every scan of large global/group count encodings.
         while True:
-            # Kiểm tra trạng thái các mệnh đề dưới phép gán hiện tại
-            unit_literals: List[int] = []
-            has_conflict = False
-
-            for clause in clauses:
-                unassigned_lits = []
-                clause_satisfied = False
-
-                for lit in clause:
-                    var = abs(lit)
-                    if var in current_assignment:
-                        # Kiểm tra literal có đúng theo assignment không
-                        lit_val = current_assignment[var] if lit > 0 else not current_assignment[var]
-                        if lit_val:
-                            clause_satisfied = True
-                            break
-                    else:
-                        unassigned_lits.append(lit)
-
-                if clause_satisfied:
+            reduced = []
+            units = []
+            for clause in active:
+                if any(current_assignment.get(abs(lit)) == (lit > 0)
+                       for lit in clause if abs(lit) in current_assignment):
                     continue
-
-                # Conflict detection: Tất cả literals trong clause đều False -> Clause rỗng -> Mâu thuẫn
-                if len(unassigned_lits) == 0:
-                    has_conflict = True
-                    break
-
-                # Unit clause detection: Chỉ còn đúng 1 literal chưa gán và clause chưa thỏa mãn
-                if len(unassigned_lits) == 1:
-                    unit_literals.append(unassigned_lits[0])
-
-            if has_conflict:
-                return False, current_assignment
-
-            if not unit_literals:
-                # Không còn unit clause nào để lan truyền
-                break
-
-            # Thực hiện lan truyền đơn vị cho unit literal tìm được đầu tiên
-            unit_lit = unit_literals[0]
-            var = abs(unit_lit)
-            forced_val = unit_lit > 0
-
-            if var in current_assignment:
-                if current_assignment[var] != forced_val:
-                    # Xảy ra mâu thuẫn giữa 2 unit clauses
+                remaining = {lit for lit in clause if abs(lit) not in current_assignment}
+                if not remaining:
                     return False, current_assignment
-            else:
-                self.propagations += 1
-                current_assignment[var] = forced_val
-
-        # 2. KIỂM TRA ĐIỀU KIỆN DỪNG (Toàn bộ clauses đã thỏa mãn chưa?)
-        all_satisfied = True
-        for clause in clauses:
-            clause_sat = False
-            for lit in clause:
-                var = abs(lit)
-                if var in current_assignment:
-                    lit_val = current_assignment[var] if lit > 0 else not current_assignment[var]
-                    if lit_val:
-                        clause_sat = True
-                        break
-            if not clause_sat:
-                all_satisfied = False
+                reduced.append(remaining)
+                if len(remaining) == 1:
+                    units.append(next(iter(remaining)))
+            active = reduced
+            if not units:
                 break
-
-        if all_satisfied:
+            for literal in units:
+                variable, value = abs(literal), literal > 0
+                if variable in current_assignment:
+                    if current_assignment[variable] != value:
+                        return False, current_assignment
+                else:
+                    current_assignment[variable] = value
+                    self.propagations += 1
+        if not active:
             return True, current_assignment
 
-        # 3. DETERMINISTIC VARIABLE SELECTION (Chọn biến rẽ nhánh tất định)
-        # Chọn biến chưa gán có chỉ số số nguyên nhỏ nhất
-        unassigned_vars = sorted([v for v in all_vars if v not in current_assignment])
-        if not unassigned_vars:
-            # Tất cả các biến đã gán nhưng vẫn có clause chưa thỏa mãn
-            return False, current_assignment
-
-        chosen_var = unassigned_vars[0]
-
-        # 4. RECURSIVE BRANCHING & BACKTRACKING
-        # Nhánh 1: Thử chosen_var = True (Quyết định rẽ nhánh)
+        # Stable smallest *active* unassigned variable. Variables appearing only
+        # in satisfied clauses are free and need no speculative decisions.
+        chosen_var = min(abs(lit) for clause in active for lit in clause)
         self.decisions += 1
-        branch1_assignment = dict(current_assignment)
-        branch1_assignment[chosen_var] = True
-        sat1, model1 = self._dpll(clauses, branch1_assignment, all_vars)
-        if sat1:
-            return True, model1
-
-        # Nhánh 2: Backtrack, thử chosen_var = False
+        branch = dict(current_assignment)
+        branch[chosen_var] = True
+        sat, model = self._dpll(active, branch, all_vars)
+        if sat:
+            return True, model
         self.backtracks += 1
-        branch2_assignment = dict(current_assignment)
-        branch2_assignment[chosen_var] = False
-        sat2, model2 = self._dpll(clauses, branch2_assignment, all_vars)
-        if sat2:
-            return True, model2
-
-        # Cả 2 nhánh đều mâu thuẫn -> UNSAT
-        return False, current_assignment
+        branch[chosen_var] = False
+        return self._dpll(active, branch, all_vars)
 
     # -------------------------------------------------------------
     # CÁC TIỆN ÍCH ĐỌC & TEST FILE .CNF CHUẨN DIMACS ĐỘC LẬP

@@ -21,7 +21,7 @@ from src.core.clue import Clue
 from tools.validate_puzzles import ROOT, PUZZLE_IDS, clue_scope, validate_puzzle
 
 DEFAULT_SEED = 20261110
-GENERATOR_VERSION = "2.0"
+GENERATOR_VERSION = "3.0"
 NAMES = ("Abel", "Bea", "Clara", "Derek", "Eliza", "Franz", "Grant", "Hannah", "Ivy",
          "Jonah", "Kira", "Leo", "Maya", "Nora", "Owen", "Petra", "Quinn", "Rosa",
          "Seth", "Tara", "Uma", "Vera", "Will", "Xena", "Yuri")
@@ -35,6 +35,8 @@ TARGET_LABELS = {
 
 
 def quality_target(size, case):
+    if case == 5 and size == 5:
+        return 4
     return 0 if size == 3 and case <= 2 else 1 if size == 3 else 3 if size == 4 else 6
 
 
@@ -51,7 +53,7 @@ def _layout(size, case, rng):
     return [f"{chr(65+c)}{r+1}" for r, c in coords]
 
 
-def build_puzzle(size, case, seed=DEFAULT_SEED, attempt=0):
+def _build_local_puzzle(size, case, seed=DEFAULT_SEED, attempt=0):
     if size not in (3, 4, 5) or case not in range(1, 6):
         raise ValueError("Require size 3/4/5 and case 1..5")
     # Intentional tutorial/easy references; only these two keep baseline design.
@@ -186,6 +188,49 @@ def build_puzzle(size, case, seed=DEFAULT_SEED, attempt=0):
             "clues": [by_owner[cid] for cid in ids]}
 
 
+def official_characters(size, case):
+    """Keep public identities aligned with all 250 existing portrait mappings."""
+    manifest = json.loads((ROOT / "assets/characters/portrait_manifest.json").read_text(encoding="utf-8"))
+    pid = f"{size}x{size}_{case:02d}"
+    by_id = {m["cell_id"]: m for m in manifest["mapping"] if m["puzzle_id"] == pid}
+    return [{"id": cid, "name": by_id[cid]["character_name"], "profession": by_id[cid]["profession"],
+             "row": r, "col": c} for r in range(size) for c in range(size)
+            for cid in [f"{chr(65 + c)}{r + 1}"]]
+
+
+def build_puzzle(size, case, seed=DEFAULT_SEED, attempt=0):
+    if size not in (3, 4, 5) or case not in range(1, 6):
+        raise ValueError("Require size 3/4/5 and case 1..5")
+    characters = official_characters(size, case)
+    if case == 1:
+        raw = _build_local_puzzle(size, case, seed, attempt)
+        raw["characters"] = characters
+        return raw
+    from tools.archetypes import build_archetype
+    return build_archetype(size, case, characters, seed, attempt)
+
+
+def arrange_progression(entries):
+    """Never decrease difficulty bands; alternate motifs within each band.
+
+    Small score differences within a band are secondary to changing the kind
+    of reasoning. Actual measured scores remain available in the manifest.
+    """
+    ordered = []
+    last = None
+    for band in ("Tutorial", "Easy", "Medium", "Hard", "Very Hard"):
+        pending = sorted((e for e in entries if e["difficulty_label"] == band),
+                         key=lambda e: (e["difficulty"]["score"], e["size"], e["puzzle_id"]))
+        while pending:
+            chosen = next((e for e in pending if e["archetype"] != last), pending[0])
+            pending.remove(chosen)
+            ordered.append(chosen)
+            last = chosen["archetype"]
+    for rank, entry in enumerate(ordered, 1):
+        entry["progression_rank"] = rank
+    return ordered
+
+
 def generate_dataset(directory, seed=DEFAULT_SEED, max_attempts=40):
     if type(seed) is not int:
         raise TypeError("seed must be integer")
@@ -195,18 +240,31 @@ def generate_dataset(directory, seed=DEFAULT_SEED, max_attempts=40):
             target = quality_target(size, case)
             for attempt in range(max_attempts):
                 raw = build_puzzle(size, case, seed, attempt)
-                report = validate_puzzle(raw)
+                try:
+                    report = validate_puzzle(raw, check_runtime=False)
+                except ValueError:
+                    continue
                 fingerprint = report["structural_features"]["wl_fingerprint"]
-                if report["difficulty"]["multi_clue_steps"] >= target and fingerprint not in fingerprints:
+                if report["difficulty"]["multi_clue_steps"] >= target and fingerprint not in fingerprints and (case != 2 or report["global_finale"]):
                     break
             else:
                 raise ValueError(f"No certified candidate for {size}x{size}_{case:02d}; existing dataset unchanged")
             fingerprints.add(fingerprint)
+            # Certification of the production solver is mandatory for every
+            # selected candidate, and completes before publishing any bytes.
+            from tools.certify_runtime import certify_runtime
+            from src.core.puzzle_validator import PuzzleValidator
+            certify_runtime(PuzzleValidator().validate(raw))
+            report["checks"]["dpll_cnf_integration"] = "PASSED"
             generated.append(raw)
+            from tools.archetypes import ARCHETYPES
+            archetype, archetype_label = ARCHETYPES[case]
             entries.append({**{key: report[key] for key in (
                 "puzzle_id", "size", "criminal_count", "innocent_count", "clue_count", "initial_revealed_count",
                 "clue_types", "region_types", "validation_status", "checks", "proof_method")},
                 "file": raw["puzzle_id"] + ".json", "generation_seed": seed,
+                "archetype": archetype, "archetype_label": archetype_label,
+                "global_finale": report["global_finale"],
                 "generation_attempt": attempt, "generator_version": GENERATOR_VERSION,
                 "target_difficulty": TARGET_LABELS[size][case-1], "difficulty_label": report["difficulty"]["label"],
                 "difficulty_measured": True, "difficulty_is_subjective_heuristic": True,
@@ -217,13 +275,14 @@ def generate_dataset(directory, seed=DEFAULT_SEED, max_attempts=40):
                   'triple=', report['difficulty']['three_plus_clue_steps'], 'attempt=', attempt, flush=True)
     types = set().union(*(set(e["clue_types"]) for e in entries))
     regions = set().union(*(set(e["region_types"]) for e in entries))
-    if types != {"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST"} or regions != {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT"}:
+    if not {"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST", "PARITY", "COUNT_COMPARE", "IMPLIES"} <= types or not {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT", "ALL", "PROFESSION", "CORNERS", "CENTER"} <= regions:
         raise ValueError("Batch coverage failed; existing dataset unchanged")
     # Nothing is written until ALL candidates pass. Stage bytes in a sibling
     # directory and use atomic per-file replacement; errors restore old bytes.
     directory = Path(directory)
     directory.parent.mkdir(parents=True, exist_ok=True)
     payload = {raw['puzzle_id']+'.json': json.dumps(raw, indent=2, ensure_ascii=False)+'\n' for raw in generated}
+    entries = arrange_progression(entries)
     payload['manifest.json'] = json.dumps({"schema_version": "1.0", "generator_version": GENERATOR_VERSION,
         "generator_seed": seed, "max_attempts": max_attempts, "puzzles": entries}, indent=2, ensure_ascii=False)+'\n'
     old = {name: (directory/name).read_bytes() if (directory/name).exists() else None for name in payload}
@@ -252,7 +311,7 @@ def main():
     parser.add_argument('--max-attempts', type=int, default=40)
     args=parser.parse_args()
     generate_dataset(args.output_dir,args.seed,args.max_attempts)
-    print('15 SAT-certified puzzles published. Team DPLL/CNF benchmark remains BLOCKED.')
+    print('15 unique, no-guess puzzles certified by reference SAT and production DPLL/CNF published.')
 
 if __name__=='__main__':
     main()

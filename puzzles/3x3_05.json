@@ -70,8 +70,8 @@
   "hidden_solution": {
     "A1": true,
     "B1": true,
-    "C1": true,
-    "A2": false,
+    "C1": false,
+    "A2": true,
     "B2": true,
     "C2": false,
     "A3": true,
@@ -79,106 +79,110 @@
     "C3": false
   },
   "initial_revealed": [
-    "B1",
-    "C2",
-    "A3"
+    "B2",
+    "B3",
+    "C3"
   ],
   "clues": [
     {
       "clue_id": "CLUE_A1",
       "owner_id": "A1",
-      "type": "EXACTLY",
+      "type": "IMPLIES",
       "parameters": {
-        "k": 2,
-        "region_type": "ROW",
-        "index": 2
+        "antecedent": {
+          "target": "A1",
+          "status": "CRIMINAL"
+        },
+        "consequent": {
+          "target": "A2",
+          "status": "CRIMINAL"
+        }
       }
     },
     {
       "clue_id": "CLUE_B1",
       "owner_id": "B1",
-      "type": "SAME",
+      "type": "IMPLIES",
       "parameters": {
-        "target1": "A1",
-        "target2": "C1"
+        "antecedent": {
+          "target": "B1",
+          "status": "CRIMINAL"
+        },
+        "consequent": {
+          "target": "A3",
+          "status": "CRIMINAL"
+        }
       }
     },
     {
       "clue_id": "CLUE_C1",
       "owner_id": "C1",
-      "type": "EXACTLY",
+      "type": "FACT",
       "parameters": {
-        "k": 3,
-        "region_type": "COLUMN",
-        "index": 1
+        "target": "B2",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_A2",
       "owner_id": "A2",
-      "type": "FACT",
+      "type": "PARITY",
       "parameters": {
-        "target": "B1",
-        "status": "CRIMINAL"
+        "cells": [
+          "A3",
+          "C2",
+          "B1"
+        ],
+        "parity": "even"
       }
     },
     {
       "clue_id": "CLUE_B2",
       "owner_id": "B2",
-      "type": "FACT",
+      "type": "DIFFERENT",
       "parameters": {
-        "target": "A3",
-        "status": "CRIMINAL"
+        "target1": "A2",
+        "target2": "C1"
       }
     },
     {
       "clue_id": "CLUE_C2",
       "owner_id": "C2",
-      "type": "DIFFERENT",
+      "type": "FACT",
       "parameters": {
-        "target1": "C1",
-        "target2": "A2"
+        "target": "C3",
+        "status": "INNOCENT"
       }
     },
     {
       "clue_id": "CLUE_A3",
       "owner_id": "A3",
-      "type": "EXACTLY",
+      "type": "FACT",
       "parameters": {
-        "k": 2,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A1",
-          "B1",
-          "A2",
-          "C2",
-          "C3"
-        ]
+        "target": "B3",
+        "status": "CRIMINAL"
       }
     },
     {
       "clue_id": "CLUE_B3",
       "owner_id": "B3",
-      "type": "FACT",
+      "type": "PARITY",
       "parameters": {
-        "target": "C2",
-        "status": "INNOCENT"
+        "cells": [
+          "A2",
+          "C1",
+          "A1"
+        ],
+        "parity": "even"
       }
     },
     {
       "clue_id": "CLUE_C3",
       "owner_id": "C3",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "parameters": {
-        "k": 3,
-        "region_type": "EXPLICIT",
-        "cells": [
-          "A1",
-          "B1",
-          "C1",
-          "A2",
-          "C2"
-        ]
+        "target1": "A3",
+        "target2": "C2"
       }
     }
   ]

@@ -1,0 +1,88 @@
+{
+  "project": "GRIDUCTIVE — Detective Case Files",
+  "assets": "Eight Vietnamese evidence clue badges",
+  "format": "512x512 PNG RGBA transparent",
+  "count": 8,
+  "mapping": [
+    {
+      "key": "FACT",
+      "vi": "SỰ THẬT",
+      "file": "icons/A10_fact_vi.png",
+      "description": "Manh mối khẳng định trực tiếp một sự kiện.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "SAME",
+      "vi": "CÙNG PHE",
+      "file": "icons/A10_same_vi.png",
+      "description": "Hai nghi phạm có cùng trạng thái.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "DIFFERENT",
+      "vi": "KHÁC PHE",
+      "file": "icons/A10_different_vi.png",
+      "description": "Hai nghi phạm có trạng thái khác nhau.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "EXACTLY",
+      "vi": "CHÍNH XÁC",
+      "file": "icons/A10_exactly_vi.png",
+      "description": "Chính xác k người thỏa điều kiện.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "AT_LEAST",
+      "vi": "ÍT NHẤT",
+      "file": "icons/A10_at_least_vi.png",
+      "description": "Ít nhất k người thỏa điều kiện.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "AT_MOST",
+      "vi": "NHIỀU NHẤT",
+      "file": "icons/A10_at_most_vi.png",
+      "description": "Nhiều nhất k người thỏa điều kiện (không quá k).",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "PARITY",
+      "vi": "CHẴN / LẺ",
+      "file": "icons/A10_parity_vi.png",
+      "description": "Ràng buộc chẵn hoặc lẻ.",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "key": "COUNT_COMPARE",
+      "vi": "SO SÁNH SỐ LƯỢNG",
+      "file": "icons/A10_count_compare_vi.png",
+      "description": "So sánh số lượng giữa hai nhóm.",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ]
+}

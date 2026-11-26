@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional
 from src.core.character import Character
 from src.core.clue import Clue
 from src.core.puzzle import Puzzle
+from src.core.regions import SPATIAL_REGIONS, in_spatial_region
 
 if TYPE_CHECKING:
     from src.core.sequential_solvability import SequentialSolvabilityReport
@@ -21,19 +22,22 @@ class PuzzleValidator:
     """Validate a puzzle before it is allowed into GameEngine.
 
     The six required core clue templates are validated and semantically
-    evaluated here. Future extension clue implementations can be registered
-    by passing ``extension_evaluators``; each evaluator is responsible for
-    validating its own parameter shape and returning the clue's truth value.
+    evaluated here. Counting clues accept ROW / COLUMN / NEIGHBORS / EXPLICIT
+    plus ALL (global rule over the whole board) and PROFESSION (an explicit
+    ``cells`` list that must equal exactly the characters of that profession).
+    PARITY, COUNT_COMPARE and IMPLIES are built-in extensions; further types
+    can be registered by passing ``extension_evaluators``.
     """
 
     CORE_CLUE_TYPES = {"FACT", "SAME", "DIFFERENT", "EXACTLY", "AT_LEAST", "AT_MOST"}
-    SUPPORTED_REGION_TYPES = {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT"}
+    SUPPORTED_REGION_TYPES = {"ROW", "COLUMN", "NEIGHBORS", "EXPLICIT", "ALL", "PROFESSION"} | SPATIAL_REGIONS
     SUPPORTED_GRID_SIZES = {3, 4, 5}
 
     def __init__(self, extension_evaluators: Optional[Mapping[str, ExtensionEvaluator]] = None):
         self._extension_evaluators = {
             "PARITY": self._evaluate_extended,
             "COUNT_COMPARE": self._evaluate_extended,
+            "IMPLIES": self._evaluate_extended,
         }
         for key, evaluator in (extension_evaluators or {}).items():
             if not isinstance(key, str) or not key.strip():
@@ -266,6 +270,9 @@ class PuzzleValidator:
                     "COLUMN": {"index"},
                     "NEIGHBORS": {"center"},
                     "EXPLICIT": {"cells"},
+                    "ALL": set(),
+                    "PROFESSION": {"profession", "cells"},
+                    **{kind: set() for kind in SPATIAL_REGIONS},
                 }[region_type]
                 self._require_exact_parameter_keys(
                     params, {"k", "region_type"} | required_region_keys, path
@@ -327,6 +334,41 @@ class PuzzleValidator:
         grid_size: int,
         path: str,
     ) -> tuple[str, ...]:
+        if region_type == "ALL":
+            return tuple(characters)
+
+        if region_type in SPATIAL_REGIONS:
+            return tuple(c.id for c in characters.values()
+                         if in_spatial_region(region_type, c.row, c.col, grid_size))
+
+        if region_type == "PROFESSION":
+            profession = params.get("profession")
+            if not isinstance(profession, str) or not profession.strip():
+                raise PuzzleValidationError(
+                    f"{path}.parameters.profession: expected a non-empty string"
+                )
+            cells = params.get("cells")
+            if not isinstance(cells, (list, tuple)):
+                raise PuzzleValidationError(f"{path}.parameters.cells: expected an array of character IDs")
+            if any(not isinstance(cell_id, str) or cell_id not in characters for cell_id in cells):
+                raise PuzzleValidationError(f"{path}.parameters.cells: contains an unknown character ID")
+            if len(set(cells)) != len(cells):
+                raise PuzzleValidationError(f"{path}.parameters.cells: must contain distinct IDs")
+            wanted = profession.strip().casefold()
+            expected_ids = {
+                c.id for c in characters.values() if c.profession.strip().casefold() == wanted
+            }
+            if not expected_ids:
+                raise PuzzleValidationError(
+                    f"{path}.parameters.profession: no character has profession {profession!r}"
+                )
+            if set(cells) != expected_ids:
+                raise PuzzleValidationError(
+                    f"{path}.parameters.cells: must list exactly the characters with profession "
+                    f"{profession!r} ({sorted(expected_ids)}); got {sorted(cells)}"
+                )
+            return tuple(cells)
+
         if region_type in {"ROW", "COLUMN"}:
             index = params.get("index")
             if type(index) is not int or not 0 <= index < grid_size:
@@ -414,6 +456,27 @@ class PuzzleValidator:
         from src.encoder.semantic_eval import evaluate_clue, normalize_cells
         from src.core.clue import _thaw
         params = _thaw(clue.parameters)
+        board = {(c.row, c.col): assignment[c.id] for c in characters.values() if c.id in assignment}
+
+        if clue.clue_type == "IMPLIES":
+            if set(params) != {"antecedent", "consequent"}:
+                raise ValueError(f"{clue.clue_id}: expected parameters ['antecedent', 'consequent']")
+            resolved = {}
+            for field in ("antecedent", "consequent"):
+                spec = params[field]
+                if not isinstance(spec, dict) or set(spec) != {"target", "status"}:
+                    raise ValueError(f"{clue.clue_id}: {field} must have exactly 'target' and 'status'")
+                target = spec["target"]
+                if not isinstance(target, str) or target not in characters:
+                    raise ValueError(f"{clue.clue_id}: {field}.target unknown character {target!r}")
+                if spec["status"] not in ("CRIMINAL", "INNOCENT"):
+                    raise ValueError(f"{clue.clue_id}: {field}.status must be CRIMINAL or INNOCENT")
+                ch = characters[target]
+                resolved[field] = {"target": (ch.row, ch.col), "status": spec["status"]}
+            if params["antecedent"]["target"] == params["consequent"]["target"]:
+                raise ValueError(f"{clue.clue_id}: IMPLIES needs two distinct cells")
+            return evaluate_clue({"type": "IMPLIES", "params": resolved}, board)
+
         expected = {"cells", "parity"} if clue.clue_type == "PARITY" else {"region_a", "region_b", "op"}
         if set(params) != expected:
             raise ValueError(f"{clue.clue_id}: expected parameters {sorted(expected)}")
@@ -426,5 +489,4 @@ class PuzzleValidator:
             for row, col in normalize_cells(params[field]):
                 if row >= grid_size or col >= grid_size:
                     raise ValueError(f"{clue.clue_id}: cell outside grid")
-        board = {(c.row, c.col): assignment[c.id] for c in characters.values()}
         return evaluate_clue({"type": clue.clue_type, "params": params}, board)

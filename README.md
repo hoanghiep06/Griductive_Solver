@@ -8,11 +8,24 @@ Dự án phát triển **Hệ thống tự động giải đố trò chơi Gridu
 * **Thư viện phụ thuộc:** Phần Core Engine của TV1 **sử dụng thuần thư viện tiêu chuẩn Python (Standard Library)**. 
 * Package `jsonschema` là tùy chọn (chỉ dùng nếu muốn validate trực tiếp qua lệnh CLI schema validation), hệ thống chạy thực thi và Unit Test hoàn toàn không phụ thuộc vào thư viện ngoài.
 
+### Chạy giao diện Desktop (PySide6 GUI)
+Cài đặt thư viện giao diện (nếu chưa cài) và khởi chạy ứng dụng:
+
+```bash
+pip install PySide6
+python -m src.gui.app
+```
+
+Trong menu, chọn **Hướng dẫn chơi · Tân thủ** để chơi bàn tập 4×4 gồm 18 bước,
+bao phủ đủ 8 loại manh mối. Màn chơi cũng có nút **? Tân thủ**; ván chính được
+giữ nguyên khi xem hoặc bỏ qua hướng dẫn. Xem [thiết kế và kịch bản](docs/INTERACTIVE_TUTORIAL.md).
+
 ### Kiểm thử hệ thống (Run Unit Tests)
-Chạy lệnh sau tại thư mục gốc dự án (`Lab02/`) để kiểm tra toàn bộ bộ test tự động:
+Chạy lệnh sau tại thư mục gốc dự án để kiểm tra toàn bộ bộ test tự động (Core + GUI):
 
 ```bash
 python -m unittest discover -s tests -v
+QT_QPA_PLATFORM=offscreen PYTEST_QT_API=pyside6 pytest -q
 python -m compileall -q src tests
 ```
 
