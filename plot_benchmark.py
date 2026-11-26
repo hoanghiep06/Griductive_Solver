@@ -162,7 +162,7 @@ def plot_dpll_metrics(records: List[Dict[str, Any]], output_path: Path) -> None:
     backtracks = [r["backtracks"] for r in records]
     propagations = [r["propagations"] for r in records]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8.2), dpi=300, sharex=True)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 9.0), dpi=300)
 
     x = np.arange(len(puzzles))
     width = 0.36
@@ -171,10 +171,13 @@ def plot_dpll_metrics(records: List[Dict[str, Any]], output_path: Path) -> None:
     ax1.bar(x - width/2, decisions, width, label="Decisions (Phân nhánh)", color="#6366F1", alpha=0.9, zorder=3)
     ax1.bar(x + width/2, backtracks, width, label="Backtracks (Quay lui / Xung đột)", color="#F43F5E", alpha=0.9, zorder=3)
     ax1.set_ylabel("Số lượng thao tác", fontsize=10.5, fontweight="bold")
+    ax1.set_xlabel("Mã Puzzle", fontsize=10.5, fontweight="bold", labelpad=6)
     ax1.set_title("(A) So Sánh Giữa Phân Nhánh (Decisions) Và Quay Lui (Backtracks)", fontsize=12, fontweight="bold", color=COLOR_SLATE_DARK, pad=10)
     ax1.grid(axis="y", linestyle="--", alpha=0.6, zorder=0)
     despine(ax1)
     ax1.legend(loc="upper left", frameon=True, facecolor="#F8FAFC", edgecolor="#E2E8F0", fontsize=9.5)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(puzzles, rotation=40, ha="right", fontsize=9.5)
 
     # Highlight backtracks > 0
     for i, b in enumerate(backtracks):
