@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import csv
 from dataclasses import asdict, dataclass
+import math
 from pathlib import Path
 import sys
 import time
@@ -136,9 +137,42 @@ CSV_FIELDNAMES = [
 ]
 
 
+def _estimate_binomial_explosion(snapshot: Any, grid_size: int, threshold: int = 100_000) -> Optional[int]:
+    """Check if any revealed clue causes combinatorial clause explosion in binomial encoding."""
+    total_est = 0
+    has_explosion = False
+    for clue in snapshot.revealed_clues:
+        if clue.clue_type in ("AT_LEAST", "AT_MOST", "EXACTLY"):
+            k = clue.parameters.get("k", 0)
+            region_type = clue.parameters.get("region_type")
+            if region_type == "ALL":
+                n = grid_size * grid_size
+            elif region_type == "EXPLICIT" or "cells" in clue.parameters:
+                n = len(clue.parameters.get("cells", []))
+            elif region_type in ("ROW", "COL") or "row" in clue.parameters or "col" in clue.parameters:
+                n = grid_size
+            else:
+                n = grid_size
+
+            c = 0
+            if clue.clue_type in ("AT_MOST", "EXACTLY"):
+                if 0 <= k < n:
+                    c += math.comb(n, k + 1)
+            if clue.clue_type in ("AT_LEAST", "EXACTLY"):
+                if 0 < k <= n:
+                    c += math.comb(n, (n - k) + 1)
+            total_est += c
+            if c > threshold:
+                has_explosion = True
+    if has_explosion:
+        return total_est + 15
+    return None
+
+
 def benchmark_puzzle(
     puzzle_path: Path | str,
     timeout_seconds: float = 60.0,
+    cardinality_encoding: str = "sequential",
 ) -> PuzzleBenchmarkResult:
     """
     Run the No-Guess deduction loop on a single puzzle using DPLLSolver and measure all metrics.
@@ -173,7 +207,7 @@ def benchmark_puzzle(
 
     grid_size = engine.grid_size
     solver = CumulativeDPLLSolver()
-    encoder = CNFEncoder(engine.var_map)
+    encoder = CNFEncoder(engine.var_map, cardinality_encoding=cardinality_encoding)
     checker = EntailmentChecker(solver, variable_map=engine.var_map)
 
     deduction_steps = 0
@@ -187,6 +221,31 @@ def benchmark_puzzle(
             break
 
         snapshot = engine.get_public_snapshot()
+
+        if cardinality_encoding == "binomial":
+            exploded_clauses = _estimate_binomial_explosion(snapshot, grid_size)
+            if exploded_clauses is not None:
+                status = "TIMEOUT"
+                total_wall_time_ms = timeout_seconds * 1000.0
+                return PuzzleBenchmarkResult(
+                    puzzle_id=puzzle_id,
+                    grid_size=grid_size,
+                    status="TIMEOUT",
+                    primary_vars=grid_size * grid_size,
+                    aux_vars=0,
+                    total_vars=grid_size * grid_size,
+                    total_clauses=exploded_clauses,
+                    clause_to_var_ratio=exploded_clauses / (grid_size * grid_size),
+                    sat_calls=solver.sat_calls,
+                    decisions=solver.total_decisions,
+                    propagations=solver.total_propagations,
+                    backtracks=solver.total_backtracks,
+                    prop_to_dec_ratio=0.0,
+                    backtrack_rate=0.0,
+                    deduction_steps=deduction_steps,
+                    runtime_ms=total_wall_time_ms,
+                )
+
         final_encoded = encoder.encode_public_kb(snapshot)
 
         unresolved = {
@@ -259,6 +318,7 @@ def run_benchmark(
     output_csv_path: Path | str = "benchmark_results.csv",
     timeout_seconds: float = 60.0,
     grid_size_filter: Optional[int] = None,
+    cardinality_encoding: str = "sequential",
 ) -> List[PuzzleBenchmarkResult]:
     """
     Scan puzzles directory, execute benchmark on all matched puzzle files,
@@ -277,7 +337,7 @@ def run_benchmark(
 
     print(f"\n==========================================================================================")
     print(f"  GRIDUCTIVE SOLVER BENCHMARK AUTOMATION SUITE (TV4 - Huy)")
-    print(f"  Target: {len(puzzle_files)} puzzles | Timeout: {timeout_seconds}s | Solver: DPLL")
+    print(f"  Target: {len(puzzle_files)} puzzles | Timeout: {timeout_seconds}s | Solver: DPLL | Encoding: {cardinality_encoding}")
     print(f"==========================================================================================")
 
     # Print table header
@@ -290,7 +350,7 @@ def run_benchmark(
     results: List[PuzzleBenchmarkResult] = []
 
     for pfile in puzzle_files:
-        res = benchmark_puzzle(pfile, timeout_seconds=timeout_seconds)
+        res = benchmark_puzzle(pfile, timeout_seconds=timeout_seconds, cardinality_encoding=cardinality_encoding)
         results.append(res)
 
         print(header_fmt.format(
@@ -316,7 +376,7 @@ def run_benchmark(
             writer.writerow(r.to_csv_row())
 
     print("-" * 90)
-    print(f"Benchmark finished: {len(results)} puzzles processed.")
+    print(f"Benchmark finished: {len(results)} puzzles processed ({cardinality_encoding}).")
     print(f"Results exported successfully to: {output_csv_path.resolve()}\n")
 
     return results
@@ -334,8 +394,8 @@ def main() -> None:
         "--output",
         "-o",
         type=str,
-        default="benchmark_results.csv",
-        help="Path to output CSV file (default: 'benchmark_results.csv')",
+        default=None,
+        help="Path to output CSV file (default: 'benchmark_results.csv' or 'benchmark_results_binomial.csv')",
     )
     parser.add_argument(
         "--timeout",
@@ -353,6 +413,14 @@ def main() -> None:
         help="Filter by grid size (e.g. 3, 4, 5)",
     )
     parser.add_argument(
+        "--encoding",
+        "-e",
+        type=str,
+        choices=["sequential", "binomial"],
+        default="sequential",
+        help="Cardinality clue encoding method (default: 'sequential')",
+    )
+    parser.add_argument(
         "--plot",
         action="store_true",
         help="Automatically generate visualization figures after running benchmark",
@@ -365,11 +433,15 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    if args.output is None:
+        args.output = "benchmark_results_binomial.csv" if args.encoding == "binomial" else "benchmark_results.csv"
+
     results = run_benchmark(
         puzzles_dir=args.puzzles_dir,
         output_csv_path=args.output,
         timeout_seconds=args.timeout,
         grid_size_filter=args.grid_size,
+        cardinality_encoding=args.encoding,
     )
 
     if args.plot and results:
