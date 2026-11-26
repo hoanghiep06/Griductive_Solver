@@ -162,42 +162,24 @@ def plot_dpll_metrics(records: List[Dict[str, Any]], output_path: Path) -> None:
     backtracks = [r["backtracks"] for r in records]
     propagations = [r["propagations"] for r in records]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12.5, 9.5), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8.2), dpi=300, sharex=True)
 
     x = np.arange(len(puzzles))
     width = 0.36
 
-    # Subplot A: Decisions vs Backtracks with Dual Y-Axis
-    ax1_twin = ax1.twinx()
-
-    bar1 = ax1.bar(x - width/2, decisions, width, label="Decisions (Phân nhánh - Trục trái)", color="#6366F1", alpha=0.9, zorder=3)
-    bar2 = ax1_twin.bar(x + width/2, backtracks, width, label="Backtracks (Quay lui - Trục phải)", color="#F43F5E", alpha=0.9, zorder=3)
-
-    ax1.set_ylabel("Số lượt Phân nhánh (Decisions)", fontsize=10.5, fontweight="bold", color="#4338CA")
-    ax1_twin.set_ylabel("Số lượt Quay lui (Backtracks)", fontsize=10.5, fontweight="bold", color="#BE123C")
-    ax1.tick_params(axis='y', labelcolor="#4338CA")
-    ax1_twin.tick_params(axis='y', labelcolor="#BE123C")
-
-    # Set proportional limits so red bars are clearly visible and correspond nicely to blue bars
-    max_dec = max(decisions) if decisions else 2500
-    max_back = max(backtracks) if backtracks else 150
-    ax1.set_ylim(0, max_dec * 1.15)
-    ax1_twin.set_ylim(0, max_back * 1.15)
-
-    ax1.set_title("(A) So Sánh Giữa Phân Nhánh (Decisions) Và Quay Lui (Backtracks) — Trục Tung Kép", fontsize=12, fontweight="bold", color=COLOR_SLATE_DARK, pad=10)
-    ax1.grid(axis="y", linestyle="--", alpha=0.5, zorder=0)
+    # Subplot A: Decisions vs Backtracks
+    ax1.bar(x - width/2, decisions, width, label="Decisions (Phân nhánh)", color="#6366F1", alpha=0.9, zorder=3)
+    ax1.bar(x + width/2, backtracks, width, label="Backtracks (Quay lui / Xung đột)", color="#F43F5E", alpha=0.9, zorder=3)
+    ax1.set_ylabel("Số lượng thao tác", fontsize=10.5, fontweight="bold")
+    ax1.set_title("(A) So Sánh Giữa Phân Nhánh (Decisions) Và Quay Lui (Backtracks)", fontsize=12, fontweight="bold", color=COLOR_SLATE_DARK, pad=10)
+    ax1.grid(axis="y", linestyle="--", alpha=0.6, zorder=0)
     despine(ax1)
-    despine(ax1_twin)
+    ax1.legend(loc="upper left", frameon=True, facecolor="#F8FAFC", edgecolor="#E2E8F0", fontsize=9.5)
 
-    # Combined legend
-    lines = [bar1, bar2]
-    labels = [l.get_label() for l in lines]
-    ax1.legend(lines, labels, loc="upper left", frameon=True, facecolor="#F8FAFC", edgecolor="#E2E8F0", fontsize=9.5)
-
-    # Highlight backtracks > 0 with annotations
+    # Highlight backtracks > 0
     for i, b in enumerate(backtracks):
         if b > 0:
-            ax1_twin.annotate(
+            ax1.annotate(
                 f"{b}",
                 (x[i] + width/2, b),
                 textcoords="offset points",
@@ -208,15 +190,10 @@ def plot_dpll_metrics(records: List[Dict[str, Any]], output_path: Path) -> None:
                 color="#BE123C",
             )
 
-    # Explicit x-ticks for ax1 so horizontal axis is 100% clear
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(puzzles, rotation=35, ha="right", fontsize=9.0)
-    ax1.set_xlabel("Mã Puzzle (Kích thước: 3x3 → 4x4 → 5x5)", fontsize=10.0, fontweight="bold", labelpad=6)
-
     # Subplot B: Unit Propagations
     ax2.bar(x, propagations, width=0.55, color="#0EA5E9", alpha=0.9, zorder=3, label="Unit Propagations (Lan truyền đơn vị)")
     ax2.set_ylabel("Số lượng lan truyền", fontsize=10.5, fontweight="bold")
-    ax2.set_title("(B) Sức Mạnh Lan Truyền Mệnh Đề Đơn Vị (Đạt đỉnh >129,000 lần ở 5×5_02)", fontsize=12, fontweight="bold", color=COLOR_SLATE_DARK, pad=10)
+    ax2.set_title("(B) Sức Mạnh Lan Truyền Mệnh Đề Đơn Vị (Đạt đỉnh >28,000 lần ở 5×5)", fontsize=12, fontweight="bold", color=COLOR_SLATE_DARK, pad=10)
     ax2.set_xlabel("Mã Puzzle", fontsize=10.5, fontweight="bold", labelpad=8)
     ax2.grid(axis="y", linestyle="--", alpha=0.6, zorder=0)
     despine(ax2)
@@ -237,17 +214,7 @@ def plot_dpll_metrics(records: List[Dict[str, Any]], output_path: Path) -> None:
             )
 
     ax2.set_xticks(x)
-    ax2.set_xticklabels(puzzles, rotation=35, ha="right", fontsize=9.0)
-
-    # Add section separator lines between 3x3, 4x4, 5x5
-    for ax in (ax1, ax2):
-        ax.axvline(4.5, color="#94A3B8", linestyle=":", linewidth=1.2, alpha=0.7)
-        ax.axvline(9.5, color="#94A3B8", linestyle=":", linewidth=1.2, alpha=0.7)
-
-    # Add region label annotations at top
-    ax1.text(2.0, max_dec * 1.05, "Lưới 3×3", ha="center", fontsize=9, fontweight="bold", color="#64748B")
-    ax1.text(7.0, max_dec * 1.05, "Lưới 4×4", ha="center", fontsize=9, fontweight="bold", color="#64748B")
-    ax1.text(12.0, max_dec * 1.05, "Lưới 5×5 (Stress)", ha="center", fontsize=9, fontweight="bold", color="#64748B")
+    ax2.set_xticklabels(puzzles, rotation=40, ha="right", fontsize=9.5)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300)
