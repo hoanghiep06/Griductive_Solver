@@ -37,8 +37,8 @@ class TutorialOverlay(QWidget):
         self.panel = QFrame(self)
         self.panel.setObjectName("TutorialCoach")
         self.panel.setStyleSheet(
-            "QFrame#TutorialCoach {background:#FCF4E3; border:2px solid #D3AD63; border-radius:12px;}"
-            "QFrame#TutorialCoach QLabel {color:#233247; background:transparent; border:none; font-size:13px;}"
+            "QFrame#TutorialCoach {background:#FBF6EB; border:1px solid #CDBB98; border-radius:10px;}"
+            "QFrame#TutorialCoach QLabel {color:#233247; background:transparent; border:none; font-size:14px;}"
             "QFrame#TutorialCoach QLabel#TutorialTitle {font-size:18px; font-weight:700; color:#142438;}"
             "QFrame#TutorialCoach QLabel#TutorialProgress {color:#796035; font-size:11px; font-weight:700;}"
             "QFrame#TutorialCoach QLabel#TutorialFeedback {color:#77501C; font-weight:600;}"
@@ -189,11 +189,11 @@ class TutorialOverlay(QWidget):
             holes = holes.united(hole)
         backdrop = QPainterPath()
         backdrop.addRect(QRectF(self.rect()))
-        p.fillPath(backdrop.subtracted(holes), QColor(8, 14, 23, 181))
+        p.fillPath(backdrop.subtracted(holes), QColor(8, 14, 23, 155))
         pulse = 0.5 + 0.5 * math.sin(self._phase)
         p.setBrush(Qt.BrushStyle.NoBrush)
         for rect in highlights:
-            for spread, alpha in ((5, 20), (3, 40), (1, 85)):
+            for spread, alpha in ((3, 16), (2, 28), (1, 60)):
                 p.setPen(QPen(QColor(255, 207, 105, int(alpha + pulse * 20)), spread * 2))
                 p.drawRoundedRect(rect, 7, 7)
             p.setPen(QPen(QColor("#FFE3A0"), 2))

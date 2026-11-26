@@ -141,6 +141,9 @@ class MainWindow(QMainWindow):
         self._stardust_overlay = AmbientStardustOverlay(central)
         self._stardust_overlay.setGeometry(central.rect())
         self._stardust_overlay.raise_()
+        self._router.screen_changed.connect(
+            lambda screen: self._stardust_overlay.set_subtle_mode(screen == ScreenId.GAMEPLAY)
+        )
 
         # Apply global theme if QApplication has no stylesheet yet (supports isolated widget tests)
         app = QApplication.instance()

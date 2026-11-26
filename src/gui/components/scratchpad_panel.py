@@ -34,9 +34,12 @@ class ScratchpadPanel(StyledPanel):
             parent=parent,
         )
         self.setObjectName("ScratchpadPanel")
+        self._root_layout.setContentsMargins(12, 10, 12, 10)
+        if self.subtitle_label is not None:
+            self.subtitle_label.hide()
         if self.title_label is not None:
             self.title_label.setStyleSheet(
-                "color: #162436; font-family: Georgia, serif; font-size: 18px; "
+                "color: #162436; font-family: Georgia, serif; font-size: 17px; "
                 "font-weight: 800; font-style: italic; background: transparent;"
             )
         self.setStyleSheet(
@@ -54,6 +57,8 @@ class ScratchpadPanel(StyledPanel):
             self,
         )
         self._legend.setTextFormat(Qt.TextFormat.PlainText)
+        self._legend.setToolTip(self._legend.text())
+        self._legend.setText("Chuột phải / phím D: đánh dấu riêng trên thẻ chưa mở.")
         self._legend.setWordWrap(True)
         self._legend.setStyleSheet(
             "color: #4E5A67; font-size: 11.5px; background: transparent;"
@@ -70,7 +75,7 @@ class ScratchpadPanel(StyledPanel):
         self._editor = QPlainTextEdit(self)
         self._editor.setPlaceholderText("Viết nháp tại đây: giả thiết, phép loại trừ, việc cần kiểm tra...")
         self._editor.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._editor.setMinimumHeight(72)
+        self._editor.setMinimumHeight(60)
         self._editor.setStyleSheet(
             "QPlainTextEdit {"
             "  background: #FBF7F0; color: #1F2430; border: 1px solid #D5C7B2;"
@@ -86,6 +91,18 @@ class ScratchpadPanel(StyledPanel):
         self._clear_button.setToolTip("Xóa ghi chú nháp (không xóa dấu trên thẻ)")
         self._clear_button.clicked.connect(self._on_clear_clicked)
         self.content_layout.addWidget(self._clear_button, 0, Qt.AlignmentFlag.AlignRight)
+
+        # Keep the useful writing area; move the clear action into the title
+        # row instead of spending another full row underneath the editor.
+        from PySide6.QtWidgets import QHBoxLayout
+        self.content_layout.removeWidget(self._clear_button)
+        header = QHBoxLayout()
+        if self.title_label is not None:
+            self._root_layout.removeWidget(self.title_label)
+            header.addWidget(self.title_label, 1)
+        header.addWidget(self._clear_button)
+        self._root_layout.insertLayout(0, header)
+        self.set_mark_summary(0, 0, 0)
 
     # ------------------------------------------------------------------
 
@@ -104,6 +121,7 @@ class ScratchpadPanel(StyledPanel):
         self.set_mark_summary(0, 0, 0)
 
     def set_mark_summary(self, unsure: int, suspect: int, innocent: int) -> None:
+        self._summary.setVisible(unsure + suspect + innocent > 0)
         if unsure + suspect + innocent == 0:
             self._summary.setText("Chưa đánh dấu thẻ nào.")
         else:

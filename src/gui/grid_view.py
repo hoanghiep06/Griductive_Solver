@@ -89,6 +89,7 @@ from src.gui.components.character_card import (
 )
 from src.gui.resources.pixmap_loader import PixmapLoader, default_pixmap_loader
 from src.gui.styles.tokens import COLORS, GEOMETRY, TYPOGRAPHY
+from src.gui.styles.investigation import CURSOR_RADIUS
 from src.gui.view_models import (
     PublicBoardSnapshot,
     PublicCharacterView,
@@ -122,11 +123,12 @@ _GAP_Y_BY_MODE: dict[CardDisplayMode, int] = {
     CardDisplayMode.COMPACT: 6,
 }
 
-# The board is taller now (each row also hosts a clue strip), so allow cards to shrink more.
+# The fixed-size reading surface keeps clues legible independently of board
+# zoom, so small windows can show the entire grid rather than crop its last row.
 _MIN_SCALE_BY_MODE: dict[CardDisplayMode, float] = {
-    CardDisplayMode.EXPANDED: 0.62,
-    CardDisplayMode.STANDARD: 0.56,
-    CardDisplayMode.COMPACT: 0.56,
+    CardDisplayMode.EXPANDED: 0.50,
+    CardDisplayMode.STANDARD: 0.40,
+    CardDisplayMode.COMPACT: 0.40,
 }
 
 
@@ -1400,6 +1402,7 @@ class GameBoard(QGraphicsView):
         painter.setPen(Qt.PenStyle.NoPen)
 
         # 2. Layer 2 — Warm Brass Desk Lamp Tungsten Pulse & Volumetric Light Cone (left side)
+        painter.setOpacity(0.28)
         lamp_pt = QPointF(vw * 0.114 + px_off * 0.9, vh * 0.575 + py_off * 0.9)
         lamp_flicker = (
             0.86
@@ -1566,13 +1569,15 @@ class GameBoard(QGraphicsView):
                 )
 
         # 8. Layer 8 — Interactive Warm Detective Lantern Cursor Spotlight
+        painter.setOpacity(1.0)
+        painter.fillRect(vp_rect, QColor(16, 28, 40, 76))
         if self._cursor_vp is not None and not self.reduced_motion:
-            spot = QRadialGradient(self._cursor_vp, 190.0)
-            spot.setColorAt(0.0, QColor(255, 234, 178, 56))
-            spot.setColorAt(0.5, QColor(235, 178, 92, 22))
+            spot = QRadialGradient(self._cursor_vp, CURSOR_RADIUS)
+            spot.setColorAt(0.0, QColor(255, 234, 178, 20))
+            spot.setColorAt(0.5, QColor(235, 178, 92, 8))
             spot.setColorAt(1.0, QColor(235, 178, 92, 0))
             painter.setBrush(spot)
-            painter.drawEllipse(self._cursor_vp, 190.0, 190.0)
+            painter.drawEllipse(self._cursor_vp, CURSOR_RADIUS, CURSOR_RADIUS)
 
         # 9. Layer 9 — Dark Leather & Double Antique-Brass Filigree Board Frame + Deduction Ripple
         sr = self._scene.sceneRect()
@@ -1586,8 +1591,8 @@ class GameBoard(QGraphicsView):
             painter.drawRoundedRect(mat_rect.translated(0.0, 3.0).adjusted(-3.0, -2.0, 3.0, 3.0), 12.0, 12.0)
 
             # Rich dark detective leather board well (maximizes contrast for cards & glowing threads)
-            painter.setBrush(QColor(18, 14, 11, 184))
-            painter.setPen(QPen(QColor(206, 166, 92, 225), 2.1, Qt.PenStyle.SolidLine))
+            painter.setBrush(QColor(21, 31, 42, 238))
+            painter.setPen(QPen(QColor(173, 148, 102, 210), 1.3, Qt.PenStyle.SolidLine))
             painter.drawRoundedRect(mat_rect, 10.0, 10.0)
 
             inner_mat = mat_rect.adjusted(4.5, 4.5, -4.5, -4.5)

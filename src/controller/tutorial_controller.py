@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject
 from src.core.game_engine import VerdictResponse
 from src.tutorial.data import TUTORIAL_STEPS
 from src.tutorial.session import TutorialSession
+from src.gui.components.character_card import ClueNote
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,22 @@ class TutorialController(QObject):
         # Display the precise public clue discussed by this step, without
         # crowding the lesson with all previously opened clues.
         view.clues.set_clues([clue] if clue else public_clues[:1])
+        self._sync_clue_notes()
         view.focus_cells = clue.referenced_cells if clue else ()
         view.board.highlight_cells(view.focus_cells)
         view.board.set_interactive(False)
         self._present()
+
+    def _sync_clue_notes(self):
+        """Use the same under-card clue strips as the real investigation desk."""
+        active = self.model.step.clue_id
+        if self.model.index == 0:
+            active = self.model.game.board().clues[0].clue_id
+        self.view.board.set_clue_notes({
+            c.owner_id: ClueNote(c.clue_id, c.clue_type, c.text,
+                                 "normal" if c.clue_id == active else "spent", c.clue_id == active)
+            for c in self.model.game.board().clues
+        })
 
     def _present(self, message=""):
         view = self.view
@@ -106,6 +119,7 @@ class TutorialController(QObject):
         _, board = self._pending
         self._pending = None
         self.view.board.set_board(board)
+        self._sync_clue_notes()
         self.view.board.highlight_cells(self.view.focus_cells)
         self.view.board.set_interactive(False)
         self._present()

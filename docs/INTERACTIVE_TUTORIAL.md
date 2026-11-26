@@ -52,7 +52,7 @@ Mỗi lượt dưới đây chỉ cần manh mối được nêu và các trạn
 | Bước | Quan sát → phân tích → kết luận |
 | --- | --- |
 | 1 | Giới thiệu tọa độ, hai phe và mục tiêu 16 thẻ |
-| 2 | Giới thiệu Bảng Chứng Cứ và thao tác chọn ô → phán quyết |
+| 2 | Giới thiệu dải manh mối dưới thẻ, khung đọc đầy đủ và thao tác chọn ô → phán quyết |
 | 3 | A1: FACT B1 tội phạm → thông tin trực tiếp → B1 tội phạm |
 | 4 | B1: B1 SAME C1 → B1 tội phạm → C1 tội phạm |
 | 5 | C1: hàng 1 EXACTLY 3 → A1/B1/C1 đã đủ 3 → D1 vô tội |
@@ -78,8 +78,9 @@ biến thể đó. Toàn bộ lời dẫn tiếng Việt nằm trong `src/tutori
 
 Menu có nút **Hướng dẫn chơi · Tân thủ**, màn chơi có nút **? Tân thủ**.
 Tutorial mở trong cửa sổ modal cùng kích thước cửa sổ game, dùng phiên
-`GameEngine` mới. Giao diện tái sử dụng `GameBoard`, `CluePanel`, portrait và
-hiệu ứng lật thẻ thật. Chỉ hiển thị manh mối công khai đang được giải thích.
+`GameEngine` mới. Giao diện tái sử dụng `GameBoard`, `ClueReader`, dải manh mối
+dưới thẻ, portrait và hiệu ứng lật thẻ thật. Dải nguồn và bản đọc đầy đủ cùng
+được spotlight. Chỉ hiển thị manh mối công khai đang được giải thích.
 
 Overlay làm tối vùng ngoài spotlight, vẽ glow và mũi tên động. Các ô tham chiếu
 của manh mối đều sáng; mũi tên chỉ vào ô cần chọn rồi chuyển đến phán quyết.

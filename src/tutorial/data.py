@@ -33,7 +33,7 @@ TUTORIAL_STEPS = (
     ),
     TutorialStep(
         "Đọc manh mối trước khi kết luận",
-        "Bảng Chứng Cứ bên phải đang hiển thị lời khai của A1: B1 là tội phạm.",
+        "Manh mối nằm ngay dưới thẻ A1. Khung đọc bên phải hiển thị đầy đủ: B1 là tội phạm.",
         "Mở một thẻ sẽ công khai cả phe lẫn manh mối của người đó. Lời khai vẫn đúng khi người nói là tội phạm.",
         "Mỗi lượt: đọc manh mối → suy luận → chọn ô sáng → bấm phán quyết. Tiếp tục chỉ mở khóa sau khi bạn làm đúng.",
         focus="clue", clue_id="t_A1",

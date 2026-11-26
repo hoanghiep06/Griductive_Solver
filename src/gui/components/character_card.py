@@ -96,9 +96,9 @@ CARD_DIMENSIONS_BY_MODE: dict[CardDisplayMode, tuple[int, int]] = {
 # Clue strip under the card: (strip height px, max text lines, font px).
 # max_lines == 0 -> only a type chip is shown (5x5 COMPACT).
 NOTE_SPEC_BY_MODE: dict[CardDisplayMode, tuple[int, int, int]] = {
-    CardDisplayMode.EXPANDED: (48, 3, 10),
-    CardDisplayMode.STANDARD: (36, 2, 10),
-    CardDisplayMode.COMPACT: (18, 0, 8),
+    CardDisplayMode.EXPANDED: (48, 3, 12),
+    CardDisplayMode.STANDARD: (40, 2, 12),
+    CardDisplayMode.COMPACT: (22, 0, 11),
 }
 NOTE_HEIGHT_BY_MODE: dict[CardDisplayMode, int] = {
     mode: spec[0] for mode, spec in NOTE_SPEC_BY_MODE.items()
@@ -1220,13 +1220,13 @@ class CharacterCard(QGraphicsObject):
 
         if collapsed or max_lines == 0:
             # Tiny chip: dim "✓ TYPE" when spent, bright TYPE chip on 5x5
-            chip_font = self._ui_font(8, bold=True)
+            chip_font = self._ui_font(10, bold=True)
             fm = QFontMetricsF(chip_font)
             text = f"✓ {label}" if collapsed else label
             chip_w = min(w - 4.0, fm.horizontalAdvance(text) + 14.0)
-            chip_h = 13.0
+            chip_h = 17.0
             chip = QRectF(area.left() + (w - chip_w) * 0.5, area.top(), chip_w, chip_h)
-            alpha = 105 if collapsed else 240
+            alpha = 205 if collapsed else 255
             bg = QColor(COLORS.paper_linen)
             bg.setAlpha(alpha)
             border = QColor(COLORS.brass_ink if not note.selected else "#2B6BA0")
@@ -1243,7 +1243,7 @@ class CharacterCard(QGraphicsObject):
             return
 
         bg = QColor("#EAF1F7" if note.selected else COLORS.paper_sheet)
-        bg.setAlpha(240)
+        bg.setAlpha(255)
         painter.setPen(QPen(accent, 1.8 if note.selected else 1.1))
         painter.setBrush(bg)
         painter.drawRoundedRect(area, 5.0, 5.0)

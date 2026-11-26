@@ -3,11 +3,11 @@
 Layout:
     - Top Bar: GRIDUCTIVE logo | Case ID & grid size | Demo switcher (dev-only) | GameState pill
     - Non-blocking NotificationBanner (auto-hides when dismissed; never covers GameBoard)
-    - Main Workspace (QSplitter ~58% Board / ~42% Sidebar):
+    - Main Workspace (QSplitter ~70% Board / ~30% Sidebar):
         * Left: ``GameBoard``. Each revealed card carries its own public clue in a
           strip right under the name frame (the old CluePanel is gone).
-        * Right: clue-visibility toggle + public counts + ``ScratchpadPanel`` (Nháp)
-          + ``DeductionPanel``
+        * Right: public counts + a fixed-size ``ClueReader``; tabbed personal
+          scratchpad (Nháp) and deduction journal.
     - Bottom: ``ActionBar`` (Verdict Strip + Game Action Controls) | ``ProgressPanel``
 
 Clue visibility ("ẩn manh mối không quan trọng"):
@@ -26,15 +26,17 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen, QPolygonF
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPalette, QPen, QPolygonF
 from PySide6.QtWidgets import (
     QFrame,
     QApplication,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QSizePolicy,
     QSplitter,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -45,6 +47,7 @@ from src.gui.animations.motion_config import DEFAULT_MOTION, MotionConfig
 from src.gui.components.action_bar import ActionBar
 from src.gui.components.asset_image_view import AssetImageView, ImageScaleMode
 from src.gui.components.character_card import ClueNote
+from src.gui.components.clue_reader import ClueReader
 from src.gui.components.deduction_panel import DeductionPanel
 from src.gui.components.interaction_dialog import InteractionDialog
 from src.gui.components.notification_dialog import NotificationBanner
@@ -58,6 +61,7 @@ from src.gui.interaction_state import InteractionState
 from src.gui.resources.pixmap_loader import PixmapLoader
 from src.gui.screens.backdrop_screen import BackdropScreen
 from src.gui.styles.tokens import COLORS, GEOMETRY, SPACING
+from src.gui.styles.investigation import TABS_STYLE
 from src.gui.view_models import (
     ActionCode,
     CardVisibility,
@@ -175,6 +179,64 @@ class _TopBrandPlaque(QWidget):
         p.end()
 
 
+class _CaseTitleLabel(QLabel):
+    """Keep the full accessible title, eliding cleanly when the header is narrow."""
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        painter = QPainter(self)
+        painter.setFont(self.font())
+        painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
+        area = self.contentsRect()
+        text = self.fontMetrics().elidedText(self.text(), Qt.TextElideMode.ElideRight, area.width())
+        painter.drawText(area, self.alignment(), text)
+
+
+class _GameplayHeader(QFrame):
+    """Equal side columns keep the plaque on the actual window centerline."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._grid = QGridLayout(self)
+        self._grid.setContentsMargins(SPACING.space_3, 4, SPACING.space_3, 4)
+        self._grid.setHorizontalSpacing(12)
+        self.left = QWidget(self)
+        self.left_layout = QHBoxLayout(self.left)
+        self.left_layout.setContentsMargins(0, 0, 0, 0)
+        self.left_layout.setSpacing(SPACING.space_2)
+        self.plaque = _TopBrandPlaque(self)
+        self.right = QWidget(self)
+        self.controls = QHBoxLayout(self.right)
+        self.controls.setContentsMargins(0, 0, 0, 0)
+        self.controls.setSpacing(SPACING.space_2)
+        self._grid.addWidget(self.left, 0, 0)
+        self._grid.addWidget(self.plaque, 0, 1, Qt.AlignmentFlag.AlignCenter)
+        self._grid.addWidget(self.right, 0, 2, Qt.AlignmentFlag.AlignRight)
+        self._rebalance_timer = QTimer(self)
+        self._rebalance_timer.setSingleShot(True)
+        self._rebalance_timer.timeout.connect(self.rebalance)
+        self.right.installEventFilter(self)
+
+    def rebalance(self):
+        controls_width = self.controls.sizeHint().width()
+        margins = self._grid.contentsMargins()
+        required = 2 * controls_width + self.plaque.width() + 24 + margins.left() + margins.right()
+        centered = self.width() >= max(1450, required)
+        self.plaque.setVisible(centered)
+        for column in (0, 2):
+            self._grid.setColumnMinimumWidth(column, controls_width if centered else 0)
+        self._grid.setColumnStretch(0, 1)
+        self._grid.setColumnStretch(2, 1 if centered else 0)
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        self.rebalance()
+
+    def eventFilter(self, watched, event) -> bool:  # noqa: N802
+        if event.type() == QEvent.Type.LayoutRequest:
+            self._rebalance_timer.start(0)
+        return super().eventFilter(watched, event)
+
+
 class GameplayScreen(BackdropScreen):
     """Completed Phase 4 Gameplay Screen hosting GĐ3 ``GameBoard`` + dashboard."""
 
@@ -209,7 +271,7 @@ class GameplayScreen(BackdropScreen):
     ) -> None:
         super().__init__(
             AssetId.A05_GAMEPLAY_BACKGROUND,
-            scrim_rgba=(24, 17, 13, 232),
+            scrim_rgba=(20, 31, 43, 244),
             pixmap_loader=pixmap_loader,
             parent=parent,
         )
@@ -233,7 +295,7 @@ class GameplayScreen(BackdropScreen):
         # ------------------------------------------------------------------
         # 1. VINTAGE BRASS TOP BAR: Logo + Case | Center Brand Plaque | Nav + Status
         # ------------------------------------------------------------------
-        top_bar = QFrame(self)
+        top_bar = _GameplayHeader(self)
         top_bar.setObjectName("GameplayVintageTopBar")
         top_bar.setProperty("widgetKind", "pageHeader")
         top_bar.setStyleSheet(
@@ -243,9 +305,8 @@ class GameplayScreen(BackdropScreen):
             "}"
         )
         top_bar.setMinimumHeight(52)
-        top_layout = QHBoxLayout(top_bar)
-        top_layout.setContentsMargins(SPACING.space_3, 4, SPACING.space_3, 4)
-        top_layout.setSpacing(SPACING.space_2)
+        self._top_bar = top_bar
+        top_layout = top_bar.controls
 
         compact_logo = AssetImageView(
             AssetId.A04_LOGO_WIDE,
@@ -254,19 +315,19 @@ class GameplayScreen(BackdropScreen):
             pixmap_loader=pixmap_loader,
             parent=top_bar,
         )
-        compact_logo.setFixedSize(108, 34)
-        top_layout.addWidget(compact_logo)
+        compact_logo.setFixedSize(90, 30)
+        top_bar.left_layout.addWidget(compact_logo)
 
-        self._case_label = QLabel("Hồ sơ: Chưa nạp vụ án", top_bar)
+        self._case_label = _CaseTitleLabel("Hồ sơ: Chưa nạp vụ án", top_bar)
         self._case_label.setTextFormat(Qt.TextFormat.PlainText)
         self._case_label.setProperty("role", "paperSubheading")
         self._case_label.setStyleSheet("color: #202836; font-weight: 700; font-size: 13.5px; background: transparent;")
-        top_layout.addWidget(self._case_label, 1)
+        self._case_label.setMinimumWidth(0)
+        self._case_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        top_bar.left_layout.addWidget(self._case_label, 1)
 
         # Centered ornate GRIDUCTIVE SOLVER · Hồ Sơ Phá Án brass plaque
-        self._brand_plaque = _TopBrandPlaque(top_bar)
-        top_layout.addWidget(self._brand_plaque, 0, Qt.AlignmentFlag.AlignCenter)
-        top_layout.addStretch(1)
+        self._brand_plaque = top_bar.plaque
 
         # Developer standalone demo toolbar (grouped cleanly in a secondary Demo QA capsule)
         self._demo_size_buttons: dict[int, StyledButton] = {}
@@ -365,7 +426,7 @@ class GameplayScreen(BackdropScreen):
         # ------------------------------------------------------------------
         # 3. MAIN WORKSPACE: Full-Height QSplitter over Cozy Dark Study Desk
         #    Left (~58%): Hero GameBoard (clues hang under each revealed card)
-        #    Right (~42%): clue toggle + counts + Nháp + DeductionPanel
+        #    Right: readable public clue + tabbed Nháp / deduction journal
         # ------------------------------------------------------------------
         workspace_wrap = QHBoxLayout()
         workspace_wrap.setContentsMargins(SPACING.space_3, 6, SPACING.space_3, 6)
@@ -378,7 +439,7 @@ class GameplayScreen(BackdropScreen):
         # Left column: Dominant full-height GameBoard
         self._left_column = QWidget(self._splitter)
         self._left_column.setObjectName("GameplayHeroColumn")
-        self._left_column.setMinimumWidth(540)
+        self._left_column.setMinimumWidth(460)
         left_layout = QVBoxLayout(self._left_column)
         left_layout.setContentsMargins(0, 0, SPACING.space_2, 0)
         left_layout.setSpacing(0)
@@ -390,7 +451,7 @@ class GameplayScreen(BackdropScreen):
             parent=self._left_column,
         )
         self._board_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._board_panel.setMinimumWidth(520)
+        self._board_panel.setMinimumWidth(440)
 
         self._game_board = GameBoard(
             pixmap_loader=pixmap_loader,
@@ -414,19 +475,28 @@ class GameplayScreen(BackdropScreen):
         # Right column: clue visibility toggle + public counts + Nháp + Deduction trace
         self._sidebar_widget = QWidget(self._splitter)
         self._sidebar_widget.setObjectName("GameplaySidebar")
-        self._sidebar_widget.setMinimumWidth(340)
-        self._sidebar_widget.setMaximumWidth(620)
+        self._sidebar_widget.setMinimumWidth(320)
+        self._sidebar_widget.setMaximumWidth(460)
         sidebar_layout = QVBoxLayout(self._sidebar_widget)
         sidebar_layout.setContentsMargins(SPACING.space_2, 0, 0, 0)
         sidebar_layout.setSpacing(8)
 
+        self._clue_tools_panel = QFrame(self._sidebar_widget)
+        self._clue_tools_panel.setObjectName("InvestigationSummary")
+        self._clue_tools_panel.setStyleSheet(
+            "QFrame#InvestigationSummary {background:#F3EBD9; border:1px solid #CDBB98; border-radius:8px;}"
+            "QFrame#InvestigationSummary QLabel {color:#33475A; background:transparent; border:none;}"
+        )
+        summary_layout = QVBoxLayout(self._clue_tools_panel)
+        summary_layout.setContentsMargins(12, 8, 12, 8)
+        summary_layout.setSpacing(5)
         clue_tools = QHBoxLayout()
         clue_tools.setContentsMargins(0, 0, 0, 0)
         clue_tools.setSpacing(6)
-        self._clue_hint_label = QLabel("Manh mối nằm dưới mỗi thẻ đã lật", self._sidebar_widget)
+        self._clue_hint_label = QLabel("SỔ ĐIỀU TRA", self._clue_tools_panel)
         self._clue_hint_label.setTextFormat(Qt.TextFormat.PlainText)
         self._clue_hint_label.setStyleSheet(
-            "color: #EBDDBE; font-size: 12px; font-weight: 600; background: transparent;"
+            "color: #536073; font-size: 11px; font-weight: 700; background: transparent;"
         )
         clue_tools.addWidget(self._clue_hint_label, 1)
         self._show_all_btn = StyledButton(
@@ -439,27 +509,37 @@ class GameplayScreen(BackdropScreen):
         )
         self._show_all_btn.clicked.connect(self._on_show_all_clicked)
         clue_tools.addWidget(self._show_all_btn)
-        sidebar_layout.addLayout(clue_tools)
+        summary_layout.addLayout(clue_tools)
 
         # Public counts (replaces CluePanel.global_card): only already-proved verdicts
         self._public_counts_label = QLabel("Công khai: chưa có ô nào được chứng minh", self._sidebar_widget)
         self._public_counts_label.setTextFormat(Qt.TextFormat.PlainText)
         self._public_counts_label.setStyleSheet(
-            "color: #F2D492; font-size: 12px; font-weight: 700; background: transparent;"
+            "color: #263D51; font-size: 12px; font-weight: 600; background: transparent;"
         )
-        sidebar_layout.addWidget(self._public_counts_label)
+        self._public_counts_label.setWordWrap(True)
+        summary_layout.addWidget(self._public_counts_label)
+        sidebar_layout.addWidget(self._clue_tools_panel)
+
+        self._clue_reader = ClueReader(parent=self._sidebar_widget)
+        sidebar_layout.addWidget(self._clue_reader, 2)
+
+        self._sidebar_tabs = QTabWidget(self._sidebar_widget)
+        self._sidebar_tabs.setObjectName("InvestigationTabs")
+        self._sidebar_tabs.setStyleSheet(TABS_STYLE)
 
         self._scratchpad = ScratchpadPanel(parent=self._sidebar_widget)
-        sidebar_layout.addWidget(self._scratchpad, 4)
+        self._sidebar_tabs.addTab(self._scratchpad, "Nháp cá nhân")
 
         self._deduction_panel = DeductionPanel(parent=self._sidebar_widget)
         self._deduction_panel.hint_changed.connect(self._on_hint_changed)
-        sidebar_layout.addWidget(self._deduction_panel, 6)
+        self._sidebar_tabs.addTab(self._deduction_panel, "Nhật ký suy luận")
+        sidebar_layout.addWidget(self._sidebar_tabs, 3)
 
         self._splitter.addWidget(self._sidebar_widget)
-        self._splitter.setStretchFactor(0, 58)
-        self._splitter.setStretchFactor(1, 42)
-        self._splitter.setSizes([770, 550])
+        self._splitter.setStretchFactor(0, 70)
+        self._splitter.setStretchFactor(1, 30)
+        self._splitter.setSizes([930, 400])
 
         workspace_wrap.addWidget(self._splitter, 1)
         self.body_layout.addLayout(workspace_wrap, 1)
@@ -538,6 +618,7 @@ class GameplayScreen(BackdropScreen):
         )
         revealed_count = len(revealed_ids)
         self._case_label.setText(format_gameplay_case_header(pid, n))
+        self._case_label.setToolTip(self._case_label.text())
 
         # Clue strips: remember which owners were just flipped so their clue stays open
         self._clues = tuple(norm.clues)
@@ -655,7 +736,10 @@ class GameplayScreen(BackdropScreen):
 
     def append_deduction_step(self, step: Any) -> bool:
         """Append one accepted deduction step (idempotent)."""
-        return self._deduction_panel.append_step(step)
+        added = self._deduction_panel.append_step(step)
+        if added:
+            self._sidebar_tabs.setCurrentWidget(self._deduction_panel)
+        return added
 
     def set_deduction_trace(self, steps: Iterable[Any]) -> None:
         """Replace the full accepted deduction trace."""
@@ -668,6 +752,7 @@ class GameplayScreen(BackdropScreen):
     def show_hint(self, hint: Any) -> None:
         """Render a temporary non-mutating HintView in DeductionPanel."""
         self._deduction_panel.show_hint(hint)
+        self._sidebar_tabs.setCurrentWidget(self._deduction_panel)
         self.ui_state.active_hint = hint
 
     def animate_hint_flow(
@@ -875,6 +960,17 @@ class GameplayScreen(BackdropScreen):
 
     def _refresh_clue_notes(self) -> None:
         self._game_board.set_clue_notes(self._build_clue_notes())
+        if hasattr(self, "_clue_reader"):
+            self._refresh_clue_reader()
+
+    def _refresh_clue_reader(self, clue_id=None) -> None:
+        active_id = clue_id or self.ui_state.selected_clue_id
+        clue = next((c for c in self._clues if c.clue_id == active_id), None)
+        if clue is None:
+            clue = next((c for c in self._clues if c.scope == "ALL"), None)
+        if clue is None and self._clues:
+            clue = next((c for c in self._clues if c.owner_id in self._fresh_owner_ids), self._clues[0])
+        self._clue_reader.set_clues((clue,) if clue else ())
 
     def _on_clue_used_toggled(self, clue_id: str) -> None:
         solved = self.ui_state.solved_clues
@@ -933,6 +1029,7 @@ class GameplayScreen(BackdropScreen):
             self._preview_saved_targets = tuple(self.ui_state.highlighted_targets)
         self._preview_clue_id = clue_id
         self._render_clue_focus(clue_id)
+        self._refresh_clue_reader(clue_id)
 
     def _on_clue_hover_left(self, clue_id: str) -> None:
         if self._preview_clue_id != clue_id:
@@ -946,6 +1043,7 @@ class GameplayScreen(BackdropScreen):
         else:
             self._game_board.clear_highlights()
         self._preview_saved_targets = ()
+        self._refresh_clue_reader()
 
     # ------------------------------------------------------------------
     # Public counts & Nháp (scratchpad & draft marks)
@@ -978,6 +1076,8 @@ class GameplayScreen(BackdropScreen):
         self._game_board.set_clue_notes({})
         self._game_board.clear_draft_marks()
         self._scratchpad.clear()
+        self._clue_reader.set_clues(())
+        self._sidebar_tabs.setCurrentWidget(self._scratchpad)
         self._set_public_counts(0, 0, 0)
 
     def _on_feedback_dismissed(self) -> None:
@@ -985,6 +1085,15 @@ class GameplayScreen(BackdropScreen):
 
     def _on_hint_changed(self, hint) -> None:
         self.ui_state.active_hint = hint
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        if hasattr(self, "_top_bar"):
+            self._top_bar.rebalance()
+
+    @property
+    def clue_reader(self) -> ClueReader:
+        return self._clue_reader
 
     def eventFilter(self, watched, event) -> bool:  # noqa: N802
         # This filter is installed on QApplication. Modal help/tutorial windows

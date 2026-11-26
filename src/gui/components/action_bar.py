@@ -119,7 +119,7 @@ class ActionBar(QWidget):
         verdict_row.addWidget(_TargetSuspectIcon(self._verdict_panel), 0, Qt.AlignmentFlag.AlignVCenter)
 
         self._selected_label = QLabel(
-            "Chọn thẻ chưa mở trên bàn cờ",
+            "Chọn nghi phạm",
             self._verdict_panel,
         )
         self._selected_label.setTextFormat(Qt.TextFormat.PlainText)
@@ -345,7 +345,7 @@ class ActionBar(QWidget):
         """Update selected suspect summary and verdict button enablement."""
         self._selected_character = character
         if character is None:
-            self._selected_label.setText("Chọn thẻ chưa mở trên bàn cờ")
+            self._selected_label.setText("Chọn nghi phạm")
             self._selected_label.setToolTip(
                 "Chưa chọn nghi phạm — Nhấp vào một thẻ chưa mở trên bàn cờ"
             )

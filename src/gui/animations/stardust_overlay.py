@@ -34,6 +34,7 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QApplication, QWidget
 
 from src.gui.animations.motion_config import DEFAULT_MOTION
+from src.gui.styles.investigation import CURSOR_OPACITY, CURSOR_RADIUS
 
 
 @dataclass
@@ -85,6 +86,7 @@ class AmbientStardustOverlay(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._reduced_motion: bool = bool(DEFAULT_MOTION.reduced_motion)
+        self._subtle_mode = False
         self._phase: float = 0.0
         self._meteor_cursor: int = 0
         self._ticks_until_meteor: int = 24
@@ -132,6 +134,11 @@ class AmbientStardustOverlay(QWidget):
     @property
     def active_mist_puff_count(self) -> int:
         return len(self._mist_puffs)
+
+    def set_subtle_mode(self, enabled: bool) -> None:
+        """Keep atmospheric decoration behind the reading task on the game desk."""
+        self._subtle_mode = bool(enabled)
+        self.update()
 
     def set_reduced_motion(self, enabled: bool) -> None:
         flag = bool(enabled)
@@ -227,7 +234,7 @@ class AmbientStardustOverlay(QWidget):
                         self._mist_puffs.append(
                             _MistPuff(pt.x(), pt.y(), 24.0 + min(14.0, dist * 0.18), progress=0.0)
                         )
-                        if len(self._mist_puffs) > 10:
+                        if len(self._mist_puffs) > 4:
                             self._mist_puffs.pop(0)
                         self._last_puff_pos = QPointF(pt)
         elif etype == QEvent.Type.Leave and watched is self.window():
@@ -302,11 +309,15 @@ class AmbientStardustOverlay(QWidget):
             return
 
         p = QPainter(self)
+        p.setOpacity(0.25 if self._subtle_mode else 1.0)
         p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         phase = self._phase
 
         # 1. Circular Warm Mist & Swirling Cloud Halo following the cursor
+        p.save()
+        p.setOpacity(CURSOR_OPACITY * (0.6 if self._subtle_mode else 1.0))
         self._paint_cursor_mist(p, phase)
+        p.restore()
 
         # 2. Drifting Golden Sand & Stardust Motes
         p.setPen(Qt.PenStyle.NoPen)
@@ -360,7 +371,7 @@ class AmbientStardustOverlay(QWidget):
         # A. Trailing expanding circular mist puffs left along the cursor's glide path
         for pf in self._mist_puffs:
             fade = (1.0 - pf.progress) * (1.0 - pf.progress)
-            rad = pf.base_radius * (0.85 + 1.15 * pf.progress)
+            rad = pf.base_radius * (0.85 + 1.15 * pf.progress) * 0.32
             pt = QPointF(pf.x, pf.y)
             pg = QRadialGradient(pt, rad)
             pg.setColorAt(0.0, QColor(255, 247, 226, int(36 * fade)))
@@ -377,7 +388,7 @@ class AmbientStardustOverlay(QWidget):
         breathe = 1.0 + 0.06 * math.sin(phase * 1.8)
 
         # B. Broad soft circular golden-ivory mist aura (matches detective lantern mist!)
-        outer_r = 132.0 * breathe
+        outer_r = CURSOR_RADIUS * breathe
         aura = QRadialGradient(c, outer_r)
         aura.setColorAt(0.0, QColor(255, 248, 228, int(48 * a)))
         aura.setColorAt(0.38, QColor(244, 212, 152, int(28 * a)))
@@ -389,9 +400,9 @@ class AmbientStardustOverlay(QWidget):
         # C. 6 gently orbiting translucent mist-cloud lobes creating a billowing circular cloud wreath
         for i in range(6):
             ang = phase * (0.72 if i % 2 == 0 else -0.48) + i * (math.pi / 3.0)
-            orbit_r = (34.0 + 7.0 * math.sin(phase * 1.3 + i * 1.1)) * breathe
+            orbit_r = (34.0 + 7.0 * math.sin(phase * 1.3 + i * 1.1)) * breathe * 0.32
             lobe_c = QPointF(c.x() + math.cos(ang) * orbit_r, c.y() + math.sin(ang) * orbit_r)
-            lobe_r = (42.0 + 8.0 * math.cos(phase * 0.9 + i)) * breathe
+            lobe_r = (42.0 + 8.0 * math.cos(phase * 0.9 + i)) * breathe * 0.32
             lg = QRadialGradient(lobe_c, lobe_r)
             lg.setColorAt(0.0, QColor(255, 249, 232, int(28 * a)))
             lg.setColorAt(0.48, QColor(236, 196, 128, int(16 * a)))
@@ -400,7 +411,7 @@ class AmbientStardustOverlay(QWidget):
             p.drawEllipse(lobe_c, lobe_r, lobe_r)
 
         # D. Feathered circular mist-cloud halo ring (soft radial band, no harsh bubble stroke)
-        ring_outer = 62.0 * breathe
+        ring_outer = 20.0 * breathe
         ring_grad = QRadialGradient(c, ring_outer)
         ring_grad.setColorAt(0.0, QColor(255, 250, 236, 0))
         ring_grad.setColorAt(0.56, QColor(255, 248, 226, 0))

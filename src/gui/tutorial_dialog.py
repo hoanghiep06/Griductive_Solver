@@ -1,11 +1,11 @@
-"""Dedicated tutorial view using the production board and public clue cards."""
+"""Guided first case using the production board, clue strips and clue reader."""
 
 from PySide6.QtCore import QEvent, QPoint, QRectF, Qt, QTimer
 from PySide6.QtWidgets import (
-    QDialog, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget,
+    QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget,
 )
 
-from src.gui.components.clue_panel import CluePanel
+from src.gui.components.clue_reader import ClueReader
 from src.gui.components.tutorial_overlay import TutorialOverlay
 from src.gui.assets.tutorial_portraits import TutorialPortraitRegistry
 from src.gui.grid_view import GameBoard
@@ -23,25 +23,31 @@ class TutorialDialog(QDialog):
         else:
             self.resize(1200, 800)
         self.setStyleSheet(
-            "QDialog#TutorialDialog {background:#182435;}"
-            "QDialog#TutorialDialog QLabel#TutorialHeading {color:#F4DEAC; font-size:18px; font-weight:700;}"
+            "QDialog#TutorialDialog {background:#172432;}"
+            "QDialog#TutorialDialog QLabel#TutorialHeading {color:#203247; font-size:16px; font-weight:700;}"
             "QDialog#TutorialDialog QLabel#TutorialBoardCaption {color:#ECDAB5; font-size:12px;}"
             "QDialog#TutorialDialog QPushButton#TutorialVerdict {min-height:38px; border:1px solid #C6A466;"
             "border-radius:7px; background:#EDE0C4; color:#253348; font-size:14px; font-weight:700;}"
             "QDialog#TutorialDialog QPushButton#TutorialVerdict:disabled {color:#817A6C; background:#C6BEAE;}"
             "QDialog#TutorialDialog QPushButton#TutorialVerdict:focus {border:2px solid #48BFDD;}"
+            "QDialog#TutorialDialog QPushButton#TutorialVerdict[verdict=CRIMINAL]:enabled {background:#F7E2DA; color:#8F3534; border-color:#B96C62;}"
+            "QDialog#TutorialDialog QPushButton#TutorialVerdict[verdict=INNOCENT]:enabled {background:#E0F2EC; color:#23664F; border-color:#6FA891;}"
         )
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 14)
         layout.setSpacing(12)
-        header = QHBoxLayout()
+        header_panel = QFrame(self)
+        header_panel.setObjectName("TutorialHeader")
+        header_panel.setStyleSheet("QFrame#TutorialHeader {background:#F3EBD9; border:1px solid #CDBB98; border-radius:8px;}")
+        header = QHBoxLayout(header_panel)
+        header.setContentsMargins(12, 7, 8, 7)
         self.heading = QLabel("HƯỚNG DẪN CHƠI  /  HỒ SƠ ĐẦU TIÊN", self)
         self.heading.setObjectName("TutorialHeading")
         header.addWidget(self.heading, 1)
         self.skip_slot = QWidget(self)
         self.skip_slot.setFixedSize(178, 36)
         header.addWidget(self.skip_slot)
-        layout.addLayout(header)
+        layout.addWidget(header_panel)
 
         workspace = QHBoxLayout()
         workspace.setSpacing(16)
@@ -63,10 +69,10 @@ class TutorialDialog(QDialog):
         right = QVBoxLayout(sidebar)
         right.setContentsMargins(0, 0, 0, 0)
         right.setSpacing(12)
-        self.clues = CluePanel(pixmap_loader=pixmap_loader, parent=sidebar)
+        self.clues = ClueReader(parent=sidebar)
         self.clues.set_reduced_motion(reduced_motion)
         self.clues.set_interactive(False)
-        self.clues.setFixedHeight(190)
+        self.clues.setFixedHeight(170)
         right.addWidget(self.clues)
         self.tooltip_slot = QWidget(sidebar)
         self.tooltip_slot.setMinimumHeight(225)
@@ -74,6 +80,8 @@ class TutorialDialog(QDialog):
         verdicts = QHBoxLayout()
         self.criminal_button = QPushButton("Tội phạm", sidebar)
         self.innocent_button = QPushButton("Vô tội", sidebar)
+        self.criminal_button.setProperty("verdict", "CRIMINAL")
+        self.innocent_button.setProperty("verdict", "INNOCENT")
         for button in (self.criminal_button, self.innocent_button):
             button.setObjectName("TutorialVerdict")
             button.setAutoDefault(False)
@@ -111,12 +119,19 @@ class TutorialDialog(QDialog):
         return QRectF(origin, widget.size())
 
     def cell_rect(self, cell_id):
+        return self._card_region(cell_id, note=False)
+
+    def note_rect(self, cell_id):
+        return self._card_region(cell_id, note=True)
+
+    def _card_region(self, cell_id, *, note):
         card = self.board.cards_by_id.get(cell_id)
         if card is None:
             return QRectF()
         # mapRectToScene includes each card's current position/transform; the
         # viewport mapping includes the board's fit scale and scroll offset.
-        rect = self.board.mapFromScene(card.mapRectToScene(card.card_rect())).boundingRect()
+        local = card.note_rect() if note else card.card_rect()
+        rect = self.board.mapFromScene(card.mapRectToScene(local)).boundingRect()
         rect = rect.intersected(self.board.viewport().rect())
         origin = self.overlay.mapFromGlobal(self.board.viewport().mapToGlobal(rect.topLeft()))
         return QRectF(origin, rect.size())
@@ -125,9 +140,10 @@ class TutorialDialog(QDialog):
         if self.focus_mode in {"board", "complete"}:
             return [self.widget_rect(self.board)], [], self.cell_rect("A1")
         clue_rect = self.widget_rect(self.clues)
+        source_note = self.note_rect(self.clues.clues[0].owner_id) if self.clues.clues else QRectF()
         if self.focus_mode == "clue":
-            return [clue_rect], [], clue_rect
-        highlights = [clue_rect]
+            return [clue_rect, source_note], [], source_note if not source_note.isEmpty() else clue_rect
+        highlights = [clue_rect, source_note]
         highlights.extend(self.cell_rect(cid) for cid in dict.fromkeys(self.focus_cells)
                           if cid != self.target_cell)
         actions = []
